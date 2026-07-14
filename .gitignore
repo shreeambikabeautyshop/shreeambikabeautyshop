@@ -27,8 +27,12 @@ yarn-error.log*
 .env*.local
 .env
 
-# vercel
+# Vercel
 .vercel
+
+# Credentials - NEVER commit this
+website-images/CREDENTIALS.txt
+*.credentials.txt
 
 # typescript
 *.tsbuildinfo
