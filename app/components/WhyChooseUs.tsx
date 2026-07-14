@@ -73,7 +73,7 @@ export default function WhyChooseUs() {
         {/* Header */}
         <div className="text-center mb-10">
           <p className="text-brand-gold font-semibold text-sm uppercase tracking-widest mb-2">
-            ♛ We Don't Just Sell, We Serve With Trust ♛
+            ♛ We Don&apos;t Just Sell, We Serve With Trust ♛
           </p>
           <h2 id="why-heading" className="text-3xl md:text-4xl font-bold text-brand-primary font-serif">
             Why Every Woman Chooses<br />
@@ -94,6 +94,7 @@ export default function WhyChooseUs() {
               <div>
                 <h3 className="font-bold text-gray-800 mb-1">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+
               </div>
             </div>
           ))}
@@ -105,7 +106,7 @@ export default function WhyChooseUs() {
             <h3 className="font-bold text-xl">
               ⚠️ Cheap Today, Expensive Tomorrow!
             </h3>
-            <p className="text-sm text-white/80 mt-1">Don't be fooled by low prices and duplicate products.</p>
+            <p className="text-sm text-white/80 mt-1">Don&apos;t be fooled by low prices and duplicate products.</p>
           </div>
 
           <div className="grid grid-cols-2">
