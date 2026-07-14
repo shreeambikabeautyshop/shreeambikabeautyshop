@@ -21,6 +21,7 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Brands", href: "/brands" },
   { name: "Offers", href: "/offers", badge: "Hot" },
+  { name: "Beauty Tips", href: "/beauty-tips" },
   { name: "About Us", href: "/about" },
   { name: "Contact Us", href: "/contact" },
 ];
