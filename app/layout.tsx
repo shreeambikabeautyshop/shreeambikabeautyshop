@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "Shree Ambika Beauty Shop",
     images: [
       {
-        url: "/images/slider-1.png",
+        url: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png",
         width: 1200,
         height: 630,
         alt: "Shree Ambika Beauty Shop",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Shree Ambika Beauty Shop",
     description: "100% Original Beauty Products at Best Prices",
-    images: ["/images/slider-1.png"],
+    images: ["https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png"],
   },
   robots: {
     index: true,

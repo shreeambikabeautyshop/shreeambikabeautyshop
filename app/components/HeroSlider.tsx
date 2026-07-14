@@ -7,17 +7,17 @@ import { FaWhatsapp, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 const slides = [
   {
     id: 1,
-    image: "/images/slider-1.png",
+    image: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png",
     alt: "Everything Your Beauty Needs Under One Place - Shree Ambika Beauty Shop",
   },
   {
     id: 2,
-    image: "/images/slider-2.png",
+    image: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-2_rtcjzp.png",
     alt: "Discount is Your Right - Shree Ambika Beauty Shop",
   },
   {
     id: 3,
-    image: "/images/slider-3.png",
+    image: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-3_gqqquq.png",
     alt: "We Are Everywhere To Serve You - Shree Ambika Beauty Shop",
   },
 ];
