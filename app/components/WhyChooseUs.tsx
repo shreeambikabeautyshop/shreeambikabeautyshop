@@ -1,6 +1,6 @@
 import { MdVerified, MdLocalShipping } from "react-icons/md";
 import { FaWhatsapp } from "react-icons/fa";
-import { FiShield, FiStar, FiDollarSign, FiUsers } from "react-icons/fi";
+import { FiShield, FiStar, FiUsers } from "react-icons/fi";
 
 const features = [
   {
@@ -18,7 +18,7 @@ const features = [
     bg: "bg-blue-50",
   },
   {
-    icon: <FiDollarSign size={28} />,
+    icon: <span className="text-2xl font-bold leading-none">₹</span>,
     title: "Best Possible Discount",
     desc: "We give you the maximum possible discount on every product.",
     color: "text-brand-primary",
