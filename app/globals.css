@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #8B0000;
+  --brand-secondary: #C41E3A;
+  --brand-accent: #FFB6C1;
+  --brand-gold: #D4AF37;
+  --brand-light: #FFF0F3;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-poppins), sans-serif;
+  background-color: #fff;
+  color: #333;
+  overflow-x: hidden;
+}
+
+/* Swiper custom styles */
+.swiper-pagination-bullet {
+  background: #8B0000 !important;
+  opacity: 0.5;
+}
+.swiper-pagination-bullet-active {
+  background: #8B0000 !important;
+  opacity: 1;
+}
+.swiper-button-next,
+.swiper-button-prev {
+  color: #8B0000 !important;
+}
+
+/* WhatsApp button pulse */
+@keyframes pulse-whatsapp {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(37, 211, 102, 0); }
+}
+.whatsapp-pulse {
+  animation: pulse-whatsapp 2s infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #fff0f3;
+}
+::-webkit-scrollbar-thumb {
+  background: #C41E3A;
+  border-radius: 3px;
+}
+
+/* Marquee */
+.marquee-wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-content {
+  display: inline-flex;
+  animation: marquee 30s linear infinite;
+}
+.marquee-content:hover {
+  animation-play-state: paused;
+}
