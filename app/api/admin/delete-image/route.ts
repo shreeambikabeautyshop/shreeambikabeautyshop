@@ -1,0 +1,27 @@
+import { NextRequest, NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function POST(req: NextRequest) {
+  const session = req.cookies.get("sabs_session")?.value;
+  if (session !== "authenticated") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { publicId } = await req.json();
+  if (!publicId) {
+    return NextResponse.json({ error: "Missing publicId" }, { status: 400 });
+  }
+
+  try {
+    await cloudinary.uploader.destroy(publicId);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+  }
+}
