@@ -4,31 +4,32 @@ function isAuthenticated(req: NextRequest): boolean {
   return req.cookies.get("sabs_session")?.value === "authenticated";
 }
 
-const PROMPT = `You are a professional Indian beauty product content writer and SEO expert for "Shree Ambika Beauty Shop" owned by Vinod (WhatsApp: +918291455297), Mumbai.
+const PROMPT = `You are a professional Indian beauty product content writer and SEO expert for "Shree Ambika Beauty Shop" owned by Vinod (WhatsApp: +918291455297), based in Mumbai — serving customers Pan India.
 
 Analyze this product image carefully. Generate content that is:
-- Human, warm, and relatable — like an expert friend recommending a product
-- Short, clear, professional — no fluff, no generic marketing jargon
-- SEO + GEO + AEO + LLM optimized for Indian beauty market
+- Human, warm, relatable — like an expert friend recommending a product
+- Short, clear, professional — no fluff, no generic marketing jargon  
+- Optimized for: SEO (Google), GEO (Google Maps/Local), AEO (featured snippets), LLM (AI answers)
+- Primary audience: Mumbai customers. Secondary: Pan India delivery
 
 Return ONLY raw JSON (no markdown, no code blocks):
 {
-  "name": "Exact product name as shown — Brand + Product + Variant/Shade/Size (e.g. Matrix Mega Smooth Shampoo 400ml)",
+  "name": "Exact product name — Brand + Product + Variant/Size (e.g. Matrix Mega Smooth Shampoo 400ml)",
   "brand": "Brand name exactly as on product",
   "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories",
   "price": realistic_indian_selling_price_number,
   "mrp": realistic_indian_mrp_number,
-  "description": "Write 3-4 short sentences. Start with what the product does in simple words. Mention 1-2 key ingredients or technology if visible. Say who it is for. End with: 'Available 100% original at Shree Ambika Beauty Shop — Vinod +918291455297.' Do NOT use fake superlatives.",
-  "tags": ["brand-name","product-type","main-benefit","skin-or-hair-type","india","buy-online","original","best-price","shree-ambika","beauty-shop"],
-  "seo_title": "Brand + Product + Key Benefit | Shree Ambika — max 60 chars",
-  "seo_description": "1 punchy sentence: what it does + who its for + where to buy. Max 155 chars.",
-  "key_benefits": ["Benefit 1 in plain simple words","Benefit 2","Benefit 3","Benefit 4","Benefit 5"],
-  "how_to_use": "2-3 simple steps. Practical, not robotic.",
-  "suitable_for": "Specific — e.g. Dry, frizzy hair / Oily skin / All skin types",
+  "description": "3-4 short sentences. Sentence 1: What this product does in simple words. Sentence 2: Key ingredient or technology if visible. Sentence 3: Who it is for. Sentence 4: 'Get it 100% original from Shree Ambika Beauty Shop, Mumbai — Pan India delivery available. WhatsApp Vinod: +918291455297.' Keep it human, not robotic.",
+  "tags": ["brand-name","product-type","main-benefit","skin-or-hair-type","mumbai","india","buy-online","original","best-price","shree-ambika-beauty-shop","vinod-mumbai","pan-india-delivery"],
+  "seo_title": "Brand + Product + Key Benefit | Buy in Mumbai — max 60 chars",
+  "seo_description": "What it does + Mumbai/India delivery + WhatsApp to order. Max 155 chars. Include +918291455297.",
+  "key_benefits": ["Clear plain-language benefit 1","Benefit 2","Benefit 3","Benefit 4","Benefit 5"],
+  "how_to_use": "2-3 simple practical steps. Friendly tone.",
+  "suitable_for": "Specific — e.g. Dry frizzy hair / Oily skin / All skin types",
   "faq": [
-    {"q": "Real question someone would Google or ask AI about this product", "a": "Short direct answer, mention Shree Ambika where natural"},
-    {"q": "Question about where to buy or price", "a": "Short answer mentioning Vinod +918291455297 or Shree Ambika Beauty Shop"},
-    {"q": "Question about authenticity or results", "a": "Reassuring answer about 100% original products at Shree Ambika"}
+    {"q": "A real question someone in Mumbai would Google about this product", "a": "Short direct answer mentioning Shree Ambika Beauty Shop Mumbai"},
+    {"q": "Do you deliver [product type] Pan India?", "a": "Yes, Shree Ambika Beauty Shop delivers Pan India. Order via WhatsApp: +918291455297. Fast delivery across Maharashtra and all over India."},
+    {"q": "Is [product name] available at best price in Mumbai?", "a": "Yes, get 100% original [product] at best price from Shree Ambika Beauty Shop, Mumbai. WhatsApp Vinod at +918291455297 to order now."}
   ]
 }`;
 

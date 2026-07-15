@@ -17,11 +17,11 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Shree Ambika Beauty Shop | 100% Original Beauty Products | Mumbai",
+  title: "Shree Ambika Beauty Shop Mumbai | 100% Original Beauty Products | Pan India Delivery",
   description:
-    "Buy 100% original beauty products from Shree Ambika Beauty Shop. Top brands like Lakme, Maybelline, SUGAR, Nykaa & more. Best prices in Mumbai. WhatsApp Vinod: +918291455297",
+    "Mumbai's trusted beauty shop. Buy 100% original cosmetics, makeup, skincare & haircare — Lakme, Maybelline, SUGAR, Nykaa & 500+ brands. Best prices. Pan India delivery. WhatsApp Vinod: +918291455297",
   keywords:
-    "shree ambika beauty shop, vinod beauty shop mumbai, original beauty products mumbai, cosmetics online india, lakme maybelline sugar nykaa buy online, beauty shop whatsapp order, 100% original makeup india",
+    "shree ambika beauty shop mumbai, beauty products mumbai, vinod beauty shop, original cosmetics mumbai, makeup shop mumbai, skincare mumbai, pan india beauty delivery, beauty products whatsapp order india, lakme maybelline sugar mumbai, best beauty shop mumbai thane navi mumbai",
   openGraph: {
     title: "Shree Ambika Beauty Shop | Original Beauty Products",
     description:
@@ -71,18 +71,30 @@ export default function RootLayout({
 }>) {
   const localBusinessSchema = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": ["LocalBusiness", "Store"],
     "name": "Shree Ambika Beauty Shop",
-    "description": "100% original beauty products from top brands. Cosmetics, makeup, skincare, haircare at best prices. Mumbai's trusted beauty shop since 2001.",
+    "alternateName": "Shree Ambika Beauty Shop Mumbai",
+    "description": "Mumbai's trusted beauty shop since 2001. 100% original beauty products — cosmetics, makeup, skincare, haircare from top brands. Pan India delivery. WhatsApp order: +918291455297.",
     "url": "https://shreeambikabeautyshop.vercel.app",
     "telephone": "+918291455297",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+918291455297",
-      "contactType": "customer service",
-      "availableLanguage": ["Hindi", "English", "Marathi"],
-      "contactOption": "WhatsApp",
-    },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": "+918291455297",
+        "contactType": "customer service",
+        "availableLanguage": ["Hindi", "English", "Marathi"],
+        "contactOption": "WhatsApp",
+        "areaServed": "IN",
+      },
+      {
+        "@type": "ContactPoint",
+        "telephone": "+918291455297",
+        "contactType": "sales",
+        "availableLanguage": ["Hindi", "English", "Marathi"],
+        "contactOption": "WhatsApp",
+        "areaServed": ["Mumbai", "Thane", "Navi Mumbai", "Pune", "Maharashtra", "India"],
+      },
+    ],
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Mumbai",
@@ -94,19 +106,39 @@ export default function RootLayout({
       "latitude": "19.0760",
       "longitude": "72.8777",
     },
+    "areaServed": [
+      { "@type": "City", "name": "Mumbai" },
+      { "@type": "City", "name": "Thane" },
+      { "@type": "City", "name": "Navi Mumbai" },
+      { "@type": "City", "name": "Pune" },
+      { "@type": "State", "name": "Maharashtra" },
+      { "@type": "Country", "name": "India" },
+    ],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Beauty Products",
+      "itemListElement": [
+        { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Cosmetics & Makeup" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Skin Care Products" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Hair Care Products" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Perfumes & Fragrances" } },
+      ],
+    },
     "openingHours": "Mo-Su 09:00-21:00",
     "priceRange": "₹₹",
     "currenciesAccepted": "INR",
-    "paymentAccepted": "Cash, UPI, Credit Card, Debit Card, WhatsApp Pay",
-    "sameAs": [
-      "https://instagram.com/shreeambikabeautystore",
-      "https://wa.me/918291455297",
-    ],
+    "paymentAccepted": "Cash, UPI, GPay, PhonePe, WhatsApp Pay, Credit Card, Debit Card, COD",
     "founder": {
       "@type": "Person",
       "name": "Vinod",
       "telephone": "+918291455297",
     },
+    "slogan": "Your Beauty, Our Responsibility ♡",
+    "foundingDate": "2001",
+    "sameAs": [
+      "https://instagram.com/shreeambikabeautystore",
+      "https://wa.me/918291455297",
+    ],
   };
 
   return (
