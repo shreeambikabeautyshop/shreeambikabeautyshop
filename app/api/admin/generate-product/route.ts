@@ -88,7 +88,14 @@ Important:
 
     if (!geminiRes.ok) {
       const err = await geminiRes.json();
-      return NextResponse.json({ error: err.error?.message || "Gemini API error" }, { status: 500 });
+      const errMsg = err.error?.message || "Gemini API error";
+      // Rate limit specific message
+      if (errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED")) {
+        return NextResponse.json({
+          error: "⏳ AI rate limit reached. Please wait 1 minute and try again. (Free tier: 15 requests/minute)"
+        }, { status: 429 });
+      }
+      return NextResponse.json({ error: errMsg }, { status: 500 });
     }
 
     const geminiData = await geminiRes.json();
