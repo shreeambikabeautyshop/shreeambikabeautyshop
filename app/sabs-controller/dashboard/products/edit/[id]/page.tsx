@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus } from "react-icons/fi";
+import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus, FiZap, FiRefreshCw } from "react-icons/fi";
 import Link from "next/link";
 
 const DEFAULT_CATEGORIES = [
@@ -89,6 +89,8 @@ export default function EditProduct() {
   const [brands, setBrands] = useState<string[]>(DEFAULT_BRANDS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiProgress, setAiProgress] = useState(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -122,6 +124,88 @@ export default function EditProduct() {
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
+  };
+
+  // Resize image helper
+  const resizeImage = (file: File): Promise<{ base64: string; mimeType: string }> =>
+    new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round((height * MAX) / width); width = MAX; }
+          else { width = Math.round((width * MAX) / height); height = MAX; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(url);
+        resolve({ base64: canvas.toDataURL("image/jpeg", 0.75).split(",")[1], mimeType: "image/jpeg" });
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+
+  // Re-generate all data with AI using existing first image
+  const handleRegenerate = async () => {
+    // Use new image if uploaded, else fetch existing first image
+    setError(""); setAiLoading(true); setAiProgress(10);
+    try {
+      let base64 = ""; let mimeType = "image/jpeg";
+
+      if (newImages.length > 0) {
+        // Use newly uploaded image
+        const resized = await resizeImage(newImages[0].file);
+        base64 = resized.base64; mimeType = resized.mimeType;
+      } else if (existingImages.length > 0) {
+        // Fetch existing Cloudinary image and resize
+        setAiProgress(20);
+        const response = await fetch(existingImages[0]);
+        const blob = await response.blob();
+        const file = new File([blob], "product.jpg", { type: blob.type });
+        const resized = await resizeImage(file);
+        base64 = resized.base64; mimeType = resized.mimeType;
+      } else {
+        throw new Error("No image available to analyze");
+      }
+
+      setAiProgress(45);
+      const res = await fetch("/api/admin/generate-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mimeType }),
+      });
+      setAiProgress(85);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "AI regeneration failed");
+
+      const d = json.data;
+      const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+      setForm((prev) => ({
+        ...prev,
+        name: d.name || prev.name,
+        brand: d.brand || prev.brand,
+        category: d.category || prev.category,
+        price: d.price ? String(d.price) : prev.price,
+        mrp: d.mrp ? String(d.mrp) : prev.mrp,
+        description: d.description || prev.description,
+        tags: Array.isArray(d.tags) ? d.tags.join(", ") : prev.tags,
+      }));
+
+      if (d.brand && !brands.includes(d.brand)) setBrands((b) => [...b, d.brand]);
+      if (d.category && !categories.includes(d.category)) setCategories((c) => [...c, d.category]);
+
+      setAiProgress(100);
+      setTimeout(() => setAiProgress(0), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI regeneration failed");
+      setAiProgress(0);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleNewImages = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,6 +325,42 @@ export default function EditProduct() {
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleNewImages} />
+
+          {/* AI Re-generate button */}
+          <button
+            type="button"
+            onClick={handleRegenerate}
+            disabled={aiLoading}
+            className={`mt-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all ${
+              aiLoading
+                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-purple-600 to-brand-primary text-white hover:opacity-90"
+            }`}
+          >
+            {aiLoading ? (
+              <><div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              AI is regenerating with today&apos;s data...</>
+            ) : (
+              <><FiRefreshCw size={14} /> 🔄 Re-generate with AI (Update to Today&apos;s Data)</>
+            )}
+          </button>
+
+          {/* AI Progress bar */}
+          {aiLoading && aiProgress > 0 && (
+            <div className="mt-2">
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>AI analyzing...</span>
+                <span>{aiProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${aiProgress}%`, background: "linear-gradient(90deg,#7c3aed,#C41E3A)" }} />
+              </div>
+            </div>
+          )}
+          {aiProgress === 100 && !aiLoading && (
+            <p className="text-center text-xs text-green-600 font-semibold mt-2">✅ AI updated all fields with today&apos;s data!</p>
+          )}
         </div>
 
         {/* Basic Info */}
