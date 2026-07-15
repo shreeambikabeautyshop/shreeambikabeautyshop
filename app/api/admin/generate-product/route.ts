@@ -112,31 +112,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { imageBase64, mimeType } = await req.json();
-  if (!imageBase64) {
-    return NextResponse.json({ error: "Image required" }, { status: 400 });
-  }
-
+  const { imageUrl, imageBase64, mimeType } = await req.json();
+  
   const groqKey = process.env.GROQ_API_KEY;
   if (!groqKey) {
     return NextResponse.json({ error: "Groq API key not configured" }, { status: 500 });
   }
 
+  let finalImageUrl = imageUrl;
+
+  // If no URL provided, upload base64 to Cloudinary first (fallback)
+  if (!finalImageUrl && imageBase64) {
+    try {
+      finalImageUrl = await uploadToCloudinarySigned(imageBase64, mimeType);
+    } catch (err) {
+      return NextResponse.json({ 
+        error: `Image upload failed: ${err instanceof Error ? err.message : "unknown"}` 
+      }, { status: 500 });
+    }
+  }
+
+  if (!finalImageUrl) {
+    return NextResponse.json({ error: "Image URL or base64 required" }, { status: 400 });
+  }
+
   try {
-    // Step 1: Upload to Cloudinary with temp name (signed — no preset issues)
-    const imageUrl = await uploadToCloudinarySigned(imageBase64, mimeType);
-
-    // Step 2: Groq analyzes the public image URL
-    const raw = await callGroq(imageUrl, groqKey);
+    const raw = await callGroq(finalImageUrl, groqKey);
     const productData = parseJSON(raw);
-
-    // Step 3: Return data with the Cloudinary URL already stored
     return NextResponse.json({
       success: true,
-      data: {
-        ...productData,
-        _imageUrl: imageUrl,
-      },
+      data: { ...productData, _imageUrl: finalImageUrl },
       provider: "groq",
     });
   } catch (err) {

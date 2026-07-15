@@ -124,12 +124,38 @@ export default function AddProduct() {
       r.onerror = rej; r.readAsDataURL(file);
     });
 
+  // Upload directly from browser to Cloudinary (signed)
+  const uploadToCloudinaryDirect = async (file: File): Promise<string> => {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    
+    // Get signature from our API
+    const sigRes = await fetch("/api/admin/cloudinary-sign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ timestamp }),
+    });
+    const { signature, apiKey, cloudName } = await sigRes.json();
+
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("api_key", apiKey);
+    fd.append("timestamp", timestamp);
+    fd.append("signature", signature);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!res.ok) throw new Error("Direct upload failed");
+    const data = await res.json();
+    return data.secure_url as string;
+  };
+
   // Auto-trigger AI when first image is added
   const triggerAI = useCallback(async (imgList: { file: File; preview: string; base64: string }[]) => {
     if (imgList.length === 0) return;
     setError(""); setAiLoading(true); setAiDone(false); setProgress(0);
 
-    // Animate through stages
     let stageIdx = 0;
     const interval = setInterval(() => {
       if (stageIdx < 4) {
@@ -140,10 +166,17 @@ export default function AddProduct() {
     }, 1800);
 
     try {
+      // Step 1: Upload directly from browser to Cloudinary
+      setProgress(10); setProgressLabel("Uploading image...");
+      const cloudUrl = await uploadToCloudinaryDirect(imgList[0].file);
+      setAiUploadedImageUrl(cloudUrl);
+
+      // Step 2: Send Cloudinary URL to Groq via our API
+      setProgress(45); setProgressLabel("AI analyzing product...");
       const res = await fetch("/api/admin/generate-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: imgList[0].base64, mimeType: imgList[0].file.type, brand: "", category: "" }),
+        body: JSON.stringify({ imageUrl: cloudUrl }),
       });
       clearInterval(interval);
       setProgress(90); setProgressLabel("Filling in all details...");
