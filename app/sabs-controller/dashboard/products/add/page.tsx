@@ -124,30 +124,21 @@ export default function AddProduct() {
       r.onerror = rej; r.readAsDataURL(file);
     });
 
-  // Upload directly from browser to Cloudinary (signed)
+  // Upload directly from browser to Cloudinary using unsigned preset
   const uploadToCloudinaryDirect = async (file: File): Promise<string> => {
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    
-    // Get signature from our API
-    const sigRes = await fetch("/api/admin/cloudinary-sign", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ timestamp }),
-    });
-    const { signature, apiKey, cloudName } = await sigRes.json();
-
+    const cloudName = "zjlchjal";
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("api_key", apiKey);
-    fd.append("timestamp", timestamp);
-    fd.append("signature", signature);
+    fd.append("upload_preset", "shreeambika_products");
 
     const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
       method: "POST",
       body: fd,
     });
-    if (!res.ok) throw new Error("Direct upload failed");
     const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error?.message || "Upload failed");
+    }
     return data.secure_url as string;
   };
 
