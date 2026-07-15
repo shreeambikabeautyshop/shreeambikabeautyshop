@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "crypto";
 
 function isAuthenticated(req: NextRequest): boolean {
   return req.cookies.get("sabs_session")?.value === "authenticated";
@@ -8,14 +9,14 @@ const PROMPT = `You are a professional Indian beauty product expert and SEO spec
 
 Analyze this product image and generate complete product details optimized for SEO, GEO, AEO, and LLM ranking.
 
-Return ONLY raw JSON — no markdown, no code blocks, no explanation:
+Return ONLY raw JSON — no markdown, no code blocks, no explanation, just the JSON object:
 {
   "name": "Full product name with brand variant shade size",
   "brand": "Brand name exactly as on product",
   "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories",
   "price": selling_price_number_INR,
   "mrp": mrp_number_INR,
-  "description": "Rich 150-200 word SEO description with benefits ingredients skin type how to use keywords: buy online original product best price India",
+  "description": "Rich 150-200 word SEO description with benefits, ingredients, skin type, how to use, keywords: buy online original product best price India",
   "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8"],
   "seo_title": "SEO title max 60 chars",
   "seo_description": "Meta description max 155 chars",
@@ -32,16 +33,37 @@ function parseJSON(raw: string) {
   return JSON.parse(match[0]);
 }
 
-// Upload base64 to Cloudinary, get public URL
-async function getPublicImageUrl(imageBase64: string, mimeType: string): Promise<string> {
+// Signed Cloudinary upload — no preset needed, no slash issues
+async function uploadToCloudinarySigned(
+  imageBase64: string,
+  mimeType: string,
+  productName?: string
+): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
-  
+  const apiKey = process.env.CLOUDINARY_API_KEY!;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET!;
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+
+  // SEO-friendly public_id from product name
+  const seoSlug = productName
+    ? productName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50)
+    : `product-${timestamp}`;
+
+  const publicId = `shreeambika-products/${seoSlug}`;
+
+  // Sign: alphabetical params + secret
+  const signStr = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+  const signature = createHash("sha1").update(signStr).digest("hex");
+
   const dataUrl = `data:${mimeType || "image/jpeg"};base64,${imageBase64}`;
-  
+
   const params = new URLSearchParams();
   params.append("file", dataUrl);
-  params.append("upload_preset", "shreeambika_products");
-  // No folder — avoids slash issue
+  params.append("api_key", apiKey);
+  params.append("timestamp", timestamp);
+  params.append("signature", signature);
+  params.append("public_id", publicId);
 
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -52,15 +74,14 @@ async function getPublicImageUrl(imageBase64: string, mimeType: string): Promise
     }
   );
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(`Image upload failed: ${err.error?.message || "unknown"}`);
-  }
   const data = await res.json();
+  if (!res.ok || data.error) {
+    throw new Error(`Cloudinary upload failed: ${data.error?.message || "unknown"}`);
+  }
   return data.secure_url as string;
 }
 
-// Groq with public URL (only method that works reliably)
+// Groq vision with public URL
 async function callGroq(imageUrl: string, apiKey: string): Promise<string> {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -102,23 +123,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Step 1: Upload image to Cloudinary to get public URL (temp name)
-    const imageUrl = await getPublicImageUrl(imageBase64, mimeType);
+    // Step 1: Upload to Cloudinary with temp name (signed — no preset issues)
+    const imageUrl = await uploadToCloudinarySigned(imageBase64, mimeType);
 
-    // Step 2: Send URL to Groq for analysis
+    // Step 2: Groq analyzes the public image URL
     const raw = await callGroq(imageUrl, groqKey);
-    const data = parseJSON(raw);
+    const productData = parseJSON(raw);
 
-    // Step 3: Rename image on Cloudinary with product name (SEO friendly)
-    // Extract public_id from URL and rename
-    const seoName = data.name
-      ? data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)
-      : "beauty-product";
-
-    return NextResponse.json({ 
-      success: true, 
-      data: { ...data, _imageUrl: imageUrl, _seoImageName: seoName },
-      provider: "groq" 
+    // Step 3: Return data with the Cloudinary URL already stored
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...productData,
+        _imageUrl: imageUrl,
+      },
+      provider: "groq",
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "AI generation failed";
