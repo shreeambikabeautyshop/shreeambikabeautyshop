@@ -97,6 +97,7 @@ export default function AddProduct() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiDone, setAiDone] = useState(false);
   const [aiFaq, setAiFaq] = useState<{ q: string; a: string }[]>([]);
+  const [aiUploadedImageUrl, setAiUploadedImageUrl] = useState<string>("");
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState("");
   const [saveProgress, setSaveProgress] = useState(0);
@@ -160,6 +161,10 @@ export default function AddProduct() {
       if (d.brand && !brands.includes(d.brand)) setBrands((b) => [...b, d.brand]);
       if (d.category && !categories.includes(d.category)) setCategories((c) => [...c, d.category]);
       setAiFaq(d.faq || []);
+      // Store the already-uploaded Cloudinary URL so we don't re-upload
+      if (d._imageUrl) {
+        setAiUploadedImageUrl(d._imageUrl);
+      }
       setProgress(100); setProgressLabel("✅ All details filled!");
       setAiDone(true);
     } catch (err) {
@@ -194,8 +199,26 @@ export default function AddProduct() {
     const cloudName = "zjlchjal";
     for (let i = 0; i < images.length; i++) {
       setSaveProgress(Math.round(10 + (i / images.length) * 40));
+      
+      // First image already uploaded during AI analysis — reuse URL
+      if (i === 0 && aiUploadedImageUrl) {
+        urls.push(aiUploadedImageUrl);
+        // Extract public_id from URL
+        const parts = aiUploadedImageUrl.split("/");
+        const publicId = parts.slice(-2).join("/").replace(/\.[^/.]+$/, "");
+        ids.push(publicId);
+        continue;
+      }
+
       const fd = new FormData();
-      fd.append("file", images[i].file); fd.append("upload_preset", "shreeambika_products"); fd.append("folder", "shreeambika-products");
+      fd.append("file", images[i].file);
+      fd.append("upload_preset", "shreeambika_products");
+      // Use SEO-friendly name based on product name
+      const seoName = form.name
+        ? form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)
+        : "beauty-product";
+      fd.append("public_id", `shreeambika-products/${seoName}-${i}`);
+
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
       if (!res.ok) throw new Error("Image upload failed");
       const d = await res.json(); urls.push(d.secure_url); ids.push(d.public_id);

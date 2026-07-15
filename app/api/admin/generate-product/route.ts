@@ -36,13 +36,12 @@ function parseJSON(raw: string) {
 async function getPublicImageUrl(imageBase64: string, mimeType: string): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
   
-  // Cloudinary accepts base64 data URLs directly via the file field
   const dataUrl = `data:${mimeType || "image/jpeg"};base64,${imageBase64}`;
   
   const params = new URLSearchParams();
   params.append("file", dataUrl);
   params.append("upload_preset", "shreeambika_products");
-  params.append("folder", "temp-ai-analysis");
+  // No folder — avoids slash issue
 
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -103,14 +102,24 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Step 1: Upload image to Cloudinary to get public URL
+    // Step 1: Upload image to Cloudinary to get public URL (temp name)
     const imageUrl = await getPublicImageUrl(imageBase64, mimeType);
 
     // Step 2: Send URL to Groq for analysis
     const raw = await callGroq(imageUrl, groqKey);
     const data = parseJSON(raw);
 
-    return NextResponse.json({ success: true, data, provider: "groq" });
+    // Step 3: Rename image on Cloudinary with product name (SEO friendly)
+    // Extract public_id from URL and rename
+    const seoName = data.name
+      ? data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)
+      : "beauty-product";
+
+    return NextResponse.json({ 
+      success: true, 
+      data: { ...data, _imageUrl: imageUrl, _seoImageName: seoName },
+      provider: "groq" 
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "AI generation failed";
     return NextResponse.json({ error: msg }, { status: 500 });
