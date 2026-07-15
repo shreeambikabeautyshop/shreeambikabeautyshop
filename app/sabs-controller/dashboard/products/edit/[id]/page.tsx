@@ -2,19 +2,77 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { FiUpload, FiX, FiSave, FiArrowLeft } from "react-icons/fi";
+import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus } from "react-icons/fi";
 import Link from "next/link";
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   "Cosmetics", "Makeup", "Skin Care", "Hair Care",
   "Body Care", "Perfumes", "Electronics", "Purses & Bags", "Wax & Accessories",
 ];
 
-const BRANDS = [
+const DEFAULT_BRANDS = [
   "Lakme", "Maybelline", "SUGAR", "RENEE", "Insight", "6MARS",
   "Swiss Beauty", "Hilary Rhoda", "Nykaa", "Plum", "Vega", "Braun",
-  "Lotus", "Biotique", "WOW", "Mamaearth", "Other",
+  "Lotus", "Biotique", "WOW", "Mamaearth",
 ];
+
+// Reusable AddableSelect
+function AddableSelect({
+  label, value, onChange, options, onAddNew, placeholder, required,
+}: {
+  label: string; value: string; onChange: (val: string) => void;
+  options: string[]; onAddNew: (val: string) => void;
+  placeholder: string; required?: boolean;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [newVal, setNewVal] = useState("");
+
+  const handleAdd = () => {
+    const trimmed = newVal.trim();
+    if (!trimmed) return;
+    onAddNew(trimmed);
+    onChange(trimmed);
+    setNewVal("");
+    setAdding(false);
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1.5">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      {adding ? (
+        <div className="flex gap-2">
+          <input type="text" value={newVal} onChange={(e) => setNewVal(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            placeholder={`Enter new ${label.toLowerCase()}...`} autoFocus
+            className="flex-1 border border-brand-primary rounded-xl px-4 py-2.5 text-sm outline-none" />
+          <button type="button" onClick={handleAdd}
+            className="px-4 py-2.5 bg-brand-primary text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors">
+            Add
+          </button>
+          <button type="button" onClick={() => { setAdding(false); setNewVal(""); }}
+            className="px-3 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm hover:bg-gray-200 transition-colors">
+            <FiX />
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <select value={value} onChange={(e) => onChange(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary bg-white"
+            required={required}>
+            <option value="">{placeholder}</option>
+            {options.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <button type="button" onClick={() => setAdding(true)}
+            className="flex items-center gap-1 px-3 py-2.5 bg-brand-light hover:bg-pink-100 text-brand-primary border border-brand-accent rounded-xl text-xs font-semibold transition-colors whitespace-nowrap">
+            <FiPlus size={13} /> Add
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function EditProduct() {
   const router = useRouter();
@@ -27,6 +85,8 @@ export default function EditProduct() {
   });
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<{ file: File; preview: string }[]>([]);
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [brands, setBrands] = useState<string[]>(DEFAULT_BRANDS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -193,22 +253,22 @@ export default function EditProduct() {
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" required />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">Brand</label>
-                <select name="brand" value={form.brand} onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary bg-white">
-                  <option value="">Select Brand</option>
-                  {BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">Category</label>
-                <select name="category" value={form.category} onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary bg-white">
-                  <option value="">Select Category</option>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+              <AddableSelect
+                label="Brand"
+                value={form.brand}
+                onChange={(val) => setForm((p) => ({ ...p, brand: val }))}
+                options={brands}
+                onAddNew={(val) => setBrands((prev) => [...prev, val])}
+                placeholder="Select Brand"
+              />
+              <AddableSelect
+                label="Category"
+                value={form.category}
+                onChange={(val) => setForm((p) => ({ ...p, category: val }))}
+                options={categories}
+                onAddNew={(val) => setCategories((prev) => [...prev, val])}
+                placeholder="Select Category"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Description</label>

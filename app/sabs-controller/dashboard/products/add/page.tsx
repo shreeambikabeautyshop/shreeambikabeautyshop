@@ -2,18 +2,18 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FiUpload, FiX, FiSave, FiArrowLeft } from "react-icons/fi";
+import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus } from "react-icons/fi";
 import Link from "next/link";
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   "Cosmetics", "Makeup", "Skin Care", "Hair Care",
   "Body Care", "Perfumes", "Electronics", "Purses & Bags", "Wax & Accessories",
 ];
 
-const BRANDS = [
+const DEFAULT_BRANDS = [
   "Lakme", "Maybelline", "SUGAR", "RENEE", "Insight", "6MARS",
   "Swiss Beauty", "Hilary Rhoda", "Nykaa", "Plum", "Vega", "Braun",
-  "Lotus", "Biotique", "WOW", "Mamaearth", "Other",
+  "Lotus", "Biotique", "WOW", "Mamaearth",
 ];
 
 interface FormData {
@@ -29,9 +29,99 @@ interface FormData {
   tags: string;
 }
 
+// Reusable AddableSelect component
+function AddableSelect({
+  label,
+  value,
+  onChange,
+  options,
+  onAddNew,
+  placeholder,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  onAddNew: (val: string) => void;
+  placeholder: string;
+  required?: boolean;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [newVal, setNewVal] = useState("");
+
+  const handleAdd = () => {
+    const trimmed = newVal.trim();
+    if (!trimmed) return;
+    onAddNew(trimmed);
+    onChange(trimmed);
+    setNewVal("");
+    setAdding(false);
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-600 mb-1.5">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+
+      {adding ? (
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newVal}
+            onChange={(e) => setNewVal(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            placeholder={`Enter new ${label.toLowerCase()}...`}
+            autoFocus
+            className="flex-1 border border-brand-primary rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary"
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="px-4 py-2.5 bg-brand-primary text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors"
+          >
+            Add
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAdding(false); setNewVal(""); }}
+            className="px-3 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm hover:bg-gray-200 transition-colors"
+          >
+            <FiX />
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <select
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary bg-white"
+            required={required}
+          >
+            <option value="">{placeholder}</option>
+            {options.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            title={`Add new ${label}`}
+            className="flex items-center gap-1 px-3 py-2.5 bg-brand-light hover:bg-pink-100 text-brand-primary border border-brand-accent rounded-xl text-xs font-semibold transition-colors whitespace-nowrap"
+          >
+            <FiPlus size={13} /> Add
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AddProduct() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [brands, setBrands] = useState<string[]>(DEFAULT_BRANDS);
 
   const [form, setForm] = useState<FormData>({
     name: "", brand: "", category: "", price: "", mrp: "",
@@ -70,17 +160,12 @@ export default function AddProduct() {
     const urls: string[] = [];
     const ids: string[] = [];
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
-
     for (const img of images) {
       const fd = new FormData();
       fd.append("file", img.file);
       fd.append("upload_preset", "shreeambika_products");
       fd.append("folder", "shreeambika-products");
-
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: "POST",
-        body: fd,
-      });
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
       if (!res.ok) throw new Error("Image upload failed");
       const data = await res.json();
       urls.push(data.secure_url);
@@ -92,7 +177,6 @@ export default function AddProduct() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
     if (!form.name || !form.brand || !form.category || !form.price || !form.mrp) {
       setError("Please fill all required fields.");
       return;
@@ -101,13 +185,11 @@ export default function AddProduct() {
       setError("Please add at least one product image.");
       return;
     }
-
     try {
       setUploading(true);
       const { urls, ids } = await uploadImages();
       setUploading(false);
       setSaving(true);
-
       const payload = {
         name: form.name.trim(),
         brand: form.brand,
@@ -122,16 +204,13 @@ export default function AddProduct() {
         trending: form.trending,
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
       };
-
       const res = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save product");
-
       setSuccess(true);
       setTimeout(() => router.push("/sabs-controller/dashboard/products"), 1500);
     } catch (err) {
@@ -162,7 +241,6 @@ export default function AddProduct() {
           ✅ Product added successfully! Redirecting...
         </div>
       )}
-
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 mb-5 text-sm">
           ✗ {error}
@@ -177,39 +255,24 @@ export default function AddProduct() {
             {images.map((img, idx) => (
               <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-brand-accent group">
                 <Image src={img.preview} alt="preview" fill className="object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
+                <button type="button" onClick={() => removeImage(idx)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <FiX size={10} />
                 </button>
                 {idx === 0 && (
-                  <span className="absolute bottom-0 left-0 right-0 bg-brand-primary text-white text-[9px] text-center py-0.5 font-bold">
-                    Main
-                  </span>
+                  <span className="absolute bottom-0 left-0 right-0 bg-brand-primary text-white text-[9px] text-center py-0.5 font-bold">Main</span>
                 )}
               </div>
             ))}
             {images.length < 5 && (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 hover:border-brand-primary flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-brand-primary transition-colors"
-              >
+              <button type="button" onClick={() => fileRef.current?.click()}
+                className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 hover:border-brand-primary flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-brand-primary transition-colors">
                 <FiUpload size={20} />
                 <span className="text-[10px]">Add Image</span>
               </button>
             )}
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleImageSelect}
-          />
+          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageSelect} />
           <p className="text-xs text-gray-400">Max 5 images. First image = main display image.</p>
         </div>
 
@@ -222,10 +285,7 @@ export default function AddProduct() {
                 Product Name <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
+                type="text" name="name" value={form.name} onChange={handleChange}
                 placeholder="e.g. Lakme Color + Matte Lipstick - Blush Mauve"
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary transition-colors"
                 required
@@ -233,60 +293,38 @@ export default function AddProduct() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                  Brand <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="brand"
-                  value={form.brand}
-                  onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary bg-white"
-                  required
-                >
-                  <option value="">Select Brand</option>
-                  {BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary bg-white"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+              <AddableSelect
+                label="Brand"
+                value={form.brand}
+                onChange={(val) => setForm((p) => ({ ...p, brand: val }))}
+                options={brands}
+                onAddNew={(val) => setBrands((prev) => [...prev, val])}
+                placeholder="Select Brand"
+                required
+              />
+              <AddableSelect
+                label="Category"
+                value={form.category}
+                onChange={(val) => setForm((p) => ({ ...p, category: val }))}
+                options={categories}
+                onAddNew={(val) => setCategories((prev) => [...prev, val])}
+                placeholder="Select Category"
+                required
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Description</label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={3}
+              <textarea name="description" value={form.description} onChange={handleChange} rows={3}
                 placeholder="Product description, benefits, how to use..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary resize-none transition-colors"
-              />
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary resize-none transition-colors" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Tags (comma separated)</label>
-              <input
-                type="text"
-                name="tags"
-                value={form.tags}
-                onChange={handleChange}
+              <input type="text" name="tags" value={form.tags} onChange={handleChange}
                 placeholder="e.g. matte, lipstick, long-lasting, pink"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary transition-colors"
-              />
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary transition-colors" />
             </div>
           </div>
         </div>
@@ -296,36 +334,16 @@ export default function AddProduct() {
           <h2 className="font-bold text-gray-700 mb-4">Pricing</h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                Selling Price (₹) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={form.price}
-                onChange={handleChange}
-                placeholder="349"
-                min="1"
-                step="0.01"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary"
-                required
-              />
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">Selling Price (₹) <span className="text-red-500">*</span></label>
+              <input type="number" name="price" value={form.price} onChange={handleChange}
+                placeholder="349" min="1" step="0.01"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                MRP (₹) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="mrp"
-                value={form.mrp}
-                onChange={handleChange}
-                placeholder="499"
-                min="1"
-                step="0.01"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary"
-                required
-              />
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">MRP (₹) <span className="text-red-500">*</span></label>
+              <input type="number" name="mrp" value={form.mrp} onChange={handleChange}
+                placeholder="499" min="1" step="0.01"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Discount</label>
@@ -344,17 +362,13 @@ export default function AddProduct() {
           <div className="grid grid-cols-3 gap-4">
             {[
               { name: "in_stock", label: "In Stock", desc: "Product is available" },
-              { name: "featured", label: "⭐ Featured", desc: "Show on homepage featured" },
+              { name: "featured", label: "⭐ Featured", desc: "Show on homepage" },
               { name: "trending", label: "🔥 Trending", desc: "Show in trending section" },
             ].map((toggle) => (
               <label key={toggle.name} className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  name={toggle.name}
+                <input type="checkbox" name={toggle.name}
                   checked={form[toggle.name as keyof FormData] as boolean}
-                  onChange={handleChange}
-                  className="mt-0.5 accent-brand-primary w-4 h-4"
-                />
+                  onChange={handleChange} className="mt-0.5 accent-brand-primary w-4 h-4" />
                 <div>
                   <p className="text-sm font-semibold text-gray-700">{toggle.label}</p>
                   <p className="text-xs text-gray-400">{toggle.desc}</p>
@@ -366,31 +380,18 @@ export default function AddProduct() {
 
         {/* Submit */}
         <div className="flex gap-3 pb-6">
-          <Link
-            href="/sabs-controller/dashboard/products"
-            className="flex-1 text-center border border-gray-300 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm"
-          >
+          <Link href="/sabs-controller/dashboard/products"
+            className="flex-1 text-center border border-gray-300 text-gray-600 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm">
             Cancel
           </Link>
-          <button
-            type="submit"
-            disabled={uploading || saving || success}
-            className="flex-1 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
+          <button type="submit" disabled={uploading || saving || success}
+            className="flex-1 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             {uploading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Uploading Images...
-              </>
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Uploading Images...</>
             ) : saving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Saving...
-              </>
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Saving...</>
             ) : (
-              <>
-                <FiSave /> Save Product
-              </>
+              <><FiSave /> Save Product</>
             )}
           </button>
         </div>
