@@ -35,39 +35,21 @@ function parseJSON(raw: string) {
 // Upload base64 to Cloudinary, get public URL
 async function getPublicImageUrl(imageBase64: string, mimeType: string): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
-  const ext = mimeType?.includes("png") ? "png" : "jpg";
-
-  // Build multipart body manually (Node.js compatible)
-  const boundary = `----FormBoundary${Date.now()}`;
-  const imageBuffer = Buffer.from(imageBase64, "base64");
-  const nl = "\r\n";
-
-  const before = [
-    `--${boundary}${nl}`,
-    `Content-Disposition: form-data; name="upload_preset"${nl}${nl}`,
-    `shreeambika_products${nl}`,
-    `--${boundary}${nl}`,
-    `Content-Disposition: form-data; name="folder"${nl}${nl}`,
-    `temp-ai-analysis${nl}`,
-    `--${boundary}${nl}`,
-    `Content-Disposition: form-data; name="file"; filename="product.${ext}"${nl}`,
-    `Content-Type: ${mimeType || "image/jpeg"}${nl}${nl}`,
-  ].join("");
-
-  const after = `${nl}--${boundary}--${nl}`;
-
-  const body = Buffer.concat([
-    Buffer.from(before),
-    imageBuffer,
-    Buffer.from(after),
-  ]);
+  
+  // Cloudinary accepts base64 data URLs directly via the file field
+  const dataUrl = `data:${mimeType || "image/jpeg"};base64,${imageBase64}`;
+  
+  const params = new URLSearchParams();
+  params.append("file", dataUrl);
+  params.append("upload_preset", "shreeambika_products");
+  params.append("folder", "temp-ai-analysis");
 
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
     {
       method: "POST",
-      headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
-      body,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
     }
   );
 
