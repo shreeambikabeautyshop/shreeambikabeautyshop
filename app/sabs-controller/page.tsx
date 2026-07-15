@@ -3,16 +3,13 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
-  const [pin, setPin] = useState(["", "", "", ""]);
+  const [pin, setPin] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
-  const refs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-  ];
+  const [attempts, setAttempts] = useState(0);
+
+  const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
   const router = useRouter();
 
   useEffect(() => {
@@ -25,9 +22,11 @@ export default function AdminLogin() {
     newPin[idx] = val;
     setPin(newPin);
     setError("");
-    if (val && idx < 3) refs[idx + 1].current?.focus();
+    if (val && idx < 5) refs[idx + 1].current?.focus();
+    // Auto submit only when all 6 filled — but actual PIN is first 4, rest are decoys
     if (newPin.every((d) => d !== "")) {
-      handleSubmit(newPin.join(""));
+      // Extract only positions 0,1,2,3 as the real PIN
+      handleSubmit(newPin[0] + newPin[1] + newPin[2] + newPin[3]);
     }
   };
 
@@ -49,69 +48,77 @@ export default function AdminLogin() {
       if (data.success) {
         router.push("/sabs-controller/dashboard");
       } else {
+        setAttempts((a) => a + 1);
         setShake(true);
-        setError("Invalid access token");
-        setPin(["", "", "", ""]);
+        setError(
+          attempts >= 2
+            ? "Access restricted. Multiple failed attempts detected."
+            : "Authorization failed. Token rejected."
+        );
+        setPin(["", "", "", "", "", ""]);
         setTimeout(() => {
           setShake(false);
           refs[0].current?.focus();
-        }, 600);
+        }, 700);
       }
     } catch {
-      setError("Connection error. Retry.");
+      setError("Network error. Retry.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      {/* Fake terminal/system look to confuse bots */}
-      <div className="w-full max-w-sm">
-        {/* Terminal header */}
-        <div className="bg-gray-900 rounded-t-xl px-4 py-2 flex items-center gap-2 border border-gray-700">
-          <span className="w-3 h-3 rounded-full bg-red-500" />
-          <span className="w-3 h-3 rounded-full bg-yellow-500" />
-          <span className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-gray-400 text-xs ml-3 font-mono">
-            sys/net/access-token-validator
-          </span>
-        </div>
+    <div
+      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #1a0008 0%, #2d0015 40%, #1a0008 100%)",
+      }}
+    >
+      {/* Decorative blurred circles — brand feel */}
+      <div className="absolute top-[-80px] left-[-80px] w-72 h-72 rounded-full opacity-20 blur-3xl"
+        style={{ background: "#8B0000" }} />
+      <div className="absolute bottom-[-60px] right-[-60px] w-64 h-64 rounded-full opacity-15 blur-3xl"
+        style={{ background: "#C41E3A" }} />
+      <div className="absolute top-1/2 left-1/4 w-40 h-40 rounded-full opacity-10 blur-2xl"
+        style={{ background: "#FFB6C1" }} />
 
-        {/* Terminal body */}
-        <div className="bg-gray-900 border-x border-gray-700 px-6 py-4">
-          <p className="text-green-400 font-mono text-xs mb-1">
-            $ initializing secure channel...
-          </p>
-          <p className="text-green-400 font-mono text-xs mb-1">
-            $ verifying network access permissions...
-          </p>
-          <p className="text-yellow-400 font-mono text-xs mb-3">
-            $ awaiting neter-aces-token-code input ▌
-          </p>
-        </div>
+      {/* Card */}
+      <div
+        className={`relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/10 ${shake ? "animate-[shake_0.6s_ease]" : ""}`}
+        style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(20px)" }}
+      >
+        {/* Top brand strip */}
+        <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #8B0000, #C41E3A, #FFB6C1, #C41E3A, #8B0000)" }} />
 
-        {/* Main card */}
-        <div className="bg-gray-900 rounded-b-xl border border-t-0 border-gray-700 px-6 pb-8 pt-4">
-          <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center mx-auto mb-4">
-              <span className="text-xl">🔐</span>
+        <div className="px-10 py-12">
+          {/* Logo area */}
+          <div className="flex flex-col items-center mb-10">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg"
+              style={{ background: "linear-gradient(135deg, #8B0000, #C41E3A)" }}
+            >
+              <span className="text-white font-bold text-2xl" style={{ fontFamily: "serif" }}>SA</span>
             </div>
-            <h1 className="text-white font-mono text-sm font-bold tracking-widest uppercase">
-              NETER-ACES TOKEN
+            <h1 className="text-white font-bold text-lg tracking-widest uppercase" style={{ fontFamily: "serif" }}>
+              श्री अम्बिका
             </h1>
-            <p className="text-gray-500 text-xs mt-1 font-mono">
-              Enter 4-digit authorization code
+            <p className="text-xs tracking-[0.4em] uppercase mt-1" style={{ color: "rgba(255,182,193,0.6)" }}>
+              Beauty Shop
             </p>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 mt-6 w-full">
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
+              <span className="text-xs tracking-widest uppercase" style={{ color: "rgba(255,182,193,0.4)" }}>
+                Secure Access
+              </span>
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
+            </div>
           </div>
 
-          {/* PIN inputs */}
-          <div
-            className={`flex justify-center gap-3 mb-6 ${shake ? "animate-[shake_0.5s_ease]" : ""}`}
-            style={shake ? {
-              animation: "shake 0.5s ease",
-            } : {}}
-          >
+          {/* PIN inputs — 6 boxes, no hint about digit count */}
+          <div className="flex justify-center gap-3 mb-3">
             {pin.map((digit, idx) => (
               <input
                 key={idx}
@@ -122,48 +129,84 @@ export default function AdminLogin() {
                 value={digit}
                 onChange={(e) => handleInput(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
-                className={`w-14 h-14 text-center text-2xl font-bold rounded-xl border-2 bg-gray-800 text-white outline-none transition-all font-mono
-                  ${digit ? "border-green-500 text-green-400" : "border-gray-600"}
-                  ${error ? "border-red-500" : ""}
-                  focus:border-green-400 focus:shadow-[0_0_0_3px_rgba(74,222,128,0.15)]`}
                 autoComplete="off"
-                aria-label={`Digit ${idx + 1}`}
+                aria-label="Access code digit"
+                className="w-12 h-14 text-center text-xl font-bold rounded-xl outline-none transition-all duration-200"
+                style={{
+                  background: digit
+                    ? "rgba(139,0,0,0.4)"
+                    : "rgba(255,255,255,0.06)",
+                  border: digit
+                    ? "1.5px solid rgba(196,30,58,0.8)"
+                    : error
+                    ? "1.5px solid rgba(239,68,68,0.6)"
+                    : "1.5px solid rgba(255,255,255,0.12)",
+                  color: "#fff",
+                  boxShadow: digit
+                    ? "0 0 12px rgba(139,0,0,0.3)"
+                    : "none",
+                }}
               />
             ))}
           </div>
 
           {/* Error */}
-          {error && (
-            <p className="text-red-400 text-xs text-center font-mono mb-4 animate-fade-in">
-              ✗ {error} — access denied
-            </p>
-          )}
+          <div className="h-8 flex items-center justify-center mb-4">
+            {error && (
+              <p className="text-xs text-center" style={{ color: "rgba(255,100,100,0.9)" }}>
+                ✗ {error}
+              </p>
+            )}
+            {loading && (
+              <p className="text-xs text-center animate-pulse" style={{ color: "rgba(255,182,193,0.7)" }}>
+                Verifying access...
+              </p>
+            )}
+          </div>
 
-          {/* Loading */}
-          {loading && (
-            <p className="text-green-400 text-xs text-center font-mono animate-pulse">
-              $ validating token...
-            </p>
-          )}
+          {/* Submit button */}
+          <button
+            onClick={() => {
+              const filled = pin.filter((d) => d !== "");
+              if (filled.length >= 4) {
+                handleSubmit(pin[0] + pin[1] + pin[2] + pin[3]);
+              }
+            }}
+            disabled={loading || pin.filter((d) => d !== "").length < 4}
+            className="w-full py-3.5 rounded-xl font-semibold text-sm tracking-widest uppercase transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: "linear-gradient(135deg, #8B0000, #C41E3A)",
+              color: "#fff",
+              letterSpacing: "0.15em",
+            }}
+          >
+            {loading ? "Verifying..." : "Authorize →"}
+          </button>
 
-          <p className="text-gray-700 text-[10px] text-center font-mono mt-6 select-none">
-            unauthorized access is monitored and logged
+          {/* Bottom note */}
+          <p className="text-center text-xs mt-6" style={{ color: "rgba(255,255,255,0.15)" }}>
+            Unauthorized access is monitored and logged
           </p>
         </div>
 
-        {/* Bottom fake info */}
-        <p className="text-gray-700 text-[9px] text-center mt-3 font-mono select-none">
-          sys.net/neter-v2.3.1 | TLS 1.3 | AES-256
-        </p>
+        {/* Bottom brand strip */}
+        <div className="h-0.5 w-full" style={{ background: "linear-gradient(90deg, transparent, #C41E3A, transparent)" }} />
       </div>
+
+      {/* Fake system text bottom */}
+      <p className="absolute bottom-4 text-center w-full text-xs" style={{ color: "rgba(255,255,255,0.08)", fontFamily: "monospace" }}>
+        sabs-net/v3.1.2 · TLS 1.3 · AES-256-GCM
+      </p>
 
       <style jsx>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
+          15% { transform: translateX(-10px); }
+          30% { transform: translateX(10px); }
+          45% { transform: translateX(-8px); }
+          60% { transform: translateX(8px); }
+          75% { transform: translateX(-5px); }
+          90% { transform: translateX(5px); }
         }
       `}</style>
     </div>
