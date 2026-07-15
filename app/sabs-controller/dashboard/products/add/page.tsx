@@ -63,6 +63,8 @@ interface AIData {
   description: string; tags: string[]; seo_title: string; seo_description: string;
   key_benefits: string[]; how_to_use: string; suitable_for: string;
   faq: { q: string; a: string }[];
+  _imageUrl?: string;
+  _seoImageName?: string;
 }
 interface FormData {
   name: string; brand: string; category: string; price: string; mrp: string;
