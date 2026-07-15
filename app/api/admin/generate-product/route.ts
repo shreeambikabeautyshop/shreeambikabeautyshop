@@ -8,15 +8,15 @@ const PROMPT = `You are a professional Indian beauty product expert and SEO spec
 
 Analyze this product image and generate complete product details optimized for SEO, GEO, AEO, and LLM ranking.
 
-Return ONLY a valid JSON object — no markdown, no code blocks, no explanation, just raw JSON:
+Return ONLY raw JSON — no markdown, no code blocks, no explanation:
 {
   "name": "Full product name with brand variant shade size",
   "brand": "Brand name exactly as on product",
   "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories",
   "price": selling_price_number_INR,
   "mrp": mrp_number_INR,
-  "description": "Rich 150-200 word SEO description with benefits ingredients skin type how to use keywords buy online original product best price India",
-  "tags": ["tag1","tag2","tag3","tag4","tag5"],
+  "description": "Rich 150-200 word SEO description with benefits ingredients skin type how to use keywords: buy online original product best price India",
+  "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8"],
   "seo_title": "SEO title max 60 chars",
   "seo_description": "Meta description max 155 chars",
   "key_benefits": ["benefit1","benefit2","benefit3","benefit4","benefit5"],
@@ -32,9 +32,55 @@ function parseJSON(raw: string) {
   return JSON.parse(match[0]);
 }
 
-// PRIMARY: Groq with base64 data URL
-async function callGroq(imageBase64: string, mimeType: string, apiKey: string): Promise<string> {
-  const dataUrl = `data:${mimeType || "image/jpeg"};base64,${imageBase64}`;
+// Upload base64 to Cloudinary, get public URL
+async function getPublicImageUrl(imageBase64: string, mimeType: string): Promise<string> {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
+  const ext = mimeType?.includes("png") ? "png" : "jpg";
+
+  // Build multipart body manually (Node.js compatible)
+  const boundary = `----FormBoundary${Date.now()}`;
+  const imageBuffer = Buffer.from(imageBase64, "base64");
+  const nl = "\r\n";
+
+  const before = [
+    `--${boundary}${nl}`,
+    `Content-Disposition: form-data; name="upload_preset"${nl}${nl}`,
+    `shreeambika_products${nl}`,
+    `--${boundary}${nl}`,
+    `Content-Disposition: form-data; name="folder"${nl}${nl}`,
+    `temp-ai-analysis${nl}`,
+    `--${boundary}${nl}`,
+    `Content-Disposition: form-data; name="file"; filename="product.${ext}"${nl}`,
+    `Content-Type: ${mimeType || "image/jpeg"}${nl}${nl}`,
+  ].join("");
+
+  const after = `${nl}--${boundary}--${nl}`;
+
+  const body = Buffer.concat([
+    Buffer.from(before),
+    imageBuffer,
+    Buffer.from(after),
+  ]);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    {
+      method: "POST",
+      headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
+      body,
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`Image upload failed: ${err.error?.message || "unknown"}`);
+  }
+  const data = await res.json();
+  return data.secure_url as string;
+}
+
+// Groq with public URL (only method that works reliably)
+async function callGroq(imageUrl: string, apiKey: string): Promise<string> {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -46,7 +92,7 @@ async function callGroq(imageBase64: string, mimeType: string, apiKey: string): 
       messages: [{
         role: "user",
         content: [
-          { type: "image_url", image_url: { url: dataUrl } },
+          { type: "image_url", image_url: { url: imageUrl } },
           { type: "text", text: PROMPT },
         ],
       }],
@@ -55,39 +101,8 @@ async function callGroq(imageBase64: string, mimeType: string, apiKey: string): 
     }),
   });
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error?.message || "Groq error");
-  }
+  if (!res.ok) throw new Error(data.error?.message || "Groq error");
   return data.choices?.[0]?.message?.content || "";
-}
-
-// FALLBACK: Gemini
-async function callGemini(imageBase64: string, mimeType: string, apiKey: string): Promise<string> {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: mimeType || "image/jpeg", data: imageBase64 } },
-            { text: PROMPT }
-          ]
-        }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
-      }),
-    }
-  );
-  const data = await res.json();
-  if (!res.ok) {
-    const msg = data.error?.message || "Gemini error";
-    if (msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED") || res.status === 429) {
-      throw new Error("QUOTA_EXCEEDED");
-    }
-    throw new Error(msg);
-  }
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 export async function POST(req: NextRequest) {
@@ -101,34 +116,21 @@ export async function POST(req: NextRequest) {
   }
 
   const groqKey = process.env.GROQ_API_KEY;
-  const geminiKey = process.env.GEMINI_API_KEY;
-  let lastError = "";
-
-  // 1. PRIMARY: Groq (fast, high limits, vision capable)
-  if (groqKey) {
-    try {
-      const raw = await callGroq(imageBase64, mimeType, groqKey);
-      const data = parseJSON(raw);
-      return NextResponse.json({ success: true, data, provider: "groq" });
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : "Groq failed";
-    }
+  if (!groqKey) {
+    return NextResponse.json({ error: "Groq API key not configured" }, { status: 500 });
   }
 
-  // 2. FALLBACK: Gemini
-  if (geminiKey) {
-    try {
-      const raw = await callGemini(imageBase64, mimeType, geminiKey);
-      const data = parseJSON(raw);
-      return NextResponse.json({ success: true, data, provider: "gemini" });
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : "Gemini failed";
-    }
-  }
+  try {
+    // Step 1: Upload image to Cloudinary to get public URL
+    const imageUrl = await getPublicImageUrl(imageBase64, mimeType);
 
-  return NextResponse.json({
-    error: lastError.includes("QUOTA_EXCEEDED")
-      ? "⏳ AI quota exceeded. Please try again in 1 minute."
-      : `AI generation failed: ${lastError}`
-  }, { status: 500 });
+    // Step 2: Send URL to Groq for analysis
+    const raw = await callGroq(imageUrl, groqKey);
+    const data = parseJSON(raw);
+
+    return NextResponse.json({ success: true, data, provider: "groq" });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "AI generation failed";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
