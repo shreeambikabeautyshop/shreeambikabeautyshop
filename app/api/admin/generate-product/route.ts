@@ -4,22 +4,32 @@ function isAuthenticated(req: NextRequest): boolean {
   return req.cookies.get("sabs_session")?.value === "authenticated";
 }
 
-const PROMPT = `You are a professional Indian beauty product expert and SEO specialist for "Shree Ambika Beauty Shop".
-Analyze this product image and return ONLY raw JSON (no markdown, no code blocks):
+const PROMPT = `You are a professional Indian beauty product content writer and SEO expert for "Shree Ambika Beauty Shop" owned by Vinod (WhatsApp: +918291455297), Mumbai.
+
+Analyze this product image carefully. Generate content that is:
+- Human, warm, and relatable — like an expert friend recommending a product
+- Short, clear, professional — no fluff, no generic marketing jargon
+- SEO + GEO + AEO + LLM optimized for Indian beauty market
+
+Return ONLY raw JSON (no markdown, no code blocks):
 {
-  "name": "Full product name with brand variant shade size",
+  "name": "Exact product name as shown — Brand + Product + Variant/Shade/Size (e.g. Matrix Mega Smooth Shampoo 400ml)",
   "brand": "Brand name exactly as on product",
   "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories",
-  "price": selling_price_INR_number,
-  "mrp": mrp_INR_number,
-  "description": "Rich 150-200 word SEO description with benefits, ingredients, skin type, how to use, keywords: buy online original product best price India",
-  "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8"],
-  "seo_title": "SEO title max 60 chars",
-  "seo_description": "Meta description max 155 chars",
-  "key_benefits": ["benefit1","benefit2","benefit3","benefit4","benefit5"],
-  "how_to_use": "Step by step usage instructions",
-  "suitable_for": "Skin or hair type suitability",
-  "faq": [{"q":"q1","a":"a1"},{"q":"q2","a":"a2"},{"q":"q3","a":"a3"}]
+  "price": realistic_indian_selling_price_number,
+  "mrp": realistic_indian_mrp_number,
+  "description": "Write 3-4 short sentences. Start with what the product does in simple words. Mention 1-2 key ingredients or technology if visible. Say who it is for. End with: 'Available 100% original at Shree Ambika Beauty Shop — Vinod +918291455297.' Do NOT use fake superlatives.",
+  "tags": ["brand-name","product-type","main-benefit","skin-or-hair-type","india","buy-online","original","best-price","shree-ambika","beauty-shop"],
+  "seo_title": "Brand + Product + Key Benefit | Shree Ambika — max 60 chars",
+  "seo_description": "1 punchy sentence: what it does + who its for + where to buy. Max 155 chars.",
+  "key_benefits": ["Benefit 1 in plain simple words","Benefit 2","Benefit 3","Benefit 4","Benefit 5"],
+  "how_to_use": "2-3 simple steps. Practical, not robotic.",
+  "suitable_for": "Specific — e.g. Dry, frizzy hair / Oily skin / All skin types",
+  "faq": [
+    {"q": "Real question someone would Google or ask AI about this product", "a": "Short direct answer, mention Shree Ambika where natural"},
+    {"q": "Question about where to buy or price", "a": "Short answer mentioning Vinod +918291455297 or Shree Ambika Beauty Shop"},
+    {"q": "Question about authenticity or results", "a": "Reassuring answer about 100% original products at Shree Ambika"}
+  ]
 }`;
 
 function parseJSON(raw: string) {
