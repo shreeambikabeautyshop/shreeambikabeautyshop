@@ -531,13 +531,28 @@ export default function AddProduct() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h2 className="font-bold text-gray-700 mb-4">Product Settings</h2>
           <div className="grid grid-cols-3 gap-4">
-            {[{ name:"in_stock",label:"In Stock",desc:"Available for purchase" },{ name:"featured",label:"⭐ Featured",desc:"Show on homepage" },{ name:"trending",label:"🔥 Trending",desc:"Trending section" }].map((t) => (
+            {[
+              { name: "in_stock", label: "In Stock", desc: "Available for purchase" },
+              { name: "featured", label: "⭐ Featured", desc: "Show on homepage" },
+              { name: "trending", label: "🔥 Trending", desc: "Trending section" },
+            ].map((t) => (
               <label key={t.name} className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50">
                 <input type="checkbox" name={t.name} checked={form[t.name as keyof FormData] as boolean}
                   onChange={handleChange} className="mt-0.5 accent-brand-primary w-4 h-4" />
-                <div><p className="text-sm font-semibold text-gray-700">{t.label}</p><p className="text-xs text-gray-400">{t.desc}</p></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">{t.label}</p>
+                  <p className="text-xs text-gray-400">{t.desc}</p>
+                </div>
               </label>
             ))}
+          </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">Stock Count</label>
+            <input type="number" name="stock_count" min="0"
+              value={(form as FormData & { stock_count?: string }).stock_count || ""}
+              onChange={handleChange}
+              placeholder="How many units available?"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" />
           </div>
         </div>
 

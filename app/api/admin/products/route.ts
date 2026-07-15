@@ -35,9 +35,17 @@ export async function POST(req: NextRequest) {
   const supabase = getAdminClient();
   const body = await req.json();
 
+  // Auto-generate SEO slug
+  const slug = (body.name || "product")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) + "-" + Date.now().toString(36);
+
   const { data, error } = await supabase
     .from("products")
-    .insert([body])
+    .insert([{ ...body, slug }])
     .select()
     .single();
 
