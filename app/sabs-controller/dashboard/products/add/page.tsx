@@ -124,21 +124,40 @@ export default function AddProduct() {
       r.onerror = rej; r.readAsDataURL(file);
     });
 
+  // Resize image to max 800px and compress to reduce base64 size
+  const resizeImage = (file: File): Promise<{ base64: string; mimeType: string }> =>
+    new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round((height * MAX) / width); width = MAX; }
+          else { width = Math.round((width * MAX) / height); height = MAX; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        URL.revokeObjectURL(url);
+        resolve({ base64: dataUrl.split(",")[1], mimeType: "image/jpeg" });
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+
   // Upload directly from browser to Cloudinary using unsigned preset
   const uploadToCloudinaryDirect = async (file: File): Promise<string> => {
     const cloudName = "zjlchjal";
     const fd = new FormData();
     fd.append("file", file);
     fd.append("upload_preset", "shreeambika_products");
-
     const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST",
-      body: fd,
+      method: "POST", body: fd,
     });
     const data = await res.json();
-    if (!res.ok || data.error) {
-      throw new Error(data.error?.message || "Upload failed");
-    }
+    if (!res.ok || data.error) throw new Error(data.error?.message || "Upload failed");
     return data.secure_url as string;
   };
 
@@ -157,17 +176,16 @@ export default function AddProduct() {
     }, 1800);
 
     try {
-      // Step 1: Upload directly from browser to Cloudinary
-      setProgress(10); setProgressLabel("Uploading image...");
-      const cloudUrl = await uploadToCloudinaryDirect(imgList[0].file);
-      setAiUploadedImageUrl(cloudUrl);
+      // Step 1: Resize image in browser (max 800px, JPEG 75%) — no Cloudinary for AI
+      setProgress(10); setProgressLabel("Preparing image...");
+      const { base64, mimeType } = await resizeImage(imgList[0].file);
 
-      // Step 2: Send Cloudinary URL to Groq via our API
+      // Step 2: Send resized base64 directly to Groq via API
       setProgress(45); setProgressLabel("AI analyzing product...");
       const res = await fetch("/api/admin/generate-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: cloudUrl }),
+        body: JSON.stringify({ imageBase64: base64, mimeType }),
       });
       clearInterval(interval);
       setProgress(90); setProgressLabel("Filling in all details...");
