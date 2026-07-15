@@ -54,20 +54,37 @@ async function callGemini(imageBase64: string, mimeType: string, apiKey: string)
 }
 
 async function uploadToCloudinaryTemp(imageBase64: string, mimeType: string): Promise<string> {
-  // Upload to Cloudinary to get a public URL for Groq
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
-  const formData = new FormData();
-  const blob = Buffer.from(imageBase64, "base64");
-  const file = new Blob([blob], { type: mimeType || "image/jpeg" });
-  formData.append("file", file, "product.jpg");
-  formData.append("upload_preset", "shreeambika_products");
-  formData.append("folder", "temp-ai-analysis");
+
+  // Use fetch with multipart form - Node.js compatible way
+  const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
+  const imageBuffer = Buffer.from(imageBase64, "base64");
+
+  const bodyParts: Buffer[] = [];
+  const addField = (name: string, value: string) => {
+    bodyParts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`));
+  };
+  addField("upload_preset", "shreeambika_products");
+  addField("folder", "temp-ai-analysis");
+
+  bodyParts.push(Buffer.from(
+    `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="product.jpg"\r\nContent-Type: ${mimeType || "image/jpeg"}\r\n\r\n`
+  ));
+  bodyParts.push(imageBuffer);
+  bodyParts.push(Buffer.from(`\r\n--${boundary}--\r\n`));
+
+  const bodyBuffer = Buffer.concat(bodyParts);
 
   const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
+    body: bodyBuffer,
   });
-  if (!res.ok) throw new Error("Failed to upload image for AI analysis");
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`Cloudinary upload failed: ${err.error?.message || "unknown"}`);
+  }
   const data = await res.json();
   return data.secure_url as string;
 }
