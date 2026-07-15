@@ -74,25 +74,13 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #1a0008 0%, #2d0015 40%, #1a0008 100%)",
+      }}
+    >
 
-      {/* ── BACKGROUND: slider image blurred ── */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png"
-          alt=""
-          fill
-          className="object-cover object-center"
-          quality={60}
-          priority
-        />
-        {/* Dark overlay */}
-        <div className="absolute inset-0" style={{ background: "rgba(20,0,8,0.72)" }} />
-        {/* Blur layer */}
-        <div className="absolute inset-0" style={{ backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" }} />
-      </div>
-
-      {/* ── FLOATING DECORATIVE ORBS ── */}
+      {/* ── FLOATING DECORATIVE ORBS on solid bg ── */}
       <div className="absolute top-[-100px] left-[-80px] w-80 h-80 rounded-full opacity-30 z-0"
         style={{ background: "radial-gradient(circle, #C41E3A 0%, transparent 70%)", filter: "blur(40px)" }} />
       <div className="absolute bottom-[-80px] right-[-60px] w-72 h-72 rounded-full opacity-25 z-0"
