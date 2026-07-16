@@ -116,28 +116,21 @@ export default function TrendingProducts() {
               ))
               : visible.map((p) => (
                 <div key={p.id}
-                  className="group bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative">
+                  className="group bg-white rounded-2xl border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden relative">
 
-                  {/* Discount badge */}
-                  {p.discount > 0 && (
-                    <span className="absolute top-2 left-2 z-10 bg-brand-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      -{p.discount}%
-                    </span>
-                  )}
-
-                  {/* Product image */}
+                  {/* Product image — bigger, no discount badge on image */}
                   <Link href={`/products/${p.slug || p.id}`}>
-                    <div className="relative h-44 bg-gray-50 overflow-hidden">
+                    <div className="relative h-52 bg-white overflow-hidden rounded-t-2xl">
                       {p.images?.[0] ? (
                         <Image
                           src={p.images[0]}
                           alt={p.name}
                           fill
-                          className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                          className="object-contain p-4 group-hover:scale-108 transition-transform duration-500"
                           sizes="(max-width: 640px) 50vw, 16vw"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl">💄</div>
+                        <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>
                       )}
                     </div>
                   </Link>
@@ -156,11 +149,14 @@ export default function TrendingProducts() {
                       <span className="text-[10px] text-gray-400">({p.reviews_count || 0})</span>
                     </div>
 
-                    {/* Price */}
-                    <div className="flex items-center gap-1.5 mb-3">
+                    {/* Price + Discount */}
+                    <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                       <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
                       {p.mrp > p.price && (
                         <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>
+                      )}
+                      {p.discount > 0 && (
+                        <span className="text-xs font-bold text-green-600">({p.discount}% OFF)</span>
                       )}
                     </div>
 
