@@ -59,7 +59,7 @@ Keywords:`
     .map(term => `name.ilike.%${term}%,description.ilike.%${term}%,category.ilike.%${term}%,tags.cs.{${term}}`)
     .join(",");
 
-  const { data: products } = await query.or(orConditions).limit(6);
+  const { data: products } = await query.or(orConditions).limit(50);
 
   // Step 3: Score and sort by relevance
   const scored = (products || []).map(p => {
@@ -69,7 +69,7 @@ Keywords:`
       if (text.includes(kw.toLowerCase())) score++;
     });
     return { ...p, score };
-  }).sort((a, b) => b.score - a.score).slice(0, 3);
+  }).sort((a, b) => b.score - a.score);
 
   return NextResponse.json({
     products: scored,

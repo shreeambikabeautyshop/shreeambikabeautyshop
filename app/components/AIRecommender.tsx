@@ -11,6 +11,8 @@ interface Product {
   rating: number; in_stock: boolean; description: string;
 }
 
+const PER_PAGE = 15; // 5 rows × 3 columns
+
 export default function AIRecommender() {
   const [concern, setConcern] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,6 +20,10 @@ export default function AIRecommender() {
   const [products, setProducts] = useState<Product[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [found, setFound] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.ceil(products.length / PER_PAGE);
+  const paginated = products.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const handleSubmit = async () => {
     if (!concern.trim()) return;
@@ -33,6 +39,7 @@ export default function AIRecommender() {
       setKeywords(data.keywords || []);
       setFound(data.found);
       setShowModal(true);
+      setPage(1);
     } catch {
       setShowModal(true);
       setFound(false);
@@ -157,9 +164,9 @@ export default function AIRecommender() {
             <div className="px-6 py-5">
               {found ? (
                 <>
-                  {/* Products Grid — 3 per row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    {products.map((p) => (
+                  {/* Products Grid — 3 per row, 5 rows = 15 per page */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    {paginated.map((p) => (
                       <div key={p.id} className="border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
                         {/* Image */}
                         <div className="relative h-44 bg-brand-light">
@@ -204,6 +211,56 @@ export default function AIRecommender() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between mb-5 px-1">
+                      <p className="text-xs text-gray-400">
+                        Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, products.length)} of {products.length} products
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        {/* Prev */}
+                        <button
+                          onClick={() => { setPage(p => Math.max(1, p - 1)); }}
+                          disabled={page === 1}
+                          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-brand-light hover:border-brand-accent hover:text-brand-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-bold"
+                        >
+                          ‹
+                        </button>
+
+                        {/* Page numbers */}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
+                          const isActive = num === page;
+                          const showPage = num === 1 || num === totalPages || Math.abs(num - page) <= 1;
+                          const showDots = !showPage && (num === 2 || num === totalPages - 1);
+                          if (showDots) return <span key={num} className="text-gray-300 text-xs px-1">…</span>;
+                          if (!showPage) return null;
+                          return (
+                            <button
+                              key={num}
+                              onClick={() => setPage(num)}
+                              className={`w-8 h-8 rounded-lg text-sm font-semibold transition-all ${
+                                isActive
+                                  ? "bg-brand-primary text-white shadow-sm"
+                                  : "border border-gray-200 text-gray-600 hover:bg-brand-light hover:border-brand-accent hover:text-brand-primary"
+                              }`}
+                            >
+                              {num}
+                            </button>
+                          );
+                        })}
+
+                        {/* Next */}
+                        <button
+                          onClick={() => { setPage(p => Math.min(totalPages, p + 1)); }}
+                          disabled={page === totalPages}
+                          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-brand-light hover:border-brand-accent hover:text-brand-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-bold"
+                        >
+                          ›
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <p className="text-center text-xs text-gray-400 mb-4">
                     Not satisfied? Our expert can help you find the perfect product.
