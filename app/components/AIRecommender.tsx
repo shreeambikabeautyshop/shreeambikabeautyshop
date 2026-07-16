@@ -85,9 +85,11 @@ export default function AIRecommender() {
         </div>
 
         <div className="w-full px-16 relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* LEFT */}
-            <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+
+            {/* LEFT — Robot + Text — equal flex */}
+            <div className="flex items-center gap-5 flex-1">
+              {/* Robot image */}
               <div className="relative w-28 h-28 flex-shrink-0 drop-shadow-lg">
                 <Image
                   src="https://res.cloudinary.com/zjlchjal/image/upload/v1784216154/AI-model_q5uqog.png"
@@ -96,19 +98,21 @@ export default function AIRecommender() {
                   className="object-contain"
                 />
               </div>
+              {/* Text */}
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none mb-0.5">AI POWERED</p>
                 <h2 className="text-xl font-black text-brand-primary leading-tight">SMART PRODUCT<br />RECOMMENDER</h2>
-                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed max-w-[200px]">
+                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed max-w-[220px]">
                   Tell us your beauty issue and get the perfect product recommendations for you! ✨
                 </p>
               </div>
             </div>
 
-            <div className="hidden md:block w-px h-20 bg-pink-200 flex-shrink-0 mx-2" />
+            {/* Divider */}
+            <div className="hidden md:block w-px h-20 bg-pink-200 flex-shrink-0" />
 
-            {/* RIGHT */}
-            <div className="flex-1 w-full max-w-lg">
+            {/* RIGHT — Input — equal flex */}
+            <div className="flex-1 w-full">
               <p className="text-base font-bold text-brand-primary mb-3">What is your beauty concern?</p>
               <input
                 type="text"
