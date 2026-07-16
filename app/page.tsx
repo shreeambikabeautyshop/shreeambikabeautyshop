@@ -37,7 +37,10 @@ export default function HomePage() {
         {/* 1. Hero Slider */}
         <HeroSlider />
 
-        {/* 2. Quick Trust Strip */}
+        {/* 2. AI Product Recommender — right after hero */}
+        <AIRecommender />
+
+        {/* 3. Quick Trust Strip */}
         <section className="bg-white border-b border-gray-100 py-3 px-4">
           <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
             {trustFeatures.map((f) => (
@@ -55,10 +58,7 @@ export default function HomePage() {
         {/* 4. Top Brands Marquee */}
         <BrandsMarquee />
 
-        {/* 5. AI Product Recommender */}
-        <AIRecommender />
-
-        {/* 6. Shop By Occasion */}
+        {/* 5. Shop By Occasion */}
         <ShopByOccasion />
 
         {/* 7. Beauty Myth vs Truth + Why Choose */}
