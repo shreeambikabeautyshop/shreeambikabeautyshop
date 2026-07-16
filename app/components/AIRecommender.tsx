@@ -84,7 +84,7 @@ export default function AIRecommender() {
           <div className="absolute top-1/2 right-0 text-3xl rotate-[5deg]">🌸</div>
         </div>
 
-        <div className="w-full px-10 relative z-10">
+        <div className="w-full px-20 relative z-10">
           <div className="flex flex-col md:flex-row items-center gap-0">
 
             {/* LEFT — Robot + Text — equal flex */}
