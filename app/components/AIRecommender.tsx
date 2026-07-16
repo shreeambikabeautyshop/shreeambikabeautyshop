@@ -84,13 +84,13 @@ export default function AIRecommender() {
           <div className="absolute top-1/2 right-0 text-3xl rotate-[5deg]">🌸</div>
         </div>
 
-        <div className="w-full px-16 relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="w-full px-10 relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-0">
 
             {/* LEFT — Robot + Text — equal flex */}
-            <div className="flex items-center gap-5 flex-1">
-              {/* Robot image */}
-              <div className="relative w-28 h-28 flex-shrink-0 drop-shadow-lg">
+            <div className="flex items-center gap-6 flex-1 pr-8">
+              {/* Robot image — bigger */}
+              <div className="relative w-36 h-36 flex-shrink-0 drop-shadow-xl">
                 <Image
                   src="https://res.cloudinary.com/zjlchjal/image/upload/v1784216154/AI-model_q5uqog.png"
                   alt="AI Beauty Bot"
@@ -100,20 +100,26 @@ export default function AIRecommender() {
               </div>
               {/* Text */}
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-none mb-0.5">AI POWERED</p>
-                <h2 className="text-xl font-black text-brand-primary leading-tight">SMART PRODUCT<br />RECOMMENDER</h2>
-                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed max-w-[220px]">
-                  Tell us your beauty issue and get the perfect product recommendations for you! ✨
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">AI POWERED</p>
+                <h2 className="text-2xl font-black text-brand-primary leading-tight mb-2">
+                  SMART PRODUCT<br />RECOMMENDER
+                </h2>
+                <p className="text-sm text-gray-500 leading-relaxed max-w-[260px]">
+                  Tell us your beauty issue and get the perfect
+                  product recommendations for you!{" "}
+                  <span className="text-brand-primary">✦</span>
                 </p>
               </div>
             </div>
 
             {/* Divider */}
-            <div className="hidden md:block w-px h-20 bg-pink-200 flex-shrink-0" />
+            <div className="hidden md:block w-px self-stretch bg-pink-200 flex-shrink-0" />
 
             {/* RIGHT — Input — equal flex */}
-            <div className="flex-1 w-full">
-              <p className="text-base font-bold text-brand-primary mb-3">What is your beauty concern?</p>
+            <div className="flex-1 w-full pl-8 py-3">
+              <p className="text-lg font-bold text-brand-primary mb-3">
+                What is your beauty concern?
+              </p>
               <input
                 type="text"
                 value={concern}
@@ -125,14 +131,14 @@ export default function AIRecommender() {
               <button
                 onClick={handleSubmit}
                 disabled={loading || !concern.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-full transition-all text-sm"
+                className="w-full flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-full transition-all text-sm tracking-wide"
               >
                 {loading
                   ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Finding best products...</>
                   : <>Get My Recommendations ✨</>}
               </button>
-              <p className="text-center text-xs text-brand-primary mt-2 font-medium">
-                ♥ 100% Personalised • Smart • Trusted ♥
+              <p className="text-center text-xs text-brand-primary mt-2.5 font-medium">
+                ♥ 100% Personalized • Smart • Trusted ♥
               </p>
             </div>
           </div>
