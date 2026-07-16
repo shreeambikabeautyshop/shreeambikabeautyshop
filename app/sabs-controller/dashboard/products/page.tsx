@@ -64,7 +64,12 @@ export default function ProductsList() {
   const handleShareWhatsApp = (p: Product) => {
     const url = getProductUrl(p);
     const msg = encodeURIComponent(
-      `🌸 *${p.name}*\n💰 Only ₹${p.price} (MRP ₹${p.mrp})\n✅ 100% Original\n\n👉 View Product: ${url}\n\n📱 Order on WhatsApp: +918291455297\n🏪 Shree Ambika Beauty Shop`
+      `*${p.name}*\n` +
+      `Price: Rs.${p.price} (MRP Rs.${p.mrp}) - ${p.discount}% OFF\n` +
+      `100% Original Product\n\n` +
+      `View Product: ${url}\n\n` +
+      `Order on WhatsApp: +918291455297\n` +
+      `Shree Ambika Beauty Shop`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
