@@ -1,14 +1,47 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const occasions = [
-  { name: "Wedding", href: "/occasions/wedding", emoji: "👰", bg: "from-rose-100 to-pink-50", shadow: "shadow-rose-100" },
-  { name: "Party", href: "/occasions/party", emoji: "💃", bg: "from-purple-100 to-pink-50", shadow: "shadow-purple-100" },
-  { name: "Office", href: "/occasions/office", emoji: "👩‍💼", bg: "from-blue-50 to-indigo-50", shadow: "shadow-blue-100" },
-  { name: "Daily Use", href: "/occasions/daily", emoji: "☀️", bg: "from-amber-50 to-yellow-50", shadow: "shadow-yellow-100" },
-  { name: "Date Night", href: "/occasions/date-night", emoji: "🌹", bg: "from-red-50 to-rose-50", shadow: "shadow-red-100" },
-  { name: "Festival", href: "/occasions/festival", emoji: "🪔", bg: "from-orange-100 to-amber-50", shadow: "shadow-orange-100" },
-  { name: "Travel", href: "/occasions/travel", emoji: "✈️", bg: "from-slate-100 to-gray-50", shadow: "shadow-slate-100" },
-  { name: "Gifting", href: "/occasions/gifting", emoji: "🎁", bg: "from-pink-100 to-fuchsia-50", shadow: "shadow-pink-100" },
+  {
+    name: "Wedding",
+    href: "/occasions/wedding",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221445/wedding_ro6df3.png",
+  },
+  {
+    name: "Party",
+    href: "/occasions/party",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221436/party_feyaq1.png",
+  },
+  {
+    name: "Office",
+    href: "/occasions/office",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/office_c55njk.png",
+  },
+  {
+    name: "Daily Use",
+    href: "/occasions/daily",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/daily_use_csbkl7.png",
+  },
+  {
+    name: "Date Night",
+    href: "/occasions/date-night",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/Date-night_gr0fui.png",
+  },
+  {
+    name: "Festival",
+    href: "/occasions/festival",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221437/festival_vh2wqu.png",
+  },
+  {
+    name: "Travel",
+    href: "/occasions/travel",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221444/travel_qsaz0d.png",
+  },
+  {
+    name: "Gifting",
+    href: "/occasions/gifting",
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/birthday-anniversary_v0546l.png",
+  },
 ];
 
 export default function ShopByOccasion() {
@@ -20,46 +53,46 @@ export default function ShopByOccasion() {
     >
       <div className="max-w-[1400px] mx-auto px-6">
 
-        {/* Header — exact match with decorative lines */}
+        {/* Header */}
         <div className="flex items-center justify-center gap-4 mb-8">
           <div className="flex items-center gap-2">
             <span className="text-brand-gold text-xl" style={{ fontFamily: "serif" }}>❧</span>
-            <div className="h-px w-14 bg-gradient-to-r from-transparent to-brand-gold/40" />
+            <div className="h-px w-14 bg-gradient-to-r from-transparent to-brand-gold/50" />
           </div>
           <h2
             id="occasion-heading"
-            className="text-base font-bold tracking-[0.3em] uppercase text-brand-primary whitespace-nowrap"
+            className="text-sm font-bold tracking-[0.3em] uppercase text-brand-primary whitespace-nowrap"
           >
             SHOP BY OCCASION
           </h2>
           <div className="flex items-center gap-2">
-            <div className="h-px w-14 bg-gradient-to-l from-transparent to-brand-gold/40" />
+            <div className="h-px w-14 bg-gradient-to-l from-transparent to-brand-gold/50" />
             <span className="text-brand-gold text-xl" style={{ fontFamily: "serif" }}>❧</span>
           </div>
         </div>
 
         {/* 8 Occasion Cards */}
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 mb-7">
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-4 mb-7">
           {occasions.map((occ) => (
             <Link
               key={occ.name}
               href={occ.href}
-              className="group flex flex-col items-center gap-2"
+              className="group flex flex-col items-center gap-2.5"
             >
-              {/* Card — portrait aspect ratio like reference */}
+              {/* Card */}
               <div
-                className={`w-full rounded-2xl bg-gradient-to-b ${occ.bg} border border-white 
-                  shadow-md ${occ.shadow} group-hover:shadow-xl group-hover:-translate-y-1.5 
-                  transition-all duration-300 flex items-center justify-center overflow-hidden`}
+                className="w-full rounded-2xl bg-white border border-pink-100 shadow-sm 
+                  group-hover:shadow-lg group-hover:-translate-y-1.5 
+                  transition-all duration-300 overflow-hidden relative"
                 style={{ aspectRatio: "3/4" }}
               >
-                <span
-                  className="text-5xl group-hover:scale-110 transition-transform duration-300 select-none"
-                  role="img"
-                  aria-label={occ.name}
-                >
-                  {occ.emoji}
-                </span>
+                <Image
+                  src={occ.img}
+                  alt={occ.name}
+                  fill
+                  className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 25vw, 12.5vw"
+                />
               </div>
               {/* Label */}
               <span className="text-xs font-semibold text-gray-600 group-hover:text-brand-primary transition-colors text-center leading-tight">
