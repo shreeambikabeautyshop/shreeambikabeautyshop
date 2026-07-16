@@ -45,7 +45,7 @@ export default function AIRecommender() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-[1100px] mx-auto px-8 relative z-10">
+      <div className="w-full px-16 relative z-10">
         <div className="flex flex-col md:flex-row items-center gap-6">
 
           {/* LEFT — Robot + Text */}
