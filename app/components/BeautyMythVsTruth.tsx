@@ -81,13 +81,13 @@ export default function BeautyMythVsTruth() {
             </div>
 
             {/* Women image — right side of left panel */}
-            <div className="relative w-36 flex-shrink-0 self-stretch">
+            <div className="relative w-48 flex-shrink-0 self-stretch hidden md:block">
               <Image
                 src="https://res.cloudinary.com/zjlchjal/image/upload/v1784223222/beauty_myth_vs_truth_vrngh7.png"
                 alt="Beauty Expert"
                 fill
-                className="object-cover object-top"
-                sizes="144px"
+                className="object-contain object-bottom"
+                sizes="192px"
               />
             </div>
           </div>
@@ -126,13 +126,13 @@ export default function BeautyMythVsTruth() {
             </div>
 
             {/* Women image — right side of right panel */}
-            <div className="relative w-36 flex-shrink-0 self-stretch">
+            <div className="relative w-48 flex-shrink-0 self-stretch hidden md:block">
               <Image
                 src="https://res.cloudinary.com/zjlchjal/image/upload/v1784223219/why-every-women-choose_vht46h.png"
                 alt="Why Choose Shree Ambika"
                 fill
-                className="object-cover object-top"
-                sizes="144px"
+                className="object-contain object-bottom"
+                sizes="192px"
               />
             </div>
           </div>
