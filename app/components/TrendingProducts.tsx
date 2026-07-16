@@ -1,187 +1,199 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { FiShoppingCart, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { FaStar } from "react-icons/fa";
+import Image from "next/image";
+import { FiChevronLeft, FiChevronRight, FiShoppingCart } from "react-icons/fi";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { createClient } from "@supabase/supabase-js";
 
-const products = [
-  {
-    id: 1,
-    name: "Lakme Color + Matte Lipstick - Blush Mauve",
-    brand: "Lakme",
-    price: 349,
-    mrp: 499,
-    discount: 30,
-    rating: 4.4,
-    reviews: 742,
-    emoji: "💄",
-    tag: "10% OFF",
-    color: "from-pink-100 to-rose-50",
-  },
-  {
-    id: 2,
-    name: "Maybelline Fit Me Matte + Poreless Foundation",
-    brand: "Maybelline",
-    price: 449,
-    mrp: 699,
-    discount: 36,
-    rating: 4.3,
-    reviews: 1205,
-    emoji: "🧴",
-    tag: "15% OFF",
-    color: "from-amber-50 to-yellow-50",
-  },
-  {
-    id: 3,
-    name: "Sugar Beauty Eyeshadow Palette - 12 Shades",
-    brand: "SUGAR",
-    price: 599,
-    mrp: 999,
-    discount: 40,
-    rating: 4.5,
-    reviews: 634,
-    emoji: "🎨",
-    tag: "20% OFF",
-    color: "from-purple-50 to-pink-50",
-  },
-  {
-    id: 4,
-    name: "Plum 15% Niacinamide Face Serum",
-    brand: "Plum",
-    price: 449,
-    mrp: 599,
-    discount: 25,
-    rating: 4.6,
-    reviews: 987,
-    emoji: "💧",
-    tag: "25% OFF",
-    color: "from-green-50 to-emerald-50",
-  },
-  {
-    id: 5,
-    name: "Lakme Absolute Foundation",
-    brand: "Lakme",
-    price: 529,
-    mrp: 799,
-    discount: 34,
-    rating: 4.2,
-    reviews: 541,
-    emoji: "✨",
-    tag: "30% OFF",
-    color: "from-rose-50 to-pink-50",
-  },
-  {
-    id: 6,
-    name: "Vega High Volume Mascara",
-    brand: "Vega",
-    price: 249,
-    mrp: 399,
-    discount: 38,
-    rating: 4.1,
-    reviews: 378,
-    emoji: "👁️",
-    tag: "35% OFF",
-    color: "from-gray-50 to-slate-50",
-  },
-];
+interface Product {
+  id: string; name: string; slug: string; brand: string;
+  price: number; mrp: number; discount: number;
+  images: string[]; rating: number; reviews_count: number;
+}
 
 function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <FaStar
-          key={star}
-          size={10}
-          className={star <= Math.floor(rating) ? "text-yellow-400" : "text-gray-200"}
-        />
-      ))}
-      <span className="text-[10px] text-gray-500 ml-1">({rating})</span>
-    </div>
-  );
+  const stars = [];
+  const full = Math.floor(rating);
+  const half = rating % 1 >= 0.5;
+  for (let i = 1; i <= 5; i++) {
+    if (i <= full) stars.push(<FaStar key={i} size={11} className="text-yellow-400" />);
+    else if (i === full + 1 && half) stars.push(<FaStarHalfAlt key={i} size={11} className="text-yellow-400" />);
+    else stars.push(<FaRegStar key={i} size={11} className="text-yellow-300" />);
+  }
+  return <div className="flex items-center gap-0.5">{stars}</div>;
 }
 
 export default function TrendingProducts() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [startIdx, setStartIdx] = useState(0);
-  const visible = 4;
+  const [isAnimating, setIsAnimating] = useState(false);
+  const VISIBLE = 6;
 
-  const prev = () => setStartIdx(Math.max(0, startIdx - 1));
-  const next = () => setStartIdx(Math.min(products.length - visible, startIdx + 1));
+  useEffect(() => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    supabase
+      .from("products")
+      .select("id,name,slug,brand,price,mrp,discount,images,rating,reviews_count")
+      .eq("in_stock", true)
+      .eq("trending", true)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        // If no trending, fallback to latest
+        if (!data || data.length === 0) {
+          supabase
+            .from("products")
+            .select("id,name,slug,brand,price,mrp,discount,images,rating,reviews_count")
+            .eq("in_stock", true)
+            .order("created_at", { ascending: false })
+            .limit(20)
+            .then(({ data: fallback }) => setProducts(fallback || []));
+        } else {
+          setProducts(data);
+        }
+      });
+  }, []);
 
-  const visibleProducts = products.slice(startIdx, startIdx + visible);
+  const canPrev = startIdx > 0;
+  const canNext = startIdx + VISIBLE < products.length;
+
+  const slide = (dir: "prev" | "next") => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setStartIdx((prev) => dir === "next"
+      ? Math.min(prev + 1, products.length - VISIBLE)
+      : Math.max(prev - 1, 0)
+    );
+    setTimeout(() => setIsAnimating(false), 300);
+  };
+
+  const visible = products.slice(startIdx, startIdx + VISIBLE);
+
+  const waMsg = (p: Product) => encodeURIComponent(
+    `Hi! I want to order:\n*${p.name}*\nPrice: Rs.${p.price}\n\nPlease confirm availability.`
+  );
 
   return (
-    <section className="py-12 bg-brand-light" aria-labelledby="trending-heading">
-      <div className="max-w-[1400px] mx-auto px-4">
-        <div className="flex items-center justify-between mb-7">
-          <h2 id="trending-heading" className="text-2xl font-bold text-brand-primary font-serif">
-            🔥 TRENDING PRODUCTS
+    <section className="py-10 bg-white" aria-labelledby="trending-heading">
+      <div className="max-w-[1400px] mx-auto px-6">
+
+        {/* Header */}
+        <div className="flex items-center justify-center gap-4 mb-7">
+          <div className="flex items-center gap-2">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-brand-primary/30" />
+            <span className="text-brand-primary/50 text-sm">❧</span>
+          </div>
+          <h2 id="trending-heading" className="text-base font-bold tracking-[0.3em] uppercase text-brand-primary">
+            TRENDING PRODUCTS
           </h2>
           <div className="flex items-center gap-2">
-            <button
-              onClick={prev}
-              disabled={startIdx === 0}
-              aria-label="Previous products"
-              className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:bg-brand-primary hover:text-white hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-sm"
-            >
-              <FiChevronLeft size={16} />
-            </button>
-            <button
-              onClick={next}
-              disabled={startIdx >= products.length - visible}
-              aria-label="Next products"
-              className="w-9 h-9 rounded-full bg-white border border-gray-200 hover:bg-brand-primary hover:text-white hover:border-brand-primary disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-sm"
-            >
-              <FiChevronRight size={16} />
-            </button>
+            <span className="text-brand-primary/50 text-sm">❧</span>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-brand-primary/30" />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {visibleProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-pink-50 group"
-            >
-              {/* Product image placeholder */}
-              <div className={`relative h-48 bg-gradient-to-br ${product.color} flex items-center justify-center`}>
-                <span className="text-7xl group-hover:scale-110 transition-transform duration-300">
-                  {product.emoji}
-                </span>
-                <span className="absolute top-3 left-3 bg-brand-primary text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                  {product.tag}
-                </span>
-              </div>
+        {/* Slider */}
+        <div className="relative">
+          {/* Prev arrow */}
+          <button
+            onClick={() => slide("prev")}
+            disabled={!canPrev}
+            aria-label="Previous"
+            className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-brand-primary hover:border-brand-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <FiChevronLeft size={18} />
+          </button>
 
-              {/* Info */}
-              <div className="p-4">
-                <p className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mb-1">
-                  {product.brand}
-                </p>
-                <h3 className="text-xs font-semibold text-gray-800 leading-tight mb-2 line-clamp-2">
-                  {product.name}
-                </h3>
-                <StarRating rating={product.rating} />
-                <p className="text-[10px] text-gray-400 mb-2">({product.reviews} reviews)</p>
+          {/* Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 overflow-hidden">
+            {visible.length === 0
+              ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-2xl bg-gray-50 animate-pulse h-72" />
+              ))
+              : visible.map((p) => (
+                <div key={p.id}
+                  className="group bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative">
 
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="font-bold text-gray-900 text-sm">₹{product.price}</span>
-                  <span className="text-xs text-gray-400 line-through">₹{product.mrp}</span>
-                  <span className="text-xs font-bold text-green-600">{product.discount}% OFF</span>
+                  {/* Discount badge */}
+                  {p.discount > 0 && (
+                    <span className="absolute top-2 left-2 z-10 bg-brand-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                      -{p.discount}%
+                    </span>
+                  )}
+
+                  {/* Product image */}
+                  <Link href={`/products/${p.slug || p.id}`}>
+                    <div className="relative h-44 bg-gray-50 overflow-hidden">
+                      {p.images?.[0] ? (
+                        <Image
+                          src={p.images[0]}
+                          alt={p.name}
+                          fill
+                          className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 50vw, 16vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl">💄</div>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Info */}
+                  <div className="p-3 flex flex-col flex-1">
+                    <Link href={`/products/${p.slug || p.id}`}>
+                      <h3 className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 mb-2 hover:text-brand-primary transition-colors min-h-[2.5rem]">
+                        {p.name}
+                      </h3>
+                    </Link>
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-2">
+                      <StarRating rating={p.rating || 4.2} />
+                      <span className="text-[10px] text-gray-400">({p.reviews_count || 0})</span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
+                      {p.mrp > p.price && (
+                        <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>
+                      )}
+                    </div>
+
+                    {/* Add to Cart */}
+                    <a
+                      href={`https://wa.me/918291455297?text=${waMsg(p)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto w-full flex items-center justify-center gap-1.5 bg-brand-primary hover:bg-brand-dark text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
+                    >
+                      Add to Cart <FiShoppingCart size={12} />
+                    </a>
+                  </div>
                 </div>
+              ))}
+          </div>
 
-                <button className="w-full flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-dark text-white text-xs font-bold py-2.5 rounded-xl transition-colors">
-                  <FiShoppingCart size={13} />
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          ))}
+          {/* Next arrow */}
+          <button
+            onClick={() => slide("next")}
+            disabled={!canNext}
+            aria-label="Next"
+            className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-brand-primary hover:border-brand-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <FiChevronRight size={18} />
+          </button>
         </div>
 
-        <div className="text-center mt-8">
+        {/* View All Button */}
+        <div className="text-center mt-7">
           <Link
             href="/products"
-            className="inline-block border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-semibold px-10 py-3 rounded-full transition-all"
+            className="inline-flex items-center gap-2 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-semibold px-10 py-2.5 rounded-full transition-all text-sm"
           >
             View All Products →
           </Link>
