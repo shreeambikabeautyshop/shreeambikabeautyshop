@@ -132,18 +132,6 @@ export default function ProductCard({ p }: { p: Product }) {
           )}
         </div>
 
-        {/* Benefits row — only if available */}
-        {benefits.length > 0 && (
-          <div className="grid grid-cols-3 gap-1 bg-gray-50 rounded-xl p-2">
-            {benefits.map((b, i) => (
-              <div key={i} className="flex flex-col items-center text-center gap-0.5">
-                <span className="text-sm">{benefitIcons[i]}</span>
-                <span className="text-[9px] text-gray-500 leading-tight line-clamp-2">{b}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Row 5: View Details (left) + Buy on WhatsApp (right) — same row */}
         <div className="flex gap-2 pt-1">
           <Link href={`/products/${p.slug || p.id}`}
