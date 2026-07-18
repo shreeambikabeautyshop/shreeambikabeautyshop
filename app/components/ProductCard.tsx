@@ -50,7 +50,7 @@ export default function ProductCard({ p }: { p: Product }) {
       {/* ── IMAGE AREA — full width, no badge ── */}
       <div className="relative w-full overflow-hidden rounded-t-3xl bg-gradient-to-b from-[#fdf6ee] to-[#fef9f4]">
         <Link href={`/products/${p.slug || p.id}`} className="block">
-          <div className="relative w-full" style={{ aspectRatio: "4/3" }}>
+          <div className="relative w-full" style={{ aspectRatio: "1/1" }}>
             {p.images?.[0] ? (
               <Image
                 src={p.images[0]}
@@ -123,9 +123,6 @@ export default function ProductCard({ p }: { p: Product }) {
             <span className="text-xl font-black text-gray-900 leading-none">
               ₹{p.price.toLocaleString("en-IN")}
             </span>
-            {p.discount > 0 && (
-              <span className="text-[10px] font-bold text-green-600">{p.discount}% off</span>
-            )}
           </div>
           {p.mrp > p.price && (
             <div className="text-right">
@@ -155,12 +152,22 @@ export default function ProductCard({ p }: { p: Product }) {
           </Link>
           <a href={`https://wa.me/918291455297?text=${waMsg}`}
             target="_blank" rel="noopener noreferrer"
-            className="flex-1 flex flex-col items-center justify-center bg-brand-primary hover:bg-brand-dark text-white py-2 rounded-xl transition-all hover:shadow-md">
-            <div className="flex items-center gap-1">
+            className="flex-1 flex flex-col items-center justify-center text-white py-2 rounded-xl transition-all relative overflow-hidden"
+            style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}
+          >
+            {/* Shine sweep animation */}
+            <span className="absolute inset-0 pointer-events-none"
+              style={{
+                background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%)",
+                animation: "shine-sweep 2.5s ease-in-out infinite",
+                backgroundSize: "200% 100%",
+              }}
+            />
+            <div className="relative flex items-center gap-1 z-10">
               <FaWhatsapp size={13} />
               <span className="text-[11px] font-black">Buy on WhatsApp</span>
             </div>
-            <span className="text-[8px] opacity-75">Vinod: +91-8291455297</span>
+            <span className="relative text-[8px] opacity-80 z-10">Vinod: +91-8291455297</span>
           </a>
         </div>
       </div>

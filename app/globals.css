@@ -47,6 +47,12 @@ body {
   animation: pulse-whatsapp 2s infinite;
 }
 
+/* WhatsApp button shine sweep */
+@keyframes shine-sweep {
+  0% { background-position: -200% center; }
+  60%, 100% { background-position: 200% center; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
