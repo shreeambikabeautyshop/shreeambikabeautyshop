@@ -117,10 +117,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
             {/* LEFT — Images */}
             <div>
-              {/* Main image */}
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#fdf6ee] to-white mb-3 border border-gray-100">
+              {/* Main image — bigger */}
+              <div className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#fdf6ee] to-white mb-3 border border-gray-100" style={{ aspectRatio: "1/1" }}>
                 {p.images?.[0] ? (
-                  <Image src={p.images[0]} alt={p.name} fill className="object-contain p-4" priority />
+                  <Image src={p.images[0]} alt={p.name} fill className="object-contain" priority />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-8xl">💄</div>
                 )}
@@ -130,6 +130,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   <FaShareAlt size={14} className="text-gray-600" />
                 </a>
               </div>
+
               {/* Thumbnail strip */}
               {p.images?.length > 1 && (
                 <div className="flex gap-2">
@@ -140,6 +141,25 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   ))}
                 </div>
               )}
+
+              {/* Action buttons below image on desktop */}
+              <div className="flex gap-3 mt-4">
+                <Link href={`/products/${p.slug || p.id}`}
+                  className="flex-1 flex items-center justify-center gap-2 border-2 border-gray-200 hover:border-brand-primary text-gray-700 hover:text-brand-primary font-semibold py-3 rounded-2xl transition-all text-sm">
+                  👁 View Full Details
+                </Link>
+                <a href={`https://wa.me/918291455297?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 text-white font-bold py-3 rounded-2xl transition-all text-sm relative overflow-hidden"
+                  style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}>
+                  <span className="absolute inset-0 pointer-events-none" style={{
+                    background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)",
+                    animation: "shine-sweep 2.5s ease-in-out infinite",
+                    backgroundSize: "200% 100%",
+                  }} />
+                  <FaWhatsapp size={16} className="relative z-10" />
+                  <span className="relative z-10">Buy on WhatsApp</span>
+                </a>
+              </div>
             </div>
 
             {/* RIGHT — Product Info */}
