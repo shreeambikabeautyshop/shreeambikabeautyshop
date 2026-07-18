@@ -50,7 +50,7 @@ export default function ProductCard({ p }: { p: Product }) {
       {/* ── IMAGE AREA — full width, no badge ── */}
       <div className="relative w-full overflow-hidden rounded-t-3xl bg-gradient-to-b from-[#fdf6ee] to-[#fef9f4]">
         <Link href={`/products/${p.slug || p.id}`} className="block">
-          <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
+          <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
             {p.images?.[0] ? (
               <Image
                 src={p.images[0]}
@@ -65,17 +65,17 @@ export default function ProductCard({ p }: { p: Product }) {
           </div>
         </Link>
 
-        {/* Share + Wishlist — top right */}
-        <div className="absolute top-3 right-3 flex gap-2 z-10">
+        {/* Share + Wishlist — bottom RIGHT, column-wise */}
+        <div className="absolute bottom-3 right-3 flex flex-col gap-2 z-10">
           <button onClick={handleShare}
-            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-all border border-gray-100"
+            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-all border border-gray-100"
             title={copied ? "Copied!" : "Share"}>
             {copied
               ? <span className="text-green-500 text-[10px] font-bold">✓</span>
               : <FaShareAlt size={11} className="text-gray-500" />}
           </button>
           <button onClick={(e) => { e.preventDefault(); setWishlisted(!wishlisted); }}
-            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-all border border-gray-100"
+            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-all border border-gray-100"
             title="Wishlist">
             {wishlisted
               ? <FaHeart size={12} className="text-brand-primary" />
