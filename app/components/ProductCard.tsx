@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaWhatsapp, FaHeart, FaRegHeart, FaShareAlt, FaFacebook, FaTwitter, FaTelegram } from "react-icons/fa";
 import { FiEye, FiCopy, FiX } from "react-icons/fi";
 import { useWishlist } from "@/app/context/WishlistContext";
+import { useUser } from "@/app/context/UserContext";
 import WishlistToast from "./WishlistToast";
 import { SiInstagram } from "react-icons/si";
 
@@ -29,6 +30,7 @@ function Stars({ rating }: { rating: number }) {
 
 export default function ProductCard({ p }: { p: Product }) {
   const { toggle, has } = useWishlist();
+  const { customer, isLoggedIn, triggerLogin } = useUser();
   const wishlisted = has(p.id);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -81,9 +83,13 @@ export default function ProductCard({ p }: { p: Product }) {
     },
   ];
 
-  const waMsg = encodeURIComponent(
-    `Hi Vinod! I want to order:\n*${p.name}*\nPrice: Rs.${p.price}\n\n${productUrl}`
-  );
+  const waMsg = customer
+    ? encodeURIComponent(
+        `Hi Vinod! I want to order:\n\n*Product:* ${p.name}\n*Brand:* ${p.brand}\n*Price:* ₹${p.price}\n\n*My Details:*\nName: ${customer.full_name}\nPhone: +91${customer.phone}\nAddress: ${customer.address}${customer.city ? `, ${customer.city}` : ""}${customer.state ? `, ${customer.state}` : ""}${customer.pincode ? ` - ${customer.pincode}` : ""}\n\n${productUrl}`
+      )
+    : encodeURIComponent(
+        `Hi Vinod! I want to order:\n*${p.name}*\nPrice: Rs.${p.price}\n\n${productUrl}`
+      );
 
   const benefits = Array.isArray(p.key_benefits) ? p.key_benefits.slice(0, 3) : [];
   const benefitIcons = ["🔸", "⚡", "✦"];
@@ -162,6 +168,10 @@ export default function ProductCard({ p }: { p: Product }) {
           <button
             onClick={(e) => {
               e.preventDefault();
+              if (!isLoggedIn) {
+                triggerLogin("wishlist");
+                return;
+              }
               toggle({ id: p.id, name: p.name, slug: p.slug, brand: p.brand, price: p.price, mrp: p.mrp, images: p.images, rating: p.rating, category: p.category });
               setToast({ name: p.name, image: p.images?.[0], added: !wishlisted });
             }}
@@ -234,6 +244,12 @@ export default function ProductCard({ p }: { p: Product }) {
             <FiEye size={12} /> View Details
           </Link>
           <a href={`https://wa.me/918291455297?text=${waMsg}`}
+            onClick={(e) => {
+              if (!isLoggedIn) {
+                e.preventDefault();
+                triggerLogin("order");
+              }
+            }}
             target="_blank" rel="noopener noreferrer"
             className="flex-1 flex flex-col items-center justify-center text-white py-2 rounded-xl transition-all relative overflow-hidden"
             style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}
