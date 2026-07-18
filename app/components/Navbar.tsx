@@ -46,7 +46,7 @@ export default function Navbar() {
     >
       {/* Top announcement bar */}
       <div className="bg-brand-primary text-white text-xs py-1.5 text-center font-medium tracking-wide">
-        🎉 Free Delivery on Orders Above ₹499 | 100% Original Products Guaranteed
+        ⚡ Same Day Delivery in Mumbai &nbsp;|&nbsp; 🚚 Pan India 4–7 Days &nbsp;|&nbsp; 🌍 Worldwide Shipping Available &nbsp;|&nbsp; Free Delivery Above ₹499
       </div>
 
       {/* Main navbar */}

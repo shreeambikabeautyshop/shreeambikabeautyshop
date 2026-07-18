@@ -209,6 +209,54 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 </div>
               )}
 
+              {/* Delivery Info */}
+              <div className="bg-gradient-to-r from-brand-light to-white rounded-2xl p-4 border border-pink-100">
+                <h3 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
+                  <FiTruck className="text-brand-primary" size={16} /> Delivery Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-lg flex-shrink-0">⚡</span>
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Same Day Delivery — Mumbai</p>
+                      <p className="text-[11px] text-gray-500">Order before 12 PM · Delivered same evening</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-lg flex-shrink-0">📦</span>
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Mumbai & Thane · 1–2 Days</p>
+                      <p className="text-[11px] text-gray-500">Navi Mumbai, Thane, Mira-Bhayandar, Kalyan</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-lg flex-shrink-0">🚚</span>
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Maharashtra · 2–4 Days</p>
+                      <p className="text-[11px] text-gray-500">Pune, Nashik, Nagpur, Aurangabad & all cities</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-lg flex-shrink-0">🇮🇳</span>
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Pan India · 4–7 Days</p>
+                      <p className="text-[11px] text-gray-500">All states via Blue Dart / Delhivery / DTDC</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-lg flex-shrink-0">🌍</span>
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">International · 7–14 Days</p>
+                      <p className="text-[11px] text-gray-500">Worldwide shipping available · WhatsApp for rates</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-pink-100 flex items-center gap-2">
+                  <span className="text-green-500 text-sm">✓</span>
+                  <p className="text-[11px] text-gray-500 font-medium">Free delivery on orders above ₹499 within India</p>
+                </div>
+              </div>
+
               {/* CTA Buttons */}
               <div className="flex flex-col gap-2.5 mt-2">
                 <a href={`https://wa.me/918291455297?text=${waMsg}`} target="_blank" rel="noopener noreferrer"

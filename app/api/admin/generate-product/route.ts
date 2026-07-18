@@ -19,7 +19,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
   "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories",
   "price": realistic_indian_selling_price_number,
   "mrp": realistic_indian_mrp_number,
-  "description": "3-4 short sentences. Sentence 1: What this product does in simple words. Sentence 2: Key ingredient or technology if visible. Sentence 3: Who it is for. Sentence 4: 'Get it 100% original from Shree Ambika Beauty Shop, Mumbai — Pan India delivery available. WhatsApp Vinod: +918291455297.' Keep it human, not robotic.",
+  "description": "3-4 short sentences. Sentence 1: What this product does in simple words. Sentence 2: Key ingredient or technology if visible. Sentence 3: Who it is for. Sentence 4: 'Available at Shree Ambika Beauty Shop, Mumbai — Same Day Delivery in Mumbai, Pan India 4-7 days, Worldwide shipping available. WhatsApp Vinod: +918291455297.' Keep it human, not robotic.",
   "tags": ["brand-name","product-type","main-benefit","skin-or-hair-type","mumbai","india","buy-online","original","best-price","shree-ambika-beauty-shop","vinod-mumbai","pan-india-delivery"],
   "seo_title": "Brand + Product + Key Benefit | Buy in Mumbai — max 60 chars",
   "seo_description": "What it does + Mumbai/India delivery + WhatsApp to order. Max 155 chars. Include +918291455297.",
