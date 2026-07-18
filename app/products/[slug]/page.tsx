@@ -218,7 +218,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
               {/* Quantity + Buy (client component) */}
               <ProductActions productName={p.name} price={p.price} slug={p.slug || p.id} />
 
-              {/* Est. line */}
               <p className="text-[11px] text-gray-400 text-center">
                 Est. 2001 · Mumbai&apos;s trusted beauty store · 25+ years of service
               </p>

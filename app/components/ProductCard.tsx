@@ -1,9 +1,11 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaWhatsapp, FaHeart, FaRegHeart, FaShareAlt, FaFacebook, FaTwitter, FaTelegram } from "react-icons/fa";
 import { FiEye, FiCopy, FiX } from "react-icons/fi";
+import { useWishlist } from "@/app/context/WishlistContext";
+import WishlistToast from "./WishlistToast";
 import { SiInstagram } from "react-icons/si";
 
 interface Product {
@@ -26,21 +28,19 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export default function ProductCard({ p }: { p: Product }) {
-  const [wishlisted, setWishlisted] = useState(false);
+  const { toggle, has } = useWishlist();
+  const wishlisted = has(p.id);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
-  const shareRef = useRef<HTMLDivElement>(null);
-
-  // Close share popup on outside click
-  useEffect(() => {
+  const [toast, setToast] = useState<{ name: string; image?: string; added: boolean } | null>(null);
+  const shareRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
     const handler = (e: MouseEvent) => {
-      if (shareRef.current && !shareRef.current.contains(e.target as Node)) {
-        setShowShare(false);
-      }
+      if (!node.contains(e.target as Node)) setShowShare(false);
     };
-    if (showShare) document.addEventListener("mousedown", handler);
+    document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [showShare]);
+  }, []);
 
   const productUrl = `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`;
 
@@ -160,10 +160,14 @@ export default function ProductCard({ p }: { p: Product }) {
           )}
 
           <button
-            onClick={(e) => { e.preventDefault(); setWishlisted(!wishlisted); }}
+            onClick={(e) => {
+              e.preventDefault();
+              toggle({ id: p.id, name: p.name, slug: p.slug, brand: p.brand, price: p.price, mrp: p.mrp, images: p.images, rating: p.rating, category: p.category });
+              setToast({ name: p.name, image: p.images?.[0], added: !wishlisted });
+            }}
             className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 border border-white/30
               ${wishlisted
-                ? "bg-brand-primary scale-110 animate-[heartbeat_0.4s_ease]"
+                ? "bg-brand-primary scale-110"
                 : "bg-gray-800/80 hover:bg-gray-900 hover:scale-110 active:scale-95"
               }`}
             title={wishlisted ? "Wishlisted!" : "Add to Wishlist"}
@@ -251,5 +255,6 @@ export default function ProductCard({ p }: { p: Product }) {
         </div>
       </div>
     </div>
+    <WishlistToast item={toast} onClose={() => setToast(null)} />
   );
 }

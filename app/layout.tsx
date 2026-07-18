@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { WishlistProvider } from "@/app/context/WishlistContext";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -150,8 +151,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        {children}
-      </body>
+          <WishlistProvider>
+            {children}
+          </WishlistProvider>
+        </body>
     </html>
   );
 }

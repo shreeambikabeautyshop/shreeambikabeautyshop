@@ -3,7 +3,22 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiChevronDown } from "react-icons/fi";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaHeart, FaWhatsapp } from "react-icons/fa";
+import { useWishlist } from "@/app/context/WishlistContext";
+
+function WishlistNavIcon() {
+  const { count } = useWishlist();
+  return (
+    <Link href="/wishlist" aria-label="Wishlist" className="p-2 text-gray-600 hover:text-brand-primary transition-colors relative">
+      <FaHeart size={18} className={count > 0 ? "text-brand-primary" : ""} />
+      {count > 0 && (
+        <span className="absolute top-0 right-0 bg-brand-primary text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 const categories = [
   { name: "Cosmetics", href: "/categories/cosmetics" },
@@ -150,6 +165,10 @@ export default function Navbar() {
           <button aria-label="Account" className="p-2 text-gray-600 hover:text-brand-primary transition-colors">
             <FiUser size={20} />
           </button>
+
+          {/* Wishlist icon with count */}
+          <WishlistNavIcon />
+
           <button aria-label="Cart" className="p-2 text-gray-600 hover:text-brand-primary transition-colors relative">
             <FiShoppingCart size={20} />
             <span className="absolute top-0 right-0 bg-brand-primary text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
