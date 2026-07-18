@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { FaStar, FaStarHalfAlt, FaRegStar, FaWhatsapp, FaHeart, FaRegHeart, FaShareAlt } from "react-icons/fa";
-import { FiEye } from "react-icons/fi";
+import { useState, useRef, useEffect } from "react";
+import { FaStar, FaStarHalfAlt, FaRegStar, FaWhatsapp, FaHeart, FaRegHeart, FaShareAlt, FaFacebook, FaTwitter, FaTelegram } from "react-icons/fa";
+import { FiEye, FiCopy, FiX } from "react-icons/fi";
+import { SiInstagram } from "react-icons/si";
 
 interface Product {
   id: string; name: string; slug: string; brand: string; category: string;
@@ -26,16 +27,59 @@ function Stars({ rating }: { rating: number }) {
 
 export default function ProductCard({ p }: { p: Product }) {
   const [wishlisted, setWishlisted] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  const shareRef = useRef<HTMLDivElement>(null);
+
+  // Close share popup on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node)) {
+        setShowShare(false);
+      }
+    };
+    if (showShare) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showShare]);
 
   const productUrl = `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`;
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const shareMsg = encodeURIComponent(
+    `✨ Check out this amazing product!\n\n*${p.name}*\nBrand: ${p.brand}\nPrice: ₹${p.price}\n\n🛍️ Buy from Shree Ambika Beauty Shop, Mumbai\n📱 WhatsApp Vinod: +91-8291455297\n\n👉 ${productUrl}`
+  );
+
+  const handleCopy = async () => {
     await navigator.clipboard.writeText(productUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const shareOptions = [
+    {
+      name: "WhatsApp",
+      icon: <FaWhatsapp size={18} />,
+      color: "bg-green-500 hover:bg-green-600",
+      url: `https://wa.me/?text=${shareMsg}`,
+    },
+    {
+      name: "Facebook",
+      icon: <FaFacebook size={18} />,
+      color: "bg-blue-600 hover:bg-blue-700",
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}&quote=${encodeURIComponent(`Check out ${p.name} at Shree Ambika Beauty Shop!`)}`,
+    },
+    {
+      name: "Twitter",
+      icon: <FaTwitter size={18} />,
+      color: "bg-sky-500 hover:bg-sky-600",
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`✨ ${p.name} | ₹${p.price} | Shree Ambika Beauty Shop Mumbai`)}&url=${encodeURIComponent(productUrl)}`,
+    },
+    {
+      name: "Telegram",
+      icon: <FaTelegram size={18} />,
+      color: "bg-blue-500 hover:bg-blue-600",
+      url: `https://t.me/share/url?url=${encodeURIComponent(productUrl)}&text=${shareMsg}`,
+    },
+  ];
 
   const waMsg = encodeURIComponent(
     `Hi Vinod! I want to order:\n*${p.name}*\nPrice: Rs.${p.price}\n\n${productUrl}`
@@ -66,20 +110,54 @@ export default function ProductCard({ p }: { p: Product }) {
         </Link>
 
         {/* Share + Wishlist — bottom RIGHT, column-wise, dark visible */}
-        <div className="absolute bottom-3 right-3 flex flex-col gap-2 z-10">
+        <div className="absolute bottom-3 right-3 flex flex-col gap-2 z-10" ref={shareRef}>
           <button
-            onClick={handleShare}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowShare(!showShare); }}
             className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 border border-white/30
-              ${copied
-                ? "bg-green-500 scale-110"
-                : "bg-gray-800/80 hover:bg-gray-900 hover:scale-110 active:scale-95"
-              }`}
-            title={copied ? "Copied!" : "Share"}
+              ${showShare ? "bg-brand-primary scale-110" : "bg-gray-800/80 hover:bg-gray-900 hover:scale-110 active:scale-95"}`}
+            title="Share"
           >
-            {copied
-              ? <span className="text-white text-[11px] font-black">✓</span>
-              : <FaShareAlt size={12} className="text-white" />}
+            <FaShareAlt size={12} className="text-white" />
           </button>
+
+          {/* Share Popup */}
+          {showShare && (
+            <div className="absolute bottom-12 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 w-48 z-50 animate-fade-in">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="text-xs font-bold text-gray-700">Share Product</p>
+                <button onClick={() => setShowShare(false)} className="text-gray-400 hover:text-gray-600">
+                  <FiX size={13} />
+                </button>
+              </div>
+
+              {/* Product mini preview */}
+              <div className="bg-gray-50 rounded-xl p-2 mb-3">
+                <p className="text-[10px] font-semibold text-gray-700 line-clamp-1">{p.name}</p>
+                <p className="text-[10px] text-brand-primary font-bold">₹{p.price}</p>
+              </div>
+
+              {/* Social buttons */}
+              <div className="grid grid-cols-2 gap-1.5 mb-2">
+                {shareOptions.map((s) => (
+                  <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer"
+                    onClick={() => setTimeout(() => setShowShare(false), 300)}
+                    className={`${s.color} text-white text-[10px] font-bold px-2 py-2 rounded-xl flex items-center gap-1.5 transition-all hover:scale-105`}>
+                    {s.icon} {s.name}
+                  </a>
+                ))}
+              </div>
+
+              {/* Copy URL */}
+              <button onClick={handleCopy}
+                className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-bold transition-all ${
+                  copied ? "bg-green-100 text-green-600" : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                }`}>
+                <FiCopy size={11} />
+                {copied ? "Link Copied! ✓" : "Copy Link"}
+              </button>
+            </div>
+          )}
 
           <button
             onClick={(e) => { e.preventDefault(); setWishlisted(!wishlisted); }}
