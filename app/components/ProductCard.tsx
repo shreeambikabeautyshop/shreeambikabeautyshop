@@ -48,7 +48,7 @@ export default function ProductCard({ p }: { p: Product }) {
     <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
 
       {/* ── IMAGE AREA — full width, no badge ── */}
-      <div className="relative w-full overflow-hidden rounded-t-3xl bg-gradient-to-b from-[#fdf6ee] to-[#fef9f4]">
+      <div className="relative w-full overflow-hidden rounded-t-3xl bg-white">
         <Link href={`/products/${p.slug || p.id}`} className="block">
           <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
             {p.images?.[0] ? (
@@ -56,7 +56,7 @@ export default function ProductCard({ p }: { p: Product }) {
                 src={p.images[0]}
                 alt={p.name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                className="object-contain group-hover:scale-105 transition-transform duration-500"
                 sizes="(max-width: 640px) 50vw, 25vw"
               />
             ) : (
