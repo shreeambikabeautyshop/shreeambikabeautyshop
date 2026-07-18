@@ -47,39 +47,52 @@ export default function ProductCard({ p }: { p: Product }) {
   return (
     <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
 
-      {/* ── IMAGE AREA — full width, no badge ── */}
-      <div className="relative w-full overflow-hidden rounded-t-3xl bg-white">
+      {/* ── IMAGE AREA — full width, taller, no top cut ── */}
+      <div className="relative w-full overflow-hidden rounded-t-3xl">
         <Link href={`/products/${p.slug || p.id}`} className="block">
-          <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
+          <div className="relative w-full" style={{ aspectRatio: "2/3" }}>
             {p.images?.[0] ? (
               <Image
                 src={p.images[0]}
                 alt={p.name}
                 fill
-                className="object-contain group-hover:scale-105 transition-transform duration-500"
+                className="object-cover object-top group-hover:scale-103 transition-transform duration-500"
                 sizes="(max-width: 640px) 50vw, 25vw"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-6xl">💄</div>
+              <div className="w-full h-full flex items-center justify-center text-6xl bg-brand-light">💄</div>
             )}
           </div>
         </Link>
 
-        {/* Share + Wishlist — bottom RIGHT, column-wise */}
+        {/* Share + Wishlist — bottom RIGHT, column-wise, dark visible */}
         <div className="absolute bottom-3 right-3 flex flex-col gap-2 z-10">
-          <button onClick={handleShare}
-            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-all border border-gray-100"
-            title={copied ? "Copied!" : "Share"}>
+          <button
+            onClick={handleShare}
+            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 border border-white/30
+              ${copied
+                ? "bg-green-500 scale-110"
+                : "bg-gray-800/80 hover:bg-gray-900 hover:scale-110 active:scale-95"
+              }`}
+            title={copied ? "Copied!" : "Share"}
+          >
             {copied
-              ? <span className="text-green-500 text-[10px] font-bold">✓</span>
-              : <FaShareAlt size={11} className="text-gray-500" />}
+              ? <span className="text-white text-[11px] font-black">✓</span>
+              : <FaShareAlt size={12} className="text-white" />}
           </button>
-          <button onClick={(e) => { e.preventDefault(); setWishlisted(!wishlisted); }}
-            className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-all border border-gray-100"
-            title="Wishlist">
+
+          <button
+            onClick={(e) => { e.preventDefault(); setWishlisted(!wishlisted); }}
+            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 border border-white/30
+              ${wishlisted
+                ? "bg-brand-primary scale-110 animate-[heartbeat_0.4s_ease]"
+                : "bg-gray-800/80 hover:bg-gray-900 hover:scale-110 active:scale-95"
+              }`}
+            title={wishlisted ? "Wishlisted!" : "Add to Wishlist"}
+          >
             {wishlisted
-              ? <FaHeart size={12} className="text-brand-primary" />
-              : <FaRegHeart size={12} className="text-gray-400 hover:text-brand-primary transition-colors" />}
+              ? <FaHeart size={13} className="text-white" />
+              : <FaRegHeart size={13} className="text-white" />}
           </button>
         </div>
       </div>
