@@ -6,20 +6,36 @@ import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
-import { FaStar, FaWhatsapp } from "react-icons/fa";
-import { FiCheck, FiTruck, FiShield } from "react-icons/fi";
+import { FaStar, FaWhatsapp, FaStarHalfAlt, FaRegStar, FaShareAlt } from "react-icons/fa";
+import { FiCheck, FiTruck, FiShield, FiAward, FiChevronRight } from "react-icons/fi";
 
 async function getProduct(slug: string) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const { data } = await supabase
-    .from("products")
-    .select("*")
-    .or(`slug.eq.${slug},id.eq.${slug}`)
-    .single();
-  return data;
+  // Exact slug
+  const { data: exact } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
+  if (exact) return exact;
+  // By ID
+  const { data: byId } = await supabase.from("products").select("*").eq("id", slug).maybeSingle();
+  if (byId) return byId;
+  // Partial slug (handles timestamp suffix)
+  const slugBase = slug.replace(/-[a-z0-9]{6,}$/, "");
+  if (slugBase !== slug) {
+    const { data: partial } = await supabase.from("products").select("*").ilike("slug", `${slugBase}%`).limit(1).maybeSingle();
+    if (partial) return partial;
+  }
+  return null;
+}
+
+async function getRelated(category: string, excludeId: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase.from("products").select("id,name,slug,brand,price,mrp,images,rating").eq("category", category).eq("in_stock", true).neq("id", excludeId).limit(6);
+  return data || [];
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -33,54 +49,45 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: p.seo_title || p.name,
       description: p.seo_description || p.description,
       images: p.images?.[0] ? [{ url: p.images[0], width: 800, height: 800, alt: p.name }] : [],
-      type: "website",
     },
     alternates: { canonical: `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}` },
   };
+}
+
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1,2,3,4,5].map((s) => {
+        if (s <= Math.floor(rating)) return <FaStar key={s} size={14} className="text-yellow-400" />;
+        if (s === Math.ceil(rating) && rating % 1 >= 0.5) return <FaStarHalfAlt key={s} size={14} className="text-yellow-400" />;
+        return <FaRegStar key={s} size={14} className="text-yellow-300" />;
+      })}
+    </div>
+  );
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const p = await getProduct(params.slug);
   if (!p) notFound();
 
-  const waMessage = encodeURIComponent(`Hi Vinod! I want to order: ${p.name} (₹${p.price}). Please confirm availability.`);
-  const waLink = `https://wa.me/918291455297?text=${waMessage}`;
+  const related = await getRelated(p.category, p.id);
+  const waMsg = encodeURIComponent(`Hi Vinod! I want to order:\n*${p.name}*\nPrice: Rs.${p.price}\n\nhttps://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`);
+  const shareMsg = encodeURIComponent(`✨ ${p.name}\n₹${p.price} | Shree Ambika Beauty Shop Mumbai\nWhatsApp: +91-8291455297\nhttps://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`);
 
-  // JSON-LD Product Schema
   const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": p.name,
-    "description": p.description,
-    "image": p.images || [],
-    "sku": p.slug || p.id,
-    "brand": { "@type": "Brand", "name": p.brand },
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "INR",
-      "price": p.price,
+    "@context": "https://schema.org", "@type": "Product",
+    "name": p.name, "description": p.description, "image": p.images || [],
+    "sku": p.slug || p.id, "brand": { "@type": "Brand", "name": p.brand },
+    "offers": { "@type": "Offer", "priceCurrency": "INR", "price": p.price,
       "availability": p.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "priceValidUntil": new Date(Date.now() + 90 * 86400000).toISOString().split("T")[0],
-      "seller": {
-        "@type": "Organization",
-        "name": "Shree Ambika Beauty Shop",
-        "telephone": "+918291455297",
-      },
-    },
-    "aggregateRating": p.rating ? {
-      "@type": "AggregateRating",
-      "ratingValue": p.rating,
-      "reviewCount": p.reviews_count || 1,
-    } : undefined,
+      "seller": { "@type": "Organization", "name": "Shree Ambika Beauty Shop", "telephone": "+918291455297" } },
+    ...(p.rating ? { "aggregateRating": { "@type": "AggregateRating", "ratingValue": p.rating, "reviewCount": p.reviews_count || 1 } } : {}),
   };
 
-  // FAQ Schema for AEO
   const faqSchema = p.faq?.length ? {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
+    "@context": "https://schema.org", "@type": "FAQPage",
     "mainEntity": p.faq.map((f: { q: string; a: string }) => ({
-      "@type": "Question",
-      "name": f.q,
+      "@type": "Question", "name": f.q,
       "acceptedAnswer": { "@type": "Answer", "text": f.a },
     })),
   } : null;
@@ -92,32 +99,42 @@ export default async function ProductPage({ params }: { params: { slug: string }
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
 
       <main className="bg-gray-50 min-h-screen">
-        <div className="max-w-[1200px] mx-auto px-4 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 py-6">
+
           {/* Breadcrumb */}
-          <nav className="text-xs text-gray-400 mb-6 flex gap-2 flex-wrap">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
             <Link href="/" className="hover:text-brand-primary">Home</Link>
-            <span>›</span>
+            <FiChevronRight size={10} />
             <Link href="/products" className="hover:text-brand-primary">Products</Link>
-            <span>›</span>
+            <FiChevronRight size={10} />
             <Link href={`/categories/${p.category?.toLowerCase().replace(/\s+/g, "-")}`} className="hover:text-brand-primary">{p.category}</Link>
-            <span>›</span>
+            <FiChevronRight size={10} />
             <span className="text-gray-600 line-clamp-1">{p.name}</span>
           </nav>
 
-          <div className="grid md:grid-cols-2 gap-8 bg-white rounded-3xl p-6 shadow-sm mb-8">
-            {/* Images */}
+          {/* Main product grid */}
+          <div className="grid md:grid-cols-2 gap-8 bg-white rounded-3xl p-6 shadow-sm mb-6">
+
+            {/* LEFT — Images */}
             <div>
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-brand-light mb-3">
+              {/* Main image */}
+              <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#fdf6ee] to-white mb-3 border border-gray-100">
                 {p.images?.[0] ? (
                   <Image src={p.images[0]} alt={p.name} fill className="object-contain p-4" priority />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-8xl">💄</div>
                 )}
+                {/* Share button on image */}
+                <a href={`https://wa.me/?text=${shareMsg}`} target="_blank" rel="noopener noreferrer"
+                  className="absolute top-3 right-3 w-9 h-9 bg-white/90 rounded-full flex items-center justify-center shadow-md border border-gray-100 hover:bg-white transition-all">
+                  <FaShareAlt size={14} className="text-gray-600" />
+                </a>
               </div>
+              {/* Thumbnail strip */}
               {p.images?.length > 1 && (
                 <div className="flex gap-2">
                   {p.images.slice(0, 5).map((img: string, i: number) => (
-                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-100">
+                    <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-100 hover:border-brand-primary transition-colors cursor-pointer">
                       <Image src={img} alt={`${p.name} ${i + 1}`} fill className="object-cover" />
                     </div>
                   ))}
@@ -125,88 +142,120 @@ export default async function ProductPage({ params }: { params: { slug: string }
               )}
             </div>
 
-            {/* Product Info */}
-            <div>
-              <p className="text-xs font-bold text-brand-primary uppercase tracking-widest mb-2">{p.brand}</p>
-              <h1 className="text-2xl font-bold text-gray-800 mb-3 leading-tight">{p.name}</h1>
+            {/* RIGHT — Product Info */}
+            <div className="flex flex-col gap-3">
+              {/* Category pill */}
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-primary bg-brand-light px-3 py-1 rounded-full w-fit border border-brand-accent/30">
+                🏷 {p.category}
+              </span>
 
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex">
-                  {[1,2,3,4,5].map((s) => (
-                    <FaStar key={s} size={14} className={s <= Math.floor(p.rating || 4) ? "text-yellow-400" : "text-gray-200"} />
-                  ))}
+              {/* Title */}
+              <div>
+                <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">{p.brand}</p>
+                <h1 className="text-2xl font-bold text-gray-900 leading-tight">{p.name}</h1>
+              </div>
+
+              {/* Rating + reviews + sold */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <Stars rating={p.rating || 4.2} />
+                <span className="font-bold text-gray-700">{p.rating || 4.2}</span>
+                <span className="text-sm text-gray-400">({p.reviews_count || 0} Reviews)</span>
+                {p.in_stock && <span className="text-xs text-gray-400 border-l border-gray-200 pl-3">250+ Sold</span>}
+              </div>
+
+              {/* Price block */}
+              <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  {p.mrp > p.price && (
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium">MRP</p>
+                      <p className="text-base text-gray-400 line-through font-medium">₹{p.mrp.toLocaleString("en-IN")}</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1 font-medium">Our Price</p>
+                  <p className="text-4xl font-black text-gray-900 leading-none">
+                    <span className="text-xl font-normal">₹</span>{p.price.toLocaleString("en-IN")}
+                  </p>
+                  {p.discount > 0 && (
+                    <p className="text-sm font-bold text-green-600 mt-1">
+                      {p.discount}% OFF — You save ₹{(p.mrp - p.price).toLocaleString("en-IN")}!
+                    </p>
+                  )}
                 </div>
-                <span className="text-sm text-gray-500">({p.reviews_count || 0} reviews)</span>
+                <div className="text-right">
+                  <div className={`flex items-center gap-1.5 font-semibold ${p.in_stock ? "text-green-600" : "text-red-500"}`}>
+                    <span className={`w-2.5 h-2.5 rounded-full ${p.in_stock ? "bg-green-500" : "bg-red-500"}`} />
+                    {p.in_stock ? "In Stock" : "Out of Stock"}
+                  </div>
+                  {p.in_stock && <p className="text-xs text-gray-400 mt-0.5">Ready to Ship</p>}
+                </div>
               </div>
-
-              {/* Price */}
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-3xl font-bold text-gray-900">₹{p.price}</span>
-                {p.mrp > p.price && <span className="text-lg text-gray-400 line-through">₹{p.mrp}</span>}
-                {p.discount > 0 && (
-                  <span className="bg-green-100 text-green-700 font-bold text-sm px-2 py-0.5 rounded-full">{p.discount}% OFF</span>
-                )}
-              </div>
-              {p.mrp > p.price && (
-                <p className="text-sm text-green-600 font-medium mb-4">You save ₹{p.mrp - p.price}!</p>
-              )}
 
               {/* Suitable for */}
               {p.suitable_for && (
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500">
                   <span className="font-semibold text-gray-700">Suitable for: </span>{p.suitable_for}
                 </p>
               )}
 
-              {/* Stock */}
-              <div className="flex items-center gap-2 mb-5">
-                <span className={`text-sm font-semibold ${p.in_stock ? "text-green-600" : "text-red-500"}`}>
-                  {p.in_stock ? "✓ In Stock" : "✗ Out of Stock"}
-                </span>
-              </div>
+              {/* Key benefits */}
+              {p.key_benefits?.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {p.key_benefits.slice(0, 3).map((b: string, i: number) => (
+                    <div key={i} className="text-center bg-brand-light rounded-xl p-2.5">
+                      <p className="text-[10px] text-gray-600 font-medium leading-tight">{b}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-              {/* CTAs */}
-              <div className="flex gap-3 mb-6">
-                <a href={waLink} target="_blank" rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl transition-colors">
-                  <FaWhatsapp size={18} /> Order on WhatsApp
-                </a>
-                <a href="tel:+918291455297"
-                  className="px-5 py-3.5 border-2 border-brand-primary text-brand-primary font-bold rounded-xl hover:bg-brand-light transition-colors text-sm">
-                  Call Now
-                </a>
-              </div>
-
-              {/* Trust badges */}
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { icon: <FiShield className="text-green-500" />, text: "Trusted Brands" },
-                  { icon: <FiTruck className="text-blue-500" />, text: "Pan India Delivery" },
-                  { icon: <FiCheck className="text-brand-primary" />, text: "Best Price" },
-                ].map((b) => (
-                  <div key={b.text} className="flex items-center gap-1.5 bg-gray-50 rounded-xl p-2.5">
-                    {b.icon}
-                    <span className="text-xs font-semibold text-gray-600">{b.text}</span>
+              {/* CTA Buttons */}
+              <div className="flex flex-col gap-2.5 mt-2">
+                <a href={`https://wa.me/918291455297?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 text-white font-bold py-4 rounded-2xl transition-all hover:shadow-xl relative overflow-hidden"
+                  style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}>
+                  <span className="absolute inset-0 pointer-events-none" style={{
+                    background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)",
+                    animation: "shine-sweep 2.5s ease-in-out infinite",
+                    backgroundSize: "200% 100%",
+                  }} />
+                  <FaWhatsapp size={20} className="relative z-10" />
+                  <div className="relative z-10">
+                    <p className="font-black text-base leading-tight">Buy on WhatsApp</p>
+                    <p className="text-xs opacity-80">Vinod: +91-8291455297</p>
                   </div>
-                ))}
+                </a>
+
+                {/* Trust badges */}
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { icon: <FiShield size={16} />, text: "Trusted Brands" },
+                    { icon: <FiTruck size={16} />, text: "Pan India Delivery" },
+                    { icon: <FiAward size={16} />, text: "Best Price" },
+                    { icon: <FiCheck size={16} />, text: "Easy Returns" },
+                  ].map((b) => (
+                    <div key={b.text} className="flex flex-col items-center text-center gap-1 bg-gray-50 rounded-xl p-2">
+                      <span className="text-brand-primary">{b.icon}</span>
+                      <p className="text-[9px] font-semibold text-gray-600 leading-tight">{b.text}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Description + Benefits + How to Use */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Description + How to use + FAQ tabs */}
+          <div className="grid md:grid-cols-2 gap-5 mb-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="font-bold text-gray-800 text-lg mb-3">About This Product</h2>
               <p className="text-sm text-gray-600 leading-relaxed">{p.description}</p>
-
               {p.key_benefits?.length > 0 && (
                 <>
-                  <h3 className="font-bold text-gray-700 mt-5 mb-3">Key Benefits</h3>
-                  <ul className="space-y-2">
+                  <h3 className="font-bold text-gray-700 mt-4 mb-2 text-sm">Key Benefits</h3>
+                  <ul className="space-y-1.5">
                     {p.key_benefits.map((b: string, i: number) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                        <FiCheck className="text-green-500 flex-shrink-0 mt-0.5" />
+                        <FiCheck className="text-green-500 flex-shrink-0 mt-0.5" size={13} />
                         {b}
                       </li>
                     ))}
@@ -219,17 +268,15 @@ export default async function ProductPage({ params }: { params: { slug: string }
               {p.how_to_use && (
                 <>
                   <h2 className="font-bold text-gray-800 text-lg mb-3">How to Use</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{p.how_to_use}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line mb-4">{p.how_to_use}</p>
                 </>
               )}
               {p.tags?.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="font-bold text-gray-700 mb-3">Tags</h3>
-                  <div className="flex flex-wrap gap-2">
+                <div>
+                  <h3 className="font-bold text-gray-700 mb-2 text-sm">Tags</h3>
+                  <div className="flex flex-wrap gap-1.5">
                     {p.tags.map((tag: string) => (
-                      <span key={tag} className="text-[11px] bg-brand-light text-brand-primary px-2.5 py-1 rounded-full font-medium">
-                        #{tag}
-                      </span>
+                      <span key={tag} className="text-[10px] bg-brand-light text-brand-primary px-2.5 py-1 rounded-full font-medium">#{tag}</span>
                     ))}
                   </div>
                 </div>
@@ -239,11 +286,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
           {/* FAQ */}
           {p.faq?.length > 0 && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm mb-8">
+            <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
               <h2 className="font-bold text-gray-800 text-xl mb-5">Frequently Asked Questions</h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {p.faq.map((f: { q: string; a: string }, i: number) => (
-                  <div key={i} className="border-b border-gray-50 pb-4 last:border-0">
+                  <div key={i} className="border-b border-gray-50 pb-3 last:border-0">
                     <p className="font-semibold text-brand-primary text-sm mb-1">Q: {f.q}</p>
                     <p className="text-sm text-gray-600 leading-relaxed">A: {f.a}</p>
                   </div>
@@ -252,11 +299,30 @@ export default async function ProductPage({ params }: { params: { slug: string }
             </div>
           )}
 
-          {/* Bottom CTA */}
+          {/* Related Products */}
+          {related.length > 0 && (
+            <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+              <h2 className="font-bold text-gray-800 text-lg mb-4">You May Also Like</h2>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                {related.map((r: { id: string; name: string; slug: string; brand: string; price: number; mrp: number; images: string[]; rating: number }) => (
+                  <Link key={r.id} href={`/products/${r.slug || r.id}`}
+                    className="group flex flex-col gap-1.5">
+                    <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 group-hover:border-brand-accent transition-colors">
+                      {r.images?.[0] && <Image src={r.images[0]} alt={r.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />}
+                    </div>
+                    <p className="text-[10px] font-semibold text-gray-700 line-clamp-2 leading-tight">{r.name}</p>
+                    <p className="text-xs font-bold text-gray-900">₹{r.price}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bottom WhatsApp CTA */}
           <div className="bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-6 text-center text-white">
-            <h3 className="font-bold text-xl mb-2">Ready to Order?</h3>
-            <p className="text-white/80 text-sm mb-4">WhatsApp Vinod directly — fast reply, genuine products guaranteed</p>
-            <a href={waLink} target="_blank" rel="noopener noreferrer"
+            <h3 className="font-bold text-xl mb-1">Ready to Order?</h3>
+            <p className="text-white/80 text-sm mb-4">WhatsApp Vinod directly — fast reply guaranteed</p>
+            <a href={`https://wa.me/918291455297?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white text-brand-primary font-bold px-8 py-3 rounded-full hover:bg-brand-light transition-colors">
               <FaWhatsapp size={20} className="text-green-500" />
               WhatsApp +918291455297
