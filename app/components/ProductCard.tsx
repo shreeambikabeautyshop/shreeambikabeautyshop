@@ -50,7 +50,7 @@ export default function ProductCard({ p }: { p: Product }) {
       {/* ── IMAGE AREA — full width, no badge ── */}
       <div className="relative w-full overflow-hidden rounded-t-3xl bg-gradient-to-b from-[#fdf6ee] to-[#fef9f4]">
         <Link href={`/products/${p.slug || p.id}`} className="block">
-          <div className="relative w-full" style={{ aspectRatio: "1/1" }}>
+          <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
             {p.images?.[0] ? (
               <Image
                 src={p.images[0]}
