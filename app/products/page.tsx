@@ -85,7 +85,7 @@ export default async function ProductsPage() {
           <div className="max-w-[1400px] mx-auto">
             <h1 className="text-3xl font-bold font-serif mb-2">All Beauty Products</h1>
             <p className="text-white/80 text-sm">
-              {products.length}+ original products • Mumbai store • Pan India delivery
+              {products.length}+ beauty products • Mumbai store • Pan India delivery
             </p>
             <nav className="text-xs text-white/60 mt-2">
               <Link href="/" className="hover:text-white">Home</Link>

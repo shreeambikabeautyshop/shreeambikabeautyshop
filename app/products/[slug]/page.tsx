@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!p) return { title: "Product Not Found" };
   return {
     title: p.seo_title || `${p.name} | Shree Ambika Beauty Shop Mumbai`,
-    description: p.seo_description || `Buy ${p.name} at best price in Mumbai. 100% original. Pan India delivery. WhatsApp Vinod: +918291455297`,
+    description: p.seo_description || `Buy ${p.name} at best price in Mumbai. Pan India delivery. WhatsApp Vinod: +918291455297`,
     keywords: Array.isArray(p.tags) ? p.tags.join(", ") : "",
     openGraph: {
       title: p.seo_title || p.name,
@@ -181,7 +181,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               {/* Trust badges */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { icon: <FiShield className="text-green-500" />, text: "100% Original" },
+                  { icon: <FiShield className="text-green-500" />, text: "Trusted Brands" },
                   { icon: <FiTruck className="text-blue-500" />, text: "Pan India Delivery" },
                   { icon: <FiCheck className="text-brand-primary" />, text: "Best Price" },
                 ].map((b) => (

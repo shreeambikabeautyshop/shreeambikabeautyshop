@@ -116,59 +116,86 @@ export default function TrendingProducts() {
               ))
               : visible.map((p) => (
                 <div key={p.id}
-                  className="group bg-white rounded-2xl border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden relative">
+                  className="group bg-white rounded-2xl border border-gray-100 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden">
 
-                  {/* Product image — bigger, no discount badge on image */}
-                  <Link href={`/products/${p.slug || p.id}`}>
-                    <div className="relative h-52 bg-white overflow-hidden rounded-t-2xl">
+                  {/* Image area — tall, clean white bg */}
+                  <Link href={`/products/${p.slug || p.id}`} className="relative block">
+                    <div className="relative h-56 bg-gradient-to-b from-gray-50 to-white overflow-hidden rounded-t-2xl">
                       {p.images?.[0] ? (
                         <Image
                           src={p.images[0]}
                           alt={p.name}
                           fill
-                          className="object-contain p-4 group-hover:scale-108 transition-transform duration-500"
+                          className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
                           sizes="(max-width: 640px) 50vw, 16vw"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>
+                        <div className="w-full h-full flex items-center justify-center text-6xl">💄</div>
                       )}
                     </div>
+
+                    {/* Discount pill — top right corner */}
+                    {p.discount > 0 && (
+                      <span className="absolute top-2.5 right-2.5 bg-brand-primary text-white text-[10px] font-black px-2 py-1 rounded-full shadow-sm">
+                        {p.discount}% OFF
+                      </span>
+                    )}
                   </Link>
 
-                  {/* Info */}
-                  <div className="p-3 flex flex-col flex-1">
+                  {/* Card body */}
+                  <div className="p-3.5 flex flex-col flex-1 border-t border-gray-50">
+
+                    {/* Brand */}
+                    <p className="text-[10px] font-bold text-brand-primary uppercase tracking-widest mb-1">
+                      {p.brand}
+                    </p>
+
+                    {/* Product name */}
                     <Link href={`/products/${p.slug || p.id}`}>
-                      <h3 className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 mb-2 hover:text-brand-primary transition-colors min-h-[2.5rem]">
+                      <h3 className="text-xs font-semibold text-gray-800 leading-snug line-clamp-2 mb-2 hover:text-brand-primary transition-colors" style={{ minHeight: "2.6rem" }}>
                         {p.name}
                       </h3>
                     </Link>
 
-                    {/* Rating */}
-                    <div className="flex items-center gap-1 mb-2">
-                      <StarRating rating={p.rating || 4.2} />
-                      <span className="text-[10px] text-gray-400">({p.reviews_count || 0})</span>
+                    {/* Stars + reviews */}
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <div className="flex items-center gap-0.5 bg-yellow-50 px-1.5 py-0.5 rounded-full">
+                        <StarRating rating={p.rating || 4.2} />
+                      </div>
+                      <span className="text-[10px] text-gray-400">{p.reviews_count || 0} reviews</span>
                     </div>
 
-                    {/* Price + Discount */}
-                    <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-                      <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
+                    {/* Price block */}
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-base font-black text-gray-900">₹{p.price}</span>
                       {p.mrp > p.price && (
                         <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>
                       )}
-                      {p.discount > 0 && (
-                        <span className="text-xs font-bold text-green-600">({p.discount}% OFF)</span>
-                      )}
                     </div>
+                    {p.mrp > p.price && (
+                      <p className="text-[10px] text-green-600 font-semibold mb-3">
+                        You save ₹{p.mrp - p.price}!
+                      </p>
+                    )}
 
-                    {/* Add to Cart */}
-                    <a
-                      href={`https://wa.me/918291455297?text=${waMsg(p)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-auto w-full flex items-center justify-center gap-1.5 bg-brand-primary hover:bg-brand-dark text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
-                    >
-                      Add to Cart <FiShoppingCart size={12} />
-                    </a>
+                    {/* CTA buttons */}
+                    <div className="flex gap-2 mt-auto">
+                      <a
+                        href={`https://wa.me/918291455297?text=${waMsg(p)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-brand-primary hover:bg-brand-dark text-white text-xs font-bold py-2.5 rounded-xl transition-all hover:shadow-md"
+                      >
+                        Add to Cart <FiShoppingCart size={11} />
+                      </a>
+                      <Link
+                        href={`/products/${p.slug || p.id}`}
+                        className="px-3 py-2.5 border border-brand-primary text-brand-primary rounded-xl text-xs font-semibold hover:bg-brand-light transition-colors"
+                        title="View Details"
+                      >
+                        →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
