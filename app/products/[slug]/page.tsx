@@ -272,8 +272,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-pink-100 flex items-center gap-2">
-                  <span className="text-green-500 text-sm">✓</span>
-                  <p className="text-[11px] text-gray-500 font-medium">Free delivery on orders above ₹499 within India</p>
+                  <span className="text-brand-primary text-sm">📦</span>
+                  <p className="text-[11px] text-gray-500 font-medium">Delivery charges applicable · WhatsApp for exact shipping cost</p>
                 </div>
               </div>
 
