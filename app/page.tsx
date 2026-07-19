@@ -37,7 +37,10 @@ export default function HomePage() {
         {/* 1. Hero Slider */}
         <HeroSlider />
 
-        {/* 2. AI Product Recommender — right after hero */}
+        {/* 2. Shop By Occasion — right after hero */}
+        <ShopByOccasion />
+
+        {/* 3. AI Product Recommender */}
         <AIRecommender />
 
         {/* 3. Quick Trust Strip */}
@@ -54,9 +57,6 @@ export default function HomePage() {
 
         {/* 3. Category Grid */}
         <CategoryGrid />
-
-        {/* 4. Shop By Occasion */}
-        <ShopByOccasion />
 
         {/* 5. Top Brands Marquee */}
         <BrandsMarquee />
