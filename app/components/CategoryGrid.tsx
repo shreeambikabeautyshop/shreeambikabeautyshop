@@ -29,12 +29,47 @@ const PER_PAGE = 4;
 export default function CategoryGrid() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [initialized, setInitialized] = useState(false);
 
   const activeCategory = categories[activeIndex];
 
+  // On mount: find the first category that has products and auto-select it
   useEffect(() => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const findFirstWithProducts = async () => {
+      for (let i = 0; i < categories.length; i++) {
+        const { data } = await supabase
+          .from("products")
+          .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock,key_benefits,suitable_for")
+          .eq("category", categories[i].name)
+          .eq("in_stock", true)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (data && data.length > 0) {
+          setActiveIndex(i);
+          setProducts(data);
+          setLoading(false);
+          setInitialized(true);
+          return;
+        }
+      }
+      setLoading(false);
+      setInitialized(true);
+    };
+
+    findFirstWithProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // When user manually clicks a tab (after init)
+  useEffect(() => {
+    if (!initialized) return;
     setLoading(true);
     setPage(0);
     setProducts([]);
@@ -55,7 +90,8 @@ export default function CategoryGrid() {
         setProducts(data || []);
         setLoading(false);
       });
-  }, [activeIndex, activeCategory.name]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex]);
 
   const totalPages = Math.ceil(products.length / PER_PAGE);
   const visible = products.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
