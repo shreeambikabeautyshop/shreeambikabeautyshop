@@ -110,25 +110,6 @@ export default function CategoryGrid() {
         </Link>
       </div>
 
-      {/* ── Active Category Label — only show when products exist ── */}
-      {(loading || products.length > 0) && (
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{activeCategory.icon}</span>
-          <h3 className="text-lg font-bold text-gray-800">
-            {activeCategory.name}
-            <span className="text-sm font-normal text-gray-400 ml-2">
-              {!loading && products.length > 0 && `(${products.length} products)`}
-            </span>
-          </h3>
-        </div>
-        <Link href={`/categories/${activeCategory.slug}`}
-          className="text-xs font-semibold text-brand-primary hover:underline whitespace-nowrap border border-brand-primary/30 px-3 py-1 rounded-full hover:bg-brand-light transition-colors">
-          See All {activeCategory.name} →
-        </Link>
-      </div>
-      )}
-
       {/* ── Product Grid ── */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
