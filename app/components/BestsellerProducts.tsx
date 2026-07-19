@@ -110,7 +110,7 @@ export default function BestsellerProducts() {
         </div>
 
         {/* ── Three-column layout ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_300px] gap-0 rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_300px] gap-0 rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white">
 
           {/* ══ COL 1: Product Images ══ */}
           <div className="bg-brand-light flex flex-col relative">
@@ -119,14 +119,14 @@ export default function BestsellerProducts() {
             ) : (
               <>
                 {/* Main image */}
-                <div className="relative flex-1 min-h-[380px]">
+                <div className="relative flex-1 min-h-[420px]">
                   {featured.images?.[featuredImg] ? (
                     <Image
                       src={featured.images[featuredImg]}
                       alt={featured.name}
                       fill
                       className="object-cover object-top"
-                      sizes="220px"
+                      sizes="320px"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-7xl">💄</div>
