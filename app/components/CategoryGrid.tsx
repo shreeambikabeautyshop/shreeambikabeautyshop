@@ -1,105 +1,175 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import ProductCard from "./ProductCard";
+
+interface Product {
+  id: string; name: string; slug: string; brand: string; category: string;
+  price: number; mrp: number; discount: number; images: string[];
+  rating: number; reviews_count: number; in_stock: boolean;
+  key_benefits?: string[]; suitable_for?: string;
+}
 
 const categories = [
-  {
-    name: "Cosmetics",
-    desc: "Lipsticks, Foundation, Compact, Kajal, Nail Care & More",
-    icon: "💄",
-    href: "/categories/cosmetics",
-    bg: "from-pink-100 to-rose-50",
-  },
-  {
-    name: "Makeup",
-    desc: "Makeup Kits, Brushes, Sponges, Eyeliner & More",
-    icon: "🎨",
-    href: "/categories/makeup",
-    bg: "from-purple-100 to-pink-50",
-  },
-  {
-    name: "Skin Care",
-    desc: "Cleansers, Serums, Moisturizers, Sunscreen & More",
-    icon: "✨",
-    href: "/categories/skincare",
-    bg: "from-green-50 to-emerald-50",
-  },
-  {
-    name: "Hair Care",
-    desc: "Shampoo, Conditioner, Hair Oil, Hair Mask & More",
-    icon: "💆",
-    href: "/categories/haircare",
-    bg: "from-yellow-50 to-amber-50",
-  },
-  {
-    name: "Body Care",
-    desc: "Lotions, Body Wash, Scrub, Deodorant & More",
-    icon: "🧴",
-    href: "/categories/bodycare",
-    bg: "from-blue-50 to-cyan-50",
-  },
-  {
-    name: "Perfumes",
-    desc: "Luxury, Premium & Long Lasting Scents",
-    icon: "🌸",
-    href: "/categories/perfumes",
-    bg: "from-rose-100 to-pink-50",
-  },
-  {
-    name: "Electronics",
-    desc: "Hair Dryer, Straightener, Trimmer, Steamer & More",
-    icon: "💅",
-    href: "/categories/electronics",
-    bg: "from-slate-100 to-gray-50",
-  },
-  {
-    name: "Purses & Bags",
-    desc: "Stylish Purses, Clutches, Wallets & More",
-    icon: "👜",
-    href: "/categories/purses-bags",
-    bg: "from-orange-50 to-amber-50",
-  },
-  {
-    name: "Wax & Accessories",
-    desc: "Waxing, Strips, Accessories & More",
-    icon: "🪮",
-    href: "/categories/wax-accessories",
-    bg: "from-indigo-50 to-purple-50",
-  },
+  { name: "Cosmetics",        icon: "💄", slug: "cosmetics",       bg: "from-pink-100 to-rose-50",       desc: "Lipsticks, Foundation, Compact, Kajal, Nail Care & More" },
+  { name: "Makeup",           icon: "🎨", slug: "makeup",          bg: "from-purple-100 to-pink-50",     desc: "Makeup Kits, Brushes, Sponges, Eyeliner & More" },
+  { name: "Skin Care",        icon: "✨", slug: "skincare",         bg: "from-green-50 to-emerald-50",    desc: "Cleansers, Serums, Moisturizers, Sunscreen & More" },
+  { name: "Hair Care",        icon: "💆", slug: "haircare",         bg: "from-yellow-50 to-amber-50",     desc: "Shampoo, Conditioner, Hair Oil, Hair Mask & More" },
+  { name: "Body Care",        icon: "🧴", slug: "bodycare",         bg: "from-blue-50 to-cyan-50",        desc: "Lotions, Body Wash, Scrub, Deodorant & More" },
+  { name: "Perfumes",         icon: "🌸", slug: "perfumes",         bg: "from-rose-100 to-pink-50",       desc: "Luxury, Premium & Long Lasting Scents" },
+  { name: "Electronics",      icon: "💅", slug: "electronics",      bg: "from-slate-100 to-gray-50",      desc: "Hair Dryer, Straightener, Trimmer, Steamer & More" },
+  { name: "Purses & Bags",    icon: "👜", slug: "purses-bags",      bg: "from-orange-50 to-amber-50",     desc: "Stylish Purses, Clutches, Wallets & More" },
+  { name: "Wax & Accessories",icon: "🪮", slug: "wax-accessories",  bg: "from-indigo-50 to-purple-50",    desc: "Waxing, Strips, Accessories & More" },
 ];
 
+const PER_PAGE = 4;
+
 export default function CategoryGrid() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+
+  const activeCategory = categories[activeIndex];
+
+  useEffect(() => {
+    setLoading(true);
+    setPage(0);
+    setProducts([]);
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    supabase
+      .from("products")
+      .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock,key_benefits,suitable_for")
+      .eq("category", activeCategory.name)
+      .eq("in_stock", true)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        setProducts(data || []);
+        setLoading(false);
+      });
+  }, [activeIndex, activeCategory.name]);
+
+  const totalPages = Math.ceil(products.length / PER_PAGE);
+  const visible = products.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+
   return (
     <section className="py-10 px-4 max-w-[1400px] mx-auto" aria-labelledby="category-heading">
+
+      {/* ── Header ── */}
       <div className="flex items-center justify-between mb-6">
         <h2 id="category-heading" className="text-2xl md:text-3xl font-bold text-brand-primary font-serif">
           Shop By Category
         </h2>
-        <Link
-          href="/categories"
-          className="text-sm font-semibold text-brand-secondary hover:underline"
-        >
+        <Link href={`/categories/${activeCategory.slug}`}
+          className="text-sm font-semibold text-brand-secondary hover:underline whitespace-nowrap">
           View All →
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3">
-        {categories.map((cat) => (
-          <Link
+      {/* ── Category Tabs ── */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-8">
+        {categories.map((cat, i) => (
+          <button
             key={cat.name}
-            href={cat.href}
-            className={`group flex flex-col items-center text-center p-3 rounded-2xl bg-gradient-to-b ${cat.bg} hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-white`}
+            onClick={() => setActiveIndex(i)}
+            className={`group flex flex-col items-center text-center p-3 rounded-2xl bg-gradient-to-b ${cat.bg}
+              transition-all duration-300 border-2
+              ${i === activeIndex
+                ? "border-brand-primary shadow-lg -translate-y-1 scale-[1.04]"
+                : "border-white hover:shadow-md hover:-translate-y-0.5"
+              }`}
+            aria-pressed={i === activeIndex}
           >
-            <span
-              className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300"
-              aria-hidden="true"
-            >
+            <span className="text-3xl mb-1.5 group-hover:scale-110 transition-transform duration-300" aria-hidden="true">
               {cat.icon}
             </span>
-            <p className="text-xs font-bold text-gray-800 leading-tight">{cat.name}</p>
-            <p className="text-[9px] text-gray-500 mt-1 leading-tight hidden md:block">{cat.desc}</p>
-          </Link>
+            <p className={`text-xs font-bold leading-tight ${i === activeIndex ? "text-brand-primary" : "text-gray-800"}`}>
+              {cat.name}
+            </p>
+            <p className="text-[9px] text-gray-500 mt-0.5 leading-tight hidden md:block">{cat.desc}</p>
+          </button>
         ))}
       </div>
+
+      {/* ── Active Category Label ── */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{activeCategory.icon}</span>
+          <h3 className="text-lg font-bold text-gray-800">
+            {activeCategory.name}
+            <span className="text-sm font-normal text-gray-400 ml-2">
+              {!loading && products.length > 0 && `(${products.length} products)`}
+            </span>
+          </h3>
+        </div>
+        <Link href={`/categories/${activeCategory.slug}`}
+          className="text-xs font-semibold text-brand-primary hover:underline whitespace-nowrap border border-brand-primary/30 px-3 py-1 rounded-full hover:bg-brand-light transition-colors">
+          See All {activeCategory.name} →
+        </Link>
+      </div>
+
+      {/* ── Product Grid ── */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-3xl bg-gray-50 animate-pulse h-[520px]" />
+          ))}
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100">
+          <p className="text-4xl mb-3">{activeCategory.icon}</p>
+          <p className="text-gray-500 font-medium mb-1">No products yet in {activeCategory.name}</p>
+          <p className="text-gray-400 text-sm mb-4">WhatsApp us to check availability!</p>
+          <a href={`https://wa.me/918291455297?text=Hi! Do you have ${activeCategory.name} products?`}
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-500 text-white font-bold px-6 py-2.5 rounded-full text-sm">
+            💬 Ask on WhatsApp
+          </a>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+            {visible.map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-brand-primary hover:border-brand-primary disabled:opacity-30 transition-all"
+              >
+                <FiChevronLeft size={16} />
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i)}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    i === page ? "bg-brand-primary w-6" : "bg-gray-300 w-2.5 hover:bg-gray-400"
+                  }`}
+                />
+              ))}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-brand-primary hover:border-brand-primary disabled:opacity-30 transition-all"
+              >
+                <FiChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 }
