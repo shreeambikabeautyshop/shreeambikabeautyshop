@@ -110,11 +110,6 @@ export default function BestsellerProducts() {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-7xl">💄</div>
         )}
-        {(featured.discount ?? 0) > 0 && (
-          <span className="absolute top-3 left-3 bg-green-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10 shadow">
-            {featured.discount}% OFF
-          </span>
-        )}
         {(featured.images?.length ?? 0) > 1 && (
           <>
             <button onClick={() => setFeaturedImg((i) => Math.max(0, i - 1))}
