@@ -155,7 +155,7 @@ export default function CategoryGrid() {
       ) : null}
 
       {/* ── Category Tabs ── */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mt-8">
         {categories.map((cat, i) => (
           <button
             key={cat.name}
@@ -168,9 +168,6 @@ export default function CategoryGrid() {
               }`}
             aria-pressed={i === activeIndex}
           >
-            <span className="text-3xl mb-1.5 group-hover:scale-110 transition-transform duration-300" aria-hidden="true">
-              {cat.icon}
-            </span>
             <p className={`text-xs font-bold leading-tight ${i === activeIndex ? "text-brand-primary" : "text-gray-800"}`}>
               {cat.name}
             </p>
