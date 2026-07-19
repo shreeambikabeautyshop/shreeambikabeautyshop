@@ -74,7 +74,8 @@ export default function CategoryGrid() {
         </Link>
       </div>
 
-      {/* ── Active Category Label ── */}
+      {/* ── Active Category Label — only show when products exist ── */}
+      {(loading || products.length > 0) && (
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{activeCategory.icon}</span>
@@ -90,6 +91,7 @@ export default function CategoryGrid() {
           See All {activeCategory.name} →
         </Link>
       </div>
+      )}
 
       {/* ── Product Grid ── */}
       {loading ? (
@@ -98,18 +100,7 @@ export default function CategoryGrid() {
             <div key={i} className="rounded-3xl bg-gray-50 animate-pulse h-[520px]" />
           ))}
         </div>
-      ) : products.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100 mb-10">
-          <p className="text-4xl mb-3">{activeCategory.icon}</p>
-          <p className="text-gray-500 font-medium mb-1">No products yet in {activeCategory.name}</p>
-          <p className="text-gray-400 text-sm mb-4">WhatsApp us to check availability!</p>
-          <a href={`https://wa.me/918291455297?text=Hi! Do you have ${activeCategory.name} products?`}
-            target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-green-500 text-white font-bold px-6 py-2.5 rounded-full text-sm">
-            💬 Ask on WhatsApp
-          </a>
-        </div>
-      ) : (
+      ) : products.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             {visible.map((p) => <ProductCard key={p.id} p={p} />)}
