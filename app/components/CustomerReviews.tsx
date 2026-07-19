@@ -54,7 +54,21 @@ export default function CustomerReviews() {
     setActiveIdx((i) => (i + 1) % reviews.length);
   };
 
-  if (!loading && reviews.length === 0) return null;
+  if (!loading && reviews.length === 0) {
+    // Show a placeholder so the grid cell doesn't collapse
+    return (
+      <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-pink-100 flex flex-col items-center justify-center min-h-[260px] p-8 text-center">
+        <span className="text-4xl mb-3">💬</span>
+        <p className="text-sm font-bold text-gray-600 font-serif mb-1">Happy Customers</p>
+        <p className="text-xs text-gray-400">Customer reviews coming soon!</p>
+        <a href="https://wa.me/918291455297?text=Hi Vinod! I want to share my review."
+          target="_blank" rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-full">
+          <FaWhatsapp size={12} /> Share Your Experience
+        </a>
+      </div>
+    );
+  }
 
   const review = reviews[activeIdx];
   const badge = review?.order_type ? ORDER_BADGE[review.order_type] : null;
