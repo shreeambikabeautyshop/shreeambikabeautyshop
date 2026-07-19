@@ -74,31 +74,6 @@ export default function CategoryGrid() {
         </Link>
       </div>
 
-      {/* ── Category Tabs ── */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3 mb-8">
-        {categories.map((cat, i) => (
-          <button
-            key={cat.name}
-            onClick={() => setActiveIndex(i)}
-            className={`group flex flex-col items-center text-center p-3 rounded-2xl bg-gradient-to-b ${cat.bg}
-              transition-all duration-300 border-2
-              ${i === activeIndex
-                ? "border-brand-primary shadow-lg -translate-y-1 scale-[1.04]"
-                : "border-white hover:shadow-md hover:-translate-y-0.5"
-              }`}
-            aria-pressed={i === activeIndex}
-          >
-            <span className="text-3xl mb-1.5 group-hover:scale-110 transition-transform duration-300" aria-hidden="true">
-              {cat.icon}
-            </span>
-            <p className={`text-xs font-bold leading-tight ${i === activeIndex ? "text-brand-primary" : "text-gray-800"}`}>
-              {cat.name}
-            </p>
-            <p className="text-[9px] text-gray-500 mt-0.5 leading-tight hidden md:block">{cat.desc}</p>
-          </button>
-        ))}
-      </div>
-
       {/* ── Active Category Label ── */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
@@ -118,13 +93,13 @@ export default function CategoryGrid() {
 
       {/* ── Product Grid ── */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-3xl bg-gray-50 animate-pulse h-[520px]" />
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100">
+        <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100 mb-10">
           <p className="text-4xl mb-3">{activeCategory.icon}</p>
           <p className="text-gray-500 font-medium mb-1">No products yet in {activeCategory.name}</p>
           <p className="text-gray-400 text-sm mb-4">WhatsApp us to check availability!</p>
@@ -142,7 +117,7 @@ export default function CategoryGrid() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="flex items-center justify-center gap-3 mb-8">
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
@@ -170,6 +145,31 @@ export default function CategoryGrid() {
           )}
         </>
       )}
+
+      {/* ── Category Tabs ── */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-3">
+        {categories.map((cat, i) => (
+          <button
+            key={cat.name}
+            onClick={() => setActiveIndex(i)}
+            className={`group flex flex-col items-center text-center p-3 rounded-2xl bg-gradient-to-b ${cat.bg}
+              transition-all duration-300 border-2
+              ${i === activeIndex
+                ? "border-brand-primary shadow-lg -translate-y-1 scale-[1.04]"
+                : "border-white hover:shadow-md hover:-translate-y-0.5"
+              }`}
+            aria-pressed={i === activeIndex}
+          >
+            <span className="text-3xl mb-1.5 group-hover:scale-110 transition-transform duration-300" aria-hidden="true">
+              {cat.icon}
+            </span>
+            <p className={`text-xs font-bold leading-tight ${i === activeIndex ? "text-brand-primary" : "text-gray-800"}`}>
+              {cat.name}
+            </p>
+            <p className="text-[9px] text-gray-500 mt-0.5 leading-tight hidden md:block">{cat.desc}</p>
+          </button>
+        ))}
+      </div>
     </section>
   );
 }
