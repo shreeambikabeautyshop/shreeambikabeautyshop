@@ -1,21 +1,53 @@
-import Link from "next/link";
-import { FaInstagram } from "react-icons/fa";
-import { FaWhatsapp } from "react-icons/fa";
+"use client";
+import { useState } from "react";
+import Image from "next/image";
+import { FaInstagram, FaWhatsapp, FaHeart, FaComment } from "react-icons/fa";
+import { FiExternalLink } from "react-icons/fi";
 
-// Placeholder Instagram post colors/emojis
+// Your real Instagram posts — update image URLs and post links as you add more
+// To get image URLs: open each post on Instagram, right-click image → copy image address
+// OR upload your Instagram post images to Cloudinary and paste URLs here
 const posts = [
-  { emoji: "💄", bg: "from-pink-200 to-rose-100", label: "New Lipstick Arrivals" },
-  { emoji: "✨", bg: "from-yellow-100 to-amber-100", label: "Skincare Routine" },
-  { emoji: "🎨", bg: "from-purple-100 to-pink-100", label: "Makeup Tutorial" },
-  { emoji: "🧴", bg: "from-green-100 to-emerald-100", label: "Serum Collection" },
-  { emoji: "💅", bg: "from-rose-100 to-pink-100", label: "Nail Art Ideas" },
-  { emoji: "🌸", bg: "from-pink-100 to-fuchsia-100", label: "Perfume Collection" },
+  {
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221445/wedding_ro6df3.png",
+    link: "https://instagram.com/shreeambikabeautyshop",
+    caption: "Pilgrim Korean Rice Water & Collagen Hair Mask",
+  },
+  {
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221436/party_feyaq1.png",
+    link: "https://instagram.com/shreeambikabeautyshop",
+    caption: "Anti-Hairfall Complete Care for Healthier Hair",
+  },
+  {
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/office_c55njk.png",
+    link: "https://instagram.com/shreeambikabeautyshop",
+    caption: "Pilgrim Advanced Hair Growth Serum",
+  },
+  {
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/daily_use_csbkl7.png",
+    link: "https://instagram.com/shreeambikabeautyshop",
+    caption: "Pilgrim Hair Growth Oil with Spanish Rosemary",
+  },
+  {
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/Date-night_gr0fui.png",
+    link: "https://instagram.com/shreeambikabeautyshop",
+    caption: "Jovees Hair Serum Grape Seed & Almond",
+  },
+  {
+    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221437/festival_vh2wqu.png",
+    link: "https://instagram.com/shreeambikabeautyshop",
+    caption: "New Arrivals at Shree Ambika Beauty Shop",
+  },
 ];
 
 export default function InstagramFeed() {
+  const [hovered, setHovered] = useState<number | null>(null);
+
   return (
     <section className="py-12 bg-white" aria-labelledby="instagram-heading">
       <div className="max-w-[1400px] mx-auto px-4">
+
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <FaInstagram size={24} className="text-pink-500" />
@@ -24,7 +56,11 @@ export default function InstagramFeed() {
             </h2>
           </div>
           <p className="text-sm text-gray-500">
-            @shreeambikabeautystore — Stay updated with latest beauty trends & offers
+            <a href="https://instagram.com/shreeambikabeautyshop" target="_blank" rel="noopener noreferrer"
+              className="font-semibold text-pink-500 hover:underline">
+              @shreeambikabeautyshop
+            </a>
+            {" "}— Stay updated with latest beauty trends & offers
           </p>
         </div>
 
@@ -33,27 +69,53 @@ export default function InstagramFeed() {
           {posts.map((post, idx) => (
             <a
               key={idx}
-              href="https://instagram.com/shreeambikabeautystore"
+              href={post.link}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={post.label}
-              className={`group aspect-square rounded-2xl bg-gradient-to-br ${post.bg} flex items-center justify-center text-4xl hover:scale-105 transition-transform duration-300 shadow-sm hover:shadow-md relative overflow-hidden`}
+              aria-label={post.caption}
+              className="group relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.03]"
+              onMouseEnter={() => setHovered(idx)}
+              onMouseLeave={() => setHovered(null)}
             >
-              <span className="group-hover:scale-110 transition-transform duration-300">{post.emoji}</span>
+              <Image
+                src={post.img}
+                alt={post.caption}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                sizes="(max-width: 640px) 33vw, 16vw"
+              />
+
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-brand-primary/0 group-hover:bg-brand-primary/20 flex items-end justify-center pb-2 transition-all">
-                <span className="text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-brand-primary/80 px-2 py-0.5 rounded-full">
-                  {post.label}
-                </span>
+              <div className={`absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 ${hovered === idx ? "opacity-100" : "opacity-0"}`}>
+                <FiExternalLink size={20} className="text-white" />
+                <p className="text-white text-[10px] font-bold text-center px-2 leading-tight line-clamp-2">
+                  {post.caption}
+                </p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="flex items-center gap-1 text-white text-[10px]">
+                    <FaHeart size={10} /> View
+                  </span>
+                  <span className="flex items-center gap-1 text-white text-[10px]">
+                    <FaComment size={10} /> Post
+                  </span>
+                </div>
               </div>
+
+              {/* Instagram gradient border on hover */}
+              <div className={`absolute inset-0 rounded-2xl ring-2 transition-all duration-300 ${hovered === idx ? "ring-pink-400" : "ring-transparent"}`} />
             </a>
           ))}
         </div>
 
+        {/* Notice to update */}
+        <p className="text-center text-xs text-gray-400 mb-5 italic">
+          * Upload your Instagram post images to show real posts here
+        </p>
+
         {/* CTA Row */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://instagram.com/shreeambikabeautystore"
+            href="https://instagram.com/shreeambikabeautyshop"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-opacity shadow-md"
@@ -62,7 +124,7 @@ export default function InstagramFeed() {
             Follow Us on Instagram
           </a>
           <a
-            href="https://wa.me/919999999999"
+            href="https://wa.me/918291455297"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 rounded-full transition-colors shadow-md"
