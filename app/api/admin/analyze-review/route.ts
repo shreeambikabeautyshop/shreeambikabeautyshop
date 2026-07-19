@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${groqKey}`,
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+        model: "qwen/qwen3.6-27b",
         messages: [{
           role: "user",
           content: [
