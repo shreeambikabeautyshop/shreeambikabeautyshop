@@ -6,6 +6,7 @@ import BeautyMythVsTruth from "@/app/components/BeautyMythVsTruth";
 import TodayTipAndTrending from "@/app/components/TodayTipAndTrending";
 import BuyingGuides from "@/app/components/BuyingGuides";
 import TrendingProducts from "@/app/components/TrendingProducts";
+import BestsellerProducts from "@/app/components/BestsellerProducts";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import BrandsMarquee from "@/app/components/BrandsMarquee";
 import TrustBadges from "@/app/components/TrustBadges";
@@ -72,6 +73,9 @@ export default function HomePage() {
 
         {/* 10. Trending Products */}
         <TrendingProducts />
+
+        {/* 10b. Bestseller Products */}
+        <BestsellerProducts />
 
         {/* 11. Why Choose Us (full section with comparison) */}
         <WhyChooseUs />
