@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import CustomerReviews from "./CustomerReviews";
 
@@ -110,15 +109,32 @@ export default function TodayTipAndTrending() {
               )}
             </div>
 
-            {/* Right — women image */}
-            <div className="relative w-44 flex-shrink-0 hidden sm:block">
-              <Image
-                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784471137/today-beauty-tips_tkzbog.png"
-                alt="Beauty tip model"
-                fill
-                className="object-cover object-top"
-                sizes="176px"
-              />
+            {/* Right — Why Choose mini panel */}
+            <div className="relative w-52 flex-shrink-0 hidden sm:flex flex-col justify-center px-5 py-6 border-l border-pink-200/50">
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-gold mb-3">♛ Why Choose Us</p>
+              <ul className="space-y-2.5">
+                {[
+                  { icon: "✅", text: "100% Original Products" },
+                  { icon: "🏷️", text: "Best Prices & Max Discount" },
+                  { icon: "🚚", text: "Same Day Mumbai Delivery" },
+                  { icon: "💬", text: "Expert Beauty Guidance" },
+                  { icon: "🌍", text: "Pan India + International" },
+                  { icon: "⭐", text: "Trusted Since 2001" },
+                ].map((item) => (
+                  <li key={item.text} className="flex items-center gap-2">
+                    <span className="text-sm">{item.icon}</span>
+                    <span className="text-[11px] font-semibold text-gray-700 leading-tight">{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="https://wa.me/918291455297"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold px-3 py-2 rounded-full transition-colors"
+              >
+                <FaWhatsapp size={11} /> Shop on WhatsApp
+              </a>
             </div>
           </div>
 

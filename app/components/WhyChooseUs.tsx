@@ -1,6 +1,7 @@
 import { MdVerified, MdLocalShipping } from "react-icons/md";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiShield, FiStar, FiUsers } from "react-icons/fi";
+import Image from "next/image";
 
 const features = [
   {
@@ -81,23 +82,35 @@ export default function WhyChooseUs() {
           </h2>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
-          {features.map((f, idx) => (
-            <div
-              key={idx}
-              className="flex gap-4 p-5 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-50"
-            >
-              <div className={`${f.bg} ${f.color} rounded-xl p-3 flex-shrink-0 h-fit`}>
-                {f.icon}
+        {/* Features Grid + Women Image */}
+        <div className="flex gap-6 mb-14 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 flex-1">
+            {features.map((f, idx) => (
+              <div
+                key={idx}
+                className="flex gap-4 p-5 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-50"
+              >
+                <div className={`${f.bg} ${f.color} rounded-xl p-3 flex-shrink-0 h-fit`}>
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-800 mb-1">{f.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-gray-800 mb-1">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+            ))}
+          </div>
 
-              </div>
-            </div>
-          ))}
+          {/* Women image on right */}
+          <div className="relative hidden lg:block w-72 h-[420px] flex-shrink-0 rounded-3xl overflow-hidden">
+            <Image
+              src="https://res.cloudinary.com/zjlchjal/image/upload/v1784471137/today-beauty-tips_tkzbog.png"
+              alt="Why choose Shree Ambika Beauty Shop"
+              fill
+              className="object-cover object-top"
+              sizes="288px"
+            />
+          </div>
         </div>
 
         {/* Comparison Table */}
