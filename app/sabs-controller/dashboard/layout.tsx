@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiHome } from "react-icons/fi";
+import { FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiHome, FiStar } from "react-icons/fi";
 
 const navItems = [
   { label: "Dashboard", href: "/sabs-controller/dashboard", icon: <FiGrid /> },
   { label: "All Products", href: "/sabs-controller/dashboard/products", icon: <FiPackage /> },
   { label: "Add Product", href: "/sabs-controller/dashboard/products/add", icon: <FiPlusCircle /> },
+  { label: "Customer Reviews", href: "/sabs-controller/dashboard/reviews", icon: <FiStar /> },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

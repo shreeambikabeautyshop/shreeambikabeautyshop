@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
+import CustomerReviews from "./CustomerReviews";
 
 interface Tip {
   headline: string;
@@ -13,14 +14,8 @@ interface Tip {
   productPrice: number;
 }
 
-const trendingLooks = [
-  { name: "Glass Skin Routine", icon: "✨", tag: "Trending" },
-  { name: "Korean Makeup Look", icon: "🌸", tag: "Hot" },
-  { name: "Peptide Serums Are In", icon: "💧", tag: "New" },
-  { name: "Lip Oils", icon: "💄", tag: "Viral" },
-  { name: "Hair Gloss Treatment", icon: "💫", tag: "Popular" },
-  { name: "Minimal Makeup", icon: "🌿", tag: "Trending" },
-];
+const trendingLooks: unknown[] = [];
+void trendingLooks; // unused - replaced by CustomerReviews
 
 export default function TodayTipAndTrending() {
   const [tip, setTip] = useState<Tip | null>(null);
@@ -127,35 +122,8 @@ export default function TodayTipAndTrending() {
             </div>
           </div>
 
-          {/* ── WHAT'S TRENDING TODAY ── */}
-          <div className="bg-white rounded-3xl p-7 shadow-sm border border-pink-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🔥</span>
-                <h2 className="text-base font-black tracking-[0.2em] uppercase text-brand-primary font-sans">
-                  WHAT&apos;S TRENDING TODAY?
-                </h2>
-              </div>
-              <Link href="/trending" className="text-xs font-semibold text-brand-secondary hover:underline">
-                Show All →
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {trendingLooks.map((item, idx) => (
-                <Link
-                  key={idx}
-                  href="/trending"
-                  className="group flex flex-col items-center text-center gap-1.5 p-3 rounded-xl bg-brand-light hover:bg-pink-100 transition-colors"
-                >
-                  <span className="text-2xl group-hover:scale-110 transition-transform">{item.icon}</span>
-                  <span className="text-[10px] font-semibold text-gray-700 leading-tight">{item.name}</span>
-                  <span className="text-[9px] bg-brand-primary text-white px-2 py-0.5 rounded-full font-bold">
-                    {item.tag}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          {/* ── HAPPY CUSTOMERS (Social Proof) ── */}
+          <CustomerReviews />
 
         </div>
       </div>
