@@ -19,8 +19,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-poppins)", "sans-serif"],
-        serif: ["var(--font-playfair)", "serif"],
+        sans:    ["var(--font-poppins)", "sans-serif"],
+        serif:   ["var(--font-playfair)", "Georgia", "serif"],
+        elegant: ["var(--font-cormorant)", "Georgia", "serif"],
+        script:  ["var(--font-dancing)", "cursive"],
+        heading: ["var(--font-dm-serif)", "Georgia", "serif"],
       },
       animation: {
         "slide-in": "slideIn 0.5s ease-out",

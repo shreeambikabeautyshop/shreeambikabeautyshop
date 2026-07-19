@@ -24,6 +24,82 @@ body {
   overflow-x: hidden;
 }
 
+/* ─────────────────────────────────────────
+   TYPOGRAPHY SYSTEM
+   font-heading   → DM Serif Display  (luxury page titles)
+   font-serif     → Playfair Display  (editorial headings)
+   font-elegant   → Cormorant Garamond (sub-headings, elegant text)
+   font-script    → Dancing Script    (decorative accents, quotes)
+   font-sans      → Poppins           (body, UI, buttons)
+───────────────────────────────────────── */
+
+.font-heading {
+  font-family: var(--font-dm-serif), Georgia, serif;
+}
+
+.font-serif {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+.font-elegant {
+  font-family: var(--font-cormorant), Georgia, serif;
+}
+
+.font-script {
+  font-family: var(--font-dancing), cursive;
+}
+
+.font-sans {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+/* Section headings — DM Serif italic luxury look */
+.section-title {
+  font-family: var(--font-dm-serif), Georgia, serif;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+/* Page hero titles — Cormorant large + light */
+.hero-title {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+/* Decorative script label (e.g. "Today's tip", "Exclusively for you") */
+.script-label {
+  font-family: var(--font-dancing), cursive;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Playfair editorial style for product names */
+.product-title {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* Uppercase tracking labels — Poppins */
+.label-caps {
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* Decorative divider text */
+.ornament {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--brand-gold);
+}
+
 /* Swiper custom styles */
 .swiper-pagination-bullet {
   background: #8B0000 !important;

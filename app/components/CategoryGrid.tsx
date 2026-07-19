@@ -101,7 +101,7 @@ export default function CategoryGrid() {
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between mb-6">
-        <h2 id="category-heading" className="text-2xl md:text-3xl font-bold text-brand-primary font-serif">
+        <h2 id="category-heading" className="text-2xl md:text-3xl font-bold text-brand-primary font-heading italic">
           Shop By Category
         </h2>
         <Link href={`/categories/${activeCategory.slug}`}

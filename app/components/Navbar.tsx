@@ -75,7 +75,7 @@ export default function Navbar() {
               </div>
             </div>
             <div className="hidden sm:block leading-none">
-              <p className="text-brand-primary font-bold text-sm font-serif">श्री अम्बिका</p>
+              <p className="text-brand-primary font-bold text-sm font-script">श्री अम्बिका</p>
               <p className="text-xs text-gray-500 tracking-widest">BEAUTY SHOP</p>
             </div>
           </div>

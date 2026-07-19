@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins, Playfair_Display } from "next/font/google";
+import { Poppins, Playfair_Display, Cormorant_Garamond, Dancing_Script, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { WishlistProvider } from "@/app/context/WishlistContext";
 import { UserProvider } from "@/app/context/UserContext";
@@ -16,6 +16,29 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-playfair",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const dancing = Dancing_Script({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dancing",
+  display: "swap",
+});
+
+const dmSerif = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-dm-serif",
   display: "swap",
 });
 
@@ -145,7 +168,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${poppins.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${playfair.variable} ${cormorant.variable} ${dancing.variable} ${dmSerif.variable}`}>
       <head>
         <script
           type="application/ld+json"

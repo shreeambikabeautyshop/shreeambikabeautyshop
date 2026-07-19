@@ -57,10 +57,10 @@ export default function TodayTipAndTrending() {
               {/* Header */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">💡</span>
-                <h2 className="text-base font-black tracking-[0.2em] uppercase text-brand-primary">
+                <h2 className="text-base font-black tracking-[0.2em] uppercase text-brand-primary font-sans">
                   TODAY&apos;S BEAUTY TIP
                 </h2>
-                <span className="text-brand-gold text-lg">✦</span>
+                <span className="text-brand-gold text-lg font-script">✦</span>
               </div>
 
               {loading ? (
@@ -72,10 +72,10 @@ export default function TodayTipAndTrending() {
                 </div>
               ) : tip ? (
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800 leading-snug mb-2">
+                  <p className="text-sm font-bold text-gray-800 leading-snug mb-2 font-serif">
                     {tip.headline}
                   </p>
-                  <p className="text-xs text-gray-600 leading-relaxed mb-4">
+                  <p className="text-xs text-gray-600 leading-relaxed mb-4 font-sans">
                     {tip.detail}
                   </p>
 
@@ -132,7 +132,7 @@ export default function TodayTipAndTrending() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🔥</span>
-                <h2 className="text-base font-black tracking-[0.2em] uppercase text-brand-primary">
+                <h2 className="text-base font-black tracking-[0.2em] uppercase text-brand-primary font-sans">
                   WHAT&apos;S TRENDING TODAY?
                 </h2>
               </div>

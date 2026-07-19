@@ -70,11 +70,11 @@ export default function ShopByOccasion() {
           <div className="text-center">
             <h2
               id="occasion-heading"
-              className="text-base font-bold tracking-[0.3em] uppercase text-brand-primary whitespace-nowrap"
+              className="text-base font-bold tracking-[0.3em] uppercase text-brand-primary whitespace-nowrap font-sans"
             >
               SHOP BY OCCASION
             </h2>
-            <p className="text-xs text-gray-400 mt-1 tracking-wide">Find the perfect look for every moment</p>
+            <p className="text-xs text-gray-400 mt-1 tracking-wide font-elegant italic">Find the perfect look for every moment</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-px w-16 bg-gradient-to-l from-transparent to-brand-gold/50" />
