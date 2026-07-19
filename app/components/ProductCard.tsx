@@ -95,6 +95,7 @@ export default function ProductCard({ p }: { p: Product }) {
   const benefitIcons = ["🔸", "⚡", "✦"];
 
   return (
+    <>
     <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
 
       {/* ── IMAGE AREA — full width, taller, no top cut ── */}
@@ -272,5 +273,6 @@ export default function ProductCard({ p }: { p: Product }) {
       </div>
     </div>
     <WishlistToast item={toast} onClose={() => setToast(null)} />
+    </>
   );
 }
