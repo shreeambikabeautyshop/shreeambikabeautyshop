@@ -37,11 +37,11 @@ export default function HomePage() {
         {/* 1. Hero Slider */}
         <HeroSlider />
 
-        {/* 2. Shop By Occasion — right after hero */}
-        <ShopByOccasion />
-
-        {/* 3. AI Product Recommender */}
+        {/* 2. AI Product Recommender */}
         <AIRecommender />
+
+        {/* 3. Shop By Occasion */}
+        <ShopByOccasion />
 
         {/* 3. Quick Trust Strip */}
         <section className="bg-white border-b border-gray-100 py-3 px-4">
