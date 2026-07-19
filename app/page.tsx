@@ -6,6 +6,7 @@ import BeautyMythVsTruth from "@/app/components/BeautyMythVsTruth";
 import TodayTipAndTrending from "@/app/components/TodayTipAndTrending";
 import BuyingGuides from "@/app/components/BuyingGuides";
 import TrendingProducts from "@/app/components/TrendingProducts";
+import CategoryGrid from "@/app/components/CategoryGrid";
 import BrandsMarquee from "@/app/components/BrandsMarquee";
 import TrustBadges from "@/app/components/TrustBadges";
 import WhyChooseUs from "@/app/components/WhyChooseUs";
@@ -53,6 +54,9 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        {/* 4. Shop By Category */}
+        <CategoryGrid />
 
         {/* 5. Top Brands Marquee */}
         <BrandsMarquee />
