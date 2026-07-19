@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { FiShield, FiStar, FiPackage, FiTruck, FiMessageCircle } from "react-icons/fi";
+import CustomerReviews from "./CustomerReviews";
 
 interface Tip {
   headline: string;
@@ -147,6 +148,12 @@ export default function TodayTipAndTrending() {
           </div>
 
         </div>
+
+        {/* ── Customer Reviews Slider ── */}
+        <div className="mt-8">
+          <CustomerReviews />
+        </div>
+
       </div>
     </section>
   );
