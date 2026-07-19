@@ -295,12 +295,12 @@ export default function BestsellerProducts() {
         </div>
 
         {/* Main layout — image side flips every hour */}
-        <div className={`grid grid-cols-1 lg:grid-cols-[500px_1fr_300px] gap-0 rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white ${imageRight ? "lg:[direction:rtl]" : ""}`}>
-          <div className={imageRight ? "[direction:ltr]" : ""}>{ImagePanel}</div>
-          <div className={imageRight ? "[direction:ltr]" : ""}>{DetailsPanel}</div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px_300px] gap-0 rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white">
+          <div>{DetailsPanel}</div>
+          <div>{ImagePanel}</div>
 
           {/* Bestseller list — always last */}
-          <div className={`flex flex-col ${imageRight ? "[direction:ltr]" : ""}`}>
+          <div className="flex flex-col">
             <div className="flex items-center justify-between bg-brand-primary text-white px-4 py-3">
               <div className="flex items-center gap-2">
                 <FaFire size={14} className="text-orange-300" />
