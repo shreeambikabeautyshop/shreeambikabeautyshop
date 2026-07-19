@@ -97,15 +97,15 @@ export default function BestsellerProducts() {
 
   /* ─── Image panel ─── */
   const ImagePanel = featured ? (
-    <div className="bg-brand-light flex flex-col relative min-h-[500px]">
-      <div className="relative flex-1 min-h-[460px]">
+    <div className="bg-brand-light flex flex-col relative h-full">
+      <div className="relative flex-1 min-h-[400px]">
         {featured.images?.[featuredImg] ? (
           <Image
             src={featured.images[featuredImg]}
             alt={featured.name}
             fill
             className="object-contain"
-            sizes="500px"
+            sizes="360px"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-7xl">💄</div>
@@ -294,10 +294,10 @@ export default function BestsellerProducts() {
           ))}
         </div>
 
-        {/* Main layout — image side flips every hour */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px_300px] gap-0 rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white">
-          <div>{DetailsPanel}</div>
+        {/* Main layout: Image | Details | List */}
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr_300px] gap-0 rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white">
           <div>{ImagePanel}</div>
+          <div>{DetailsPanel}</div>
 
           {/* Bestseller list — always last */}
           <div className="flex flex-col">
