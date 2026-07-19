@@ -34,7 +34,9 @@ Return ONLY raw JSON (no markdown, no code blocks):
 }`;
 
 function parseJSON(raw: string) {
-  const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+  // Strip <think>...</think> blocks (qwen model thinking output)
+  const stripped = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  const cleaned = stripped.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
   const match = cleaned.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("Could not parse AI response");
   return JSON.parse(match[0]);
@@ -80,6 +82,7 @@ export async function POST(req: NextRequest) {
         }],
         temperature: 0.4,
         max_tokens: 2048,
+        reasoning_effort: "none",
       }),
     });
 

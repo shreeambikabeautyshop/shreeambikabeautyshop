@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
         }],
         temperature: 0.3,
         max_tokens: 512,
+        reasoning_effort: "none",
       }),
     });
 
@@ -67,7 +68,9 @@ export async function POST(req: NextRequest) {
     if (!res.ok) throw new Error(data.error?.message || "Groq error");
 
     const raw = data.choices?.[0]?.message?.content || "";
-    const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    // Strip <think>...</think> blocks (qwen model thinking output)
+    const stripped = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+    const cleaned = stripped.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const match = cleaned.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("Could not parse AI response");
     const result = JSON.parse(match[0]);
