@@ -55,11 +55,11 @@ export default function HomePage() {
         {/* 3. Category Grid */}
         <CategoryGrid />
 
-        {/* 4. Top Brands Marquee */}
-        <BrandsMarquee />
-
-        {/* 5. Shop By Occasion */}
+        {/* 4. Shop By Occasion */}
         <ShopByOccasion />
+
+        {/* 5. Top Brands Marquee */}
+        <BrandsMarquee />
 
         {/* 7. Beauty Myth vs Truth + Why Choose */}
         <BeautyMythVsTruth />
