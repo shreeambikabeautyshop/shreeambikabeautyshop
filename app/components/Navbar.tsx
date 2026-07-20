@@ -240,11 +240,10 @@ export default function Navbar() {
         {/* RIGHT 75% — Top row + Bottom row */}
         <div className="flex-1 flex flex-col">
 
-          {/* Top row: search + icons */}
+          {/* Top row: search + profile + wishlist only */}
           <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-gray-100">
-
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative flex-1 max-w-lg">
               {searchOpen ? (
                 <form onSubmit={handleSearch}
                   className="flex items-center bg-gray-100 rounded-xl px-3 py-1.5 gap-2 animate-fade-in">
@@ -271,47 +270,37 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Icons */}
-            <div className="flex items-center gap-1">
-              {/* Profile */}
-              <button
-                onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
-                className="relative w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
-                aria-label="Account">
-                {isLoggedIn ? (
-                  <>
-                    <div className="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center">
-                      <span className="text-white text-[9px] font-bold">
-                        {customer?.full_name?.charAt(0).toUpperCase() || "U"}
-                      </span>
-                    </div>
-                    <MdVerified size={10} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
-                  </>
-                ) : (
-                  <FiUser size={17} />
-                )}
-              </button>
+            {/* Profile icon */}
+            <button
+              onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
+              className="relative w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
+              aria-label="Account">
+              {isLoggedIn ? (
+                <>
+                  <div className="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">
+                      {customer?.full_name?.charAt(0).toUpperCase() || "U"}
+                    </span>
+                  </div>
+                  <MdVerified size={10} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
+                </>
+              ) : (
+                <FiUser size={17} />
+              )}
+            </button>
 
-              {/* Wishlist */}
-              <WishlistIcon />
+            {/* Wishlist */}
+            <WishlistIcon />
 
-              {/* WhatsApp */}
-              <a href="https://wa.me/918291455297?text=Hi Vinod! I want to order beauty products."
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all shadow-sm ml-1">
-                <FaWhatsapp size={13} /> WhatsApp Order
-              </a>
-
-              {/* Mobile toggle */}
-              <button onClick={() => setMenuOpen(!menuOpen)}
-                className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all ml-1">
-                {menuOpen ? <FiX size={18} /> : <FiMenu size={18} />}
-              </button>
-            </div>
+            {/* Mobile toggle */}
+            <button onClick={() => setMenuOpen(!menuOpen)}
+              className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all">
+              {menuOpen ? <FiX size={18} /> : <FiMenu size={18} />}
+            </button>
           </div>
 
-          {/* Bottom row: nav links */}
-          <nav className="hidden lg:flex items-center gap-1 px-4 py-1.5">
+          {/* Bottom row: nav links only — all in one row */}
+          <nav className="hidden lg:flex items-center gap-0.5 px-4 py-1.5">
             {NAV.map((item) => (
               <div key={item.label} className="relative"
                 onMouseEnter={() => setActiveNav(item.label)}
