@@ -219,106 +219,124 @@ export default function Navbar() {
       </div>
 
       {/* ── Main bar ── */}
-      <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center gap-4">
+      <div className="max-w-[1400px] mx-auto px-4 flex items-stretch">
 
-        {/* Logo */}
-        <Link href="/" className="flex-shrink-0 flex items-center group">
-          <div className="relative w-[150px] h-[54px]">
-            <Image
-              src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
-              alt="Shree Ambika Beauty Shop"
-              fill
-              className="object-contain"
-              sizes="150px"
-              priority
-            />
-          </div>
-        </Link>
+        {/* LEFT 25% — Logo */}
+        <div className="w-[25%] flex-shrink-0 flex items-center py-3 pr-4 border-r border-gray-100">
+          <Link href="/" className="flex items-center">
+            <div className="relative w-[160px] h-[58px]">
+              <Image
+                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
+                alt="Shree Ambika Beauty Shop"
+                fill
+                className="object-contain object-left"
+                sizes="160px"
+                priority
+              />
+            </div>
+          </Link>
+        </div>
 
-        {/* ── Desktop Nav ── */}
-        <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-          {NAV.map((item) => (
-            <div key={item.label} className="relative"
-              onMouseEnter={() => setActiveNav(item.label)}
-              onMouseLeave={() => setActiveNav(null)}>
-              <Link href={item.href}
-                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap
-                  ${pathname === item.href
-                    ? "text-brand-primary bg-brand-light"
-                    : "text-gray-700 hover:text-brand-primary hover:bg-brand-light"
-                  }`}>
-                {item.label}
-                {item.badge && (
-                  <span className="bg-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">{item.badge}</span>
-                )}
-                {item.dropdown && (
-                  <FiChevronDown size={13} className={`transition-transform duration-200 ${activeNav === item.label ? "rotate-180" : ""}`} />
-                )}
-              </Link>
-              {item.dropdown && activeNav === item.label && (
-                <DropdownMenu sections={item.dropdown} onClose={() => setActiveNav(null)} />
+        {/* RIGHT 75% — Top row + Bottom row */}
+        <div className="flex-1 flex flex-col">
+
+          {/* Top row: search + icons */}
+          <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-gray-100">
+
+            {/* Search */}
+            <div className="relative flex-1 max-w-md">
+              {searchOpen ? (
+                <form onSubmit={handleSearch}
+                  className="flex items-center bg-gray-100 rounded-xl px-3 py-1.5 gap-2 animate-fade-in">
+                  <FiSearch size={14} className="text-gray-400 flex-shrink-0" />
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    placeholder="Search products, brands..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-transparent outline-none text-sm text-gray-700 w-full placeholder-gray-400"
+                    autoFocus
+                  />
+                  <button type="button" onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
+                    <FiX size={13} />
+                  </button>
+                </form>
+              ) : (
+                <button onClick={() => setSearchOpen(true)}
+                  className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 rounded-xl px-4 py-1.5 text-sm text-gray-400 transition-all w-full">
+                  <FiSearch size={14} />
+                  <span>Search products, brands...</span>
+                </button>
               )}
             </div>
-          ))}
-        </nav>
 
-        {/* ── Right side ── */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-
-          {/* Search — expands on click */}
-          <div className="relative">
-            {searchOpen ? (
-              <form onSubmit={handleSearch}
-                className="flex items-center bg-gray-100 rounded-xl px-3 py-2 gap-2 w-48 xl:w-64 animate-fade-in">
-                <FiSearch size={15} className="text-gray-400 flex-shrink-0" />
-                <input
-                  ref={searchRef}
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent outline-none text-sm text-gray-700 w-full placeholder-gray-400"
-                  autoFocus
-                />
-                <button type="button" onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
-                  <FiX size={14} />
-                </button>
-              </form>
-            ) : (
-              <button onClick={() => setSearchOpen(true)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all">
-                <FiSearch size={19} />
+            {/* Icons */}
+            <div className="flex items-center gap-1">
+              {/* Profile */}
+              <button
+                onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
+                className="relative w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
+                aria-label="Account">
+                {isLoggedIn ? (
+                  <>
+                    <div className="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center">
+                      <span className="text-white text-[9px] font-bold">
+                        {customer?.full_name?.charAt(0).toUpperCase() || "U"}
+                      </span>
+                    </div>
+                    <MdVerified size={10} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
+                  </>
+                ) : (
+                  <FiUser size={17} />
+                )}
               </button>
-            )}
+
+              {/* Wishlist */}
+              <WishlistIcon />
+
+              {/* WhatsApp */}
+              <a href="https://wa.me/918291455297?text=Hi Vinod! I want to order beauty products."
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all shadow-sm ml-1">
+                <FaWhatsapp size={13} /> WhatsApp Order
+              </a>
+
+              {/* Mobile toggle */}
+              <button onClick={() => setMenuOpen(!menuOpen)}
+                className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all ml-1">
+                {menuOpen ? <FiX size={18} /> : <FiMenu size={18} />}
+              </button>
+            </div>
           </div>
 
-          {/* Customer profile */}
-          <button
-            onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
-            className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
-            aria-label="Account">
-            {isLoggedIn ? (
-              <>
-                <div className="w-7 h-7 rounded-full bg-brand-primary flex items-center justify-center">
-                  <span className="text-white text-[10px] font-bold">
-                    {customer?.full_name?.charAt(0).toUpperCase() || "U"}
-                  </span>
-                </div>
-                <MdVerified size={11} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
-              </>
-            ) : (
-              <FiUser size={19} />
-            )}
-          </button>
+          {/* Bottom row: nav links */}
+          <nav className="hidden lg:flex items-center gap-1 px-4 py-1.5">
+            {NAV.map((item) => (
+              <div key={item.label} className="relative"
+                onMouseEnter={() => setActiveNav(item.label)}
+                onMouseLeave={() => setActiveNav(null)}>
+                <Link href={item.href}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap
+                    ${pathname === item.href
+                      ? "text-brand-primary bg-brand-light"
+                      : "text-gray-700 hover:text-brand-primary hover:bg-brand-light"
+                    }`}>
+                  {item.label}
+                  {item.badge && (
+                    <span className="bg-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                  )}
+                  {item.dropdown && (
+                    <FiChevronDown size={12} className={`transition-transform duration-200 ${activeNav === item.label ? "rotate-180" : ""}`} />
+                  )}
+                </Link>
+                {item.dropdown && activeNav === item.label && (
+                  <DropdownMenu sections={item.dropdown} onClose={() => setActiveNav(null)} />
+                )}
+              </div>
+            ))}
+          </nav>
 
-          {/* Wishlist */}
-          <WishlistIcon />
-
-          {/* Mobile toggle */}
-          <button onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all ml-1">
-            {menuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
-          </button>
         </div>
       </div>
 
