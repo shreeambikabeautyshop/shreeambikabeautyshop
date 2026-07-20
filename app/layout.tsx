@@ -3,6 +3,7 @@ import { Poppins, Playfair_Display, Cormorant_Garamond, Dancing_Script, DM_Serif
 import "./globals.css";
 import { WishlistProvider } from "@/app/context/WishlistContext";
 import { UserProvider } from "@/app/context/UserContext";
+import { SettingsProvider } from "@/app/context/SettingsContext";
 import CustomerLoginModal from "@/app/components/CustomerLoginModal";
 
 const poppins = Poppins({
@@ -340,10 +341,12 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
           <UserProvider>
-            <WishlistProvider>
-              {children}
-              <CustomerLoginModal />
-            </WishlistProvider>
+            <SettingsProvider>
+              <WishlistProvider>
+                {children}
+                <CustomerLoginModal />
+              </WishlistProvider>
+            </SettingsProvider>
           </UserProvider>
         </body>
     </html>

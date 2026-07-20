@@ -8,6 +8,7 @@ import { useWishlist } from "@/app/context/WishlistContext";
 import { useUser } from "@/app/context/UserContext";
 import WishlistToast from "./WishlistToast";
 import { SiInstagram } from "react-icons/si";
+import { useSettings } from "@/app/context/SettingsContext";
 
 interface Product {
   id: string; name: string; slug: string; brand: string; category: string;
@@ -31,6 +32,7 @@ function Stars({ rating }: { rating: number }) {
 export default function ProductCard({ p }: { p: Product }) {
   const { toggle, has } = useWishlist();
   const { customer, isLoggedIn, triggerLogin } = useUser();
+  const { show_price, show_mrp } = useSettings();
   const wishlisted = has(p.id);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -225,12 +227,18 @@ export default function ProductCard({ p }: { p: Product }) {
 
         {/* Row 4: Selling price (left) + MRP (right) */}
         <div className="flex items-baseline justify-between">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-black text-gray-900 leading-none">
-              ₹{p.price.toLocaleString("en-IN")}
+          {show_price ? (
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-black text-gray-900 leading-none">
+                ₹{p.price.toLocaleString("en-IN")}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-brand-primary font-semibold bg-brand-light px-2 py-1 rounded-full">
+              Contact for Price
             </span>
-          </div>
-          {p.mrp > p.price && (
+          )}
+          {show_price && show_mrp && p.mrp > p.price && (
             <div className="text-right">
               <p className="text-[9px] text-gray-400">MRP</p>
               <p className="text-xs text-gray-400 line-through">₹{p.mrp.toLocaleString("en-IN")}</p>
