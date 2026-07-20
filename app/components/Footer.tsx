@@ -119,13 +119,13 @@ export default function Footer() {
           {/* Col 1 — Brand */}
           <div className="lg:col-span-1">
             {/* Logo */}
-            <div className="relative w-[140px] h-[50px] mb-4">
+            <div className="relative w-[160px] h-[60px] mb-4">
               <Image
                 src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
                 alt="Shree Ambika Beauty Shop"
                 fill
-                className="object-contain object-left brightness-0 invert"
-                sizes="140px"
+                className="object-contain object-left"
+                sizes="160px"
               />
             </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
