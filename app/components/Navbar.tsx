@@ -219,94 +219,35 @@ export default function Navbar() {
       </div>
 
       {/* ── Main bar ── */}
-      <div className="max-w-[1400px] mx-auto px-4 flex items-stretch">
+      <div className="max-w-[1400px] mx-auto px-4 flex items-stretch min-h-[64px]">
 
-        {/* LEFT 25% — Logo */}
-        <div className="w-[25%] flex-shrink-0 flex items-center py-3 pr-4 border-r border-gray-100">
-          <Link href="/" className="flex items-center">
-            <div className="relative w-[160px] h-[58px]">
+        {/* LEFT 25% — Logo full height, no padding waste */}
+        <div className="w-[25%] flex-shrink-0 flex items-center border-r border-gray-100">
+          <Link href="/" className="block w-full h-full flex items-center pl-0">
+            <div className="relative w-full h-full min-h-[64px]">
               <Image
                 src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
                 alt="Shree Ambika Beauty Shop"
                 fill
-                className="object-contain object-left"
-                sizes="160px"
+                className="object-contain object-left py-1"
+                sizes="280px"
                 priority
               />
             </div>
           </Link>
         </div>
 
-        {/* RIGHT 75% — Top row + Bottom row */}
-        <div className="flex-1 flex flex-col">
+        {/* RIGHT 75% — Single row: nav links + search icon + profile + wishlist */}
+        <div className="flex-1 flex items-center px-4 gap-1">
 
-          {/* Top row: search + profile + wishlist only */}
-          <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-gray-100">
-            {/* Search */}
-            <div className="relative flex-1 max-w-lg">
-              {searchOpen ? (
-                <form onSubmit={handleSearch}
-                  className="flex items-center bg-gray-100 rounded-xl px-3 py-1.5 gap-2 animate-fade-in">
-                  <FiSearch size={14} className="text-gray-400 flex-shrink-0" />
-                  <input
-                    ref={searchRef}
-                    type="text"
-                    placeholder="Search products, brands..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent outline-none text-sm text-gray-700 w-full placeholder-gray-400"
-                    autoFocus
-                  />
-                  <button type="button" onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
-                    <FiX size={13} />
-                  </button>
-                </form>
-              ) : (
-                <button onClick={() => setSearchOpen(true)}
-                  className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 rounded-xl px-4 py-1.5 text-sm text-gray-400 transition-all w-full">
-                  <FiSearch size={14} />
-                  <span>Search products, brands...</span>
-                </button>
-              )}
-            </div>
-
-            {/* Profile icon */}
-            <button
-              onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
-              className="relative w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
-              aria-label="Account">
-              {isLoggedIn ? (
-                <>
-                  <div className="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center">
-                    <span className="text-white text-[9px] font-bold">
-                      {customer?.full_name?.charAt(0).toUpperCase() || "U"}
-                    </span>
-                  </div>
-                  <MdVerified size={10} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
-                </>
-              ) : (
-                <FiUser size={17} />
-              )}
-            </button>
-
-            {/* Wishlist */}
-            <WishlistIcon />
-
-            {/* Mobile toggle */}
-            <button onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all">
-              {menuOpen ? <FiX size={18} /> : <FiMenu size={18} />}
-            </button>
-          </div>
-
-          {/* Bottom row: nav links only — all in one row */}
-          <nav className="hidden lg:flex items-center gap-0.5 px-4 py-1.5">
+          {/* Nav links */}
+          <nav className="hidden lg:flex items-center gap-0.5 flex-1">
             {NAV.map((item) => (
               <div key={item.label} className="relative"
                 onMouseEnter={() => setActiveNav(item.label)}
                 onMouseLeave={() => setActiveNav(null)}>
                 <Link href={item.href}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap
                     ${pathname === item.href
                       ? "text-brand-primary bg-brand-light"
                       : "text-gray-700 hover:text-brand-primary hover:bg-brand-light"
@@ -326,8 +267,74 @@ export default function Navbar() {
             ))}
           </nav>
 
+          {/* Right icons — search, profile, wishlist, mobile toggle */}
+          <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+            {/* Search icon — click opens dropdown search bar below */}
+            <button onClick={() => setSearchOpen(!searchOpen)}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${searchOpen ? "bg-brand-light text-brand-primary" : "text-gray-600 hover:text-brand-primary hover:bg-brand-light"}`}>
+              {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}
+            </button>
+
+            {/* Profile */}
+            <button
+              onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
+              aria-label="Account">
+              {isLoggedIn ? (
+                <>
+                  <div className="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">
+                      {customer?.full_name?.charAt(0).toUpperCase() || "U"}
+                    </span>
+                  </div>
+                  <MdVerified size={10} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
+                </>
+              ) : (
+                <FiUser size={18} />
+              )}
+            </button>
+
+            {/* Wishlist */}
+            <WishlistIcon />
+
+            {/* Mobile toggle */}
+            <button onClick={() => setMenuOpen(!menuOpen)}
+              className="lg:hidden w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all">
+              {menuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* ── Search dropdown — slides below header on icon click ── */}
+      {searchOpen && (
+        <div className="border-t border-gray-100 bg-white shadow-lg animate-fade-in">
+          <div className="max-w-[1400px] mx-auto px-4 py-3">
+            <form onSubmit={handleSearch}
+              className="flex items-center bg-gray-100 rounded-2xl px-5 py-3 gap-3">
+              <FiSearch size={18} className="text-gray-400 flex-shrink-0" />
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search products, brands, categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent outline-none text-base text-gray-700 w-full placeholder-gray-400"
+                autoFocus
+              />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery("")} className="text-gray-400 hover:text-gray-600">
+                  <FiX size={16} />
+                </button>
+              )}
+              <button type="submit"
+                className="bg-brand-primary text-white text-sm font-bold px-5 py-2 rounded-xl hover:bg-brand-dark transition-colors whitespace-nowrap">
+                Search
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Mobile Menu ── */}
       {menuOpen && (
