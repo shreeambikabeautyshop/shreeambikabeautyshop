@@ -83,10 +83,7 @@ export default function HomePage() {
         {/* 12. Social Connect + Legacy */}
         <SocialConnect />
 
-        {/* 13. Trust Badges / Stats Bar */}
-        <TrustBadges />
-
-        {/* 14. Instagram Feed */}
+        {/* 13. Instagram Feed */}
         <InstagramFeed />
       </main>
 
