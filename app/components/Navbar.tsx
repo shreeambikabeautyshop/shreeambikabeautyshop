@@ -223,13 +223,13 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex-shrink-0 flex items-center group">
-          <div className="relative w-[120px] h-[44px]">
+          <div className="relative w-[150px] h-[54px]">
             <Image
               src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
               alt="Shree Ambika Beauty Shop"
               fill
               className="object-contain"
-              sizes="120px"
+              sizes="150px"
               priority
             />
           </div>
