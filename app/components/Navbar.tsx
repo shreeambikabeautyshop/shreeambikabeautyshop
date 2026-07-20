@@ -290,7 +290,7 @@ export default function Navbar() {
 
           {/* Customer profile */}
           <button
-            onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("profile")}
+            onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
             className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
             aria-label="Account">
             {isLoggedIn ? (
@@ -386,7 +386,7 @@ export default function Navbar() {
 
             {/* Login / Profile */}
             {!isLoggedIn && (
-              <button onClick={() => { triggerLogin("profile"); setMenuOpen(false); }}
+              <button onClick={() => { triggerLogin("wishlist"); setMenuOpen(false); }}
                 className="w-full flex items-center justify-center gap-2 border-2 border-brand-primary text-brand-primary py-2.5 rounded-xl font-bold text-sm mt-2">
                 <FiUser size={16} /> Login / Register
               </button>
