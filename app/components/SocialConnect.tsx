@@ -151,24 +151,6 @@ export default function SocialConnect() {
           </div>
         </div>
 
-        {/* Bottom CTA Banner */}
-        <div className="mt-10 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row gap-6 text-white text-sm">
-            {[
-              "100% ORIGINAL PRODUCTS",
-              "BEST PRICES ALWAYS",
-              "WIDE RANGE OF BRANDS",
-              "SAFE & SECURE SHOPPING",
-              "FAST & RELIABLE DELIVERY",
-              "DEDICATED CUSTOMER SUPPORT",
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-1.5">
-                <span className="text-brand-gold">✔</span>
-                <span className="font-medium text-xs">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
