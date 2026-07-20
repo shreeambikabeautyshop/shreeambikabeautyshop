@@ -77,9 +77,6 @@ export default function HomePage() {
         {/* 10b. Bestseller Products */}
         <BestsellerProducts />
 
-        {/* 11. Why Choose Us (full section with comparison) */}
-        <WhyChooseUs />
-
         {/* 12. Social Connect + Legacy */}
         <SocialConnect />
 
