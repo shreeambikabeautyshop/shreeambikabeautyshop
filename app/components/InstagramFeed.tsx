@@ -1,47 +1,32 @@
 "use client";
-import { useState } from "react";
-import Image from "next/image";
-import { FaInstagram, FaWhatsapp, FaHeart, FaComment } from "react-icons/fa";
-import { FiExternalLink } from "react-icons/fi";
+import { useEffect } from "react";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
-// Your real Instagram posts — update image URLs and post links as you add more
-// To get image URLs: open each post on Instagram, right-click image → copy image address
-// OR upload your Instagram post images to Cloudinary and paste URLs here
-const posts = [
-  {
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221445/wedding_ro6df3.png",
-    link: "https://instagram.com/shreeambikabeautyshop",
-    caption: "Pilgrim Korean Rice Water & Collagen Hair Mask",
-  },
-  {
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221436/party_feyaq1.png",
-    link: "https://instagram.com/shreeambikabeautyshop",
-    caption: "Anti-Hairfall Complete Care for Healthier Hair",
-  },
-  {
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/office_c55njk.png",
-    link: "https://instagram.com/shreeambikabeautyshop",
-    caption: "Pilgrim Advanced Hair Growth Serum",
-  },
-  {
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/daily_use_csbkl7.png",
-    link: "https://instagram.com/shreeambikabeautyshop",
-    caption: "Pilgrim Hair Growth Oil with Spanish Rosemary",
-  },
-  {
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221435/Date-night_gr0fui.png",
-    link: "https://instagram.com/shreeambikabeautyshop",
-    caption: "Jovees Hair Serum Grape Seed & Almond",
-  },
-  {
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221437/festival_vh2wqu.png",
-    link: "https://instagram.com/shreeambikabeautyshop",
-    caption: "New Arrivals at Shree Ambika Beauty Shop",
-  },
+// Your real Instagram post IDs
+const POSTS = [
+  "DavkfX_n7k8",
+  "Davi8UijaxF",
+  "DaviEoIDdjO",
+  "DavhBqvH8r4",
+  "DavfxROn0b8",
 ];
 
 export default function InstagramFeed() {
-  const [hovered, setHovered] = useState<number | null>(null);
+  // Load Instagram embed script
+  useEffect(() => {
+    const existing = document.querySelector('script[src="//www.instagram.com/embed.js"]');
+    if (!existing) {
+      const script = document.createElement("script");
+      script.src = "//www.instagram.com/embed.js";
+      script.async = true;
+      document.body.appendChild(script);
+    } else {
+      // Re-process embeds if script already loaded
+      if (window.instgrm) {
+        window.instgrm.Embeds.process();
+      }
+    }
+  }, []);
 
   return (
     <section className="py-12 bg-white" aria-labelledby="instagram-heading">
@@ -60,57 +45,34 @@ export default function InstagramFeed() {
               className="font-semibold text-pink-500 hover:underline">
               @shreeambikabeautyshop
             </a>
-            {" "}— Stay updated with latest beauty trends & offers
+            {" "}— Stay updated with latest beauty trends &amp; offers
           </p>
         </div>
 
-        {/* Posts Grid */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
-          {posts.map((post, idx) => (
-            <a
-              key={idx}
-              href={post.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={post.caption}
-              className="group relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.03]"
-              onMouseEnter={() => setHovered(idx)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <Image
-                src={post.img}
-                alt={post.caption}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                sizes="(max-width: 640px) 33vw, 16vw"
+        {/* Instagram embeds — horizontal scroll on mobile, wrap on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8 items-start">
+          {POSTS.map((id) => (
+            <div key={id} className="w-full overflow-hidden rounded-2xl">
+              <blockquote
+                className="instagram-media"
+                data-instgrm-captioned
+                data-instgrm-permalink={`https://www.instagram.com/p/${id}/?utm_source=ig_embed&utm_campaign=loading`}
+                data-instgrm-version="14"
+                style={{
+                  background: "#FFF",
+                  border: 0,
+                  borderRadius: "12px",
+                  boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
+                  margin: 0,
+                  maxWidth: "100%",
+                  minWidth: "0",
+                  padding: 0,
+                  width: "100%",
+                }}
               />
-
-              {/* Hover overlay */}
-              <div className={`absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 ${hovered === idx ? "opacity-100" : "opacity-0"}`}>
-                <FiExternalLink size={20} className="text-white" />
-                <p className="text-white text-[10px] font-bold text-center px-2 leading-tight line-clamp-2">
-                  {post.caption}
-                </p>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="flex items-center gap-1 text-white text-[10px]">
-                    <FaHeart size={10} /> View
-                  </span>
-                  <span className="flex items-center gap-1 text-white text-[10px]">
-                    <FaComment size={10} /> Post
-                  </span>
-                </div>
-              </div>
-
-              {/* Instagram gradient border on hover */}
-              <div className={`absolute inset-0 rounded-2xl ring-2 transition-all duration-300 ${hovered === idx ? "ring-pink-400" : "ring-transparent"}`} />
-            </a>
+            </div>
           ))}
         </div>
-
-        {/* Notice to update */}
-        <p className="text-center text-xs text-gray-400 mb-5 italic">
-          * Upload your Instagram post images to show real posts here
-        </p>
 
         {/* CTA Row */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -136,4 +98,15 @@ export default function InstagramFeed() {
       </div>
     </section>
   );
+}
+
+// Extend window type for Instagram embed
+declare global {
+  interface Window {
+    instgrm?: {
+      Embeds: {
+        process: () => void;
+      };
+    };
+  }
 }
