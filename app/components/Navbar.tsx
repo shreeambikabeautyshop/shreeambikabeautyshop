@@ -355,23 +355,24 @@ export default function Navbar() {
                 {/* Mobile dropdown items */}
                 {item.dropdown && (
                   <div className="pl-4 pb-1">
-                    {item.dropdown.flatMap((sec) => sec.items).slice(0, 5).map((subItem) => (
-                      subItem.external ? (
-                        <a key={subItem.label} href={subItem.href} target="_blank" rel="noopener noreferrer"
+                    {item.dropdown.flatMap((sec) => sec.items).slice(0, 5).map((subItem) => {
+                      const si = subItem as { label: string; href: string; desc?: string; external?: boolean };
+                      return si.external ? (
+                        <a key={si.label} href={si.href} target="_blank" rel="noopener noreferrer"
                           onClick={() => setMenuOpen(false)}
                           className="flex items-center gap-2 py-1.5 px-3 text-xs text-gray-500 hover:text-brand-primary rounded-lg hover:bg-brand-light transition-colors">
-                          <span>{subItem.label.split(" ")[0]}</span>
-                          <span>{subItem.label.split(" ").slice(1).join(" ")}</span>
+                          <span>{si.label.split(" ")[0]}</span>
+                          <span>{si.label.split(" ").slice(1).join(" ")}</span>
                         </a>
                       ) : (
-                        <Link key={subItem.label} href={subItem.href}
+                        <Link key={si.label} href={si.href}
                           onClick={() => setMenuOpen(false)}
                           className="flex items-center gap-2 py-1.5 px-3 text-xs text-gray-500 hover:text-brand-primary rounded-lg hover:bg-brand-light transition-colors">
-                          <span>{subItem.label.split(" ")[0]}</span>
-                          <span>{subItem.label.split(" ").slice(1).join(" ")}</span>
+                          <span>{si.label.split(" ")[0]}</span>
+                          <span>{si.label.split(" ").slice(1).join(" ")}</span>
                         </Link>
-                      )
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
