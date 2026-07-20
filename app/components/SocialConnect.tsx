@@ -58,9 +58,9 @@ export default function SocialConnect() {
   return (
     <section className="py-14 bg-white" aria-labelledby="social-heading">
       <div className="max-w-[1400px] mx-auto px-4">
-        <div className="grid lg:grid-cols-3 gap-10 items-start">
+        <div className="grid lg:grid-cols-[40%_60%] gap-10 items-start">
 
-          {/* Left - Order Online From Anywhere */}
+          {/* Left 40% - Order Online From Anywhere */}
           <div className="bg-brand-light rounded-3xl p-7">
             <h2 id="social-heading" className="text-2xl font-bold text-brand-primary font-serif mb-1">
               WE ARE EVERYWHERE
@@ -95,9 +95,8 @@ export default function SocialConnect() {
                 ♡ Your Order, Our Priority ♡
               </p>
             </div>
-
             <a
-              href="https://wa.me/919999999999"
+              href="https://wa.me/918291455297"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 bg-brand-primary text-white font-bold py-3 px-5 rounded-full hover:bg-brand-dark transition-colors mt-2"
@@ -106,24 +105,7 @@ export default function SocialConnect() {
             </a>
           </div>
 
-          {/* Center - Brand Logo & Tagline */}
-          <div className="flex flex-col items-center justify-center text-center py-8">
-            <div className="w-20 h-20 rounded-full bg-brand-primary flex items-center justify-center mb-4 shadow-lg">
-              <span className="text-white font-bold text-2xl font-serif">SA</span>
-            </div>
-            <h3 className="text-2xl font-black text-brand-primary font-serif">श्री अम्बिका</h3>
-            <p className="text-xs tracking-[0.3em] text-gray-400 uppercase mb-4">BEAUTY SHOP</p>
-            <p className="text-xl font-bold text-gray-700 font-serif italic">
-              Beauty Delivered
-            </p>
-            <p className="text-brand-secondary font-medium text-sm italic">With Trust & Love ♡</p>
-            <div className="mt-6 p-4 bg-brand-light rounded-2xl text-sm text-gray-600 leading-relaxed">
-              <strong className="text-brand-primary block mb-1">TWO SHOPS, ONE FAMILY, ONE PROMISE –</strong>
-              Your Beauty, Our Responsibility ♡
-            </div>
-          </div>
-
-          {/* Right - Our Legacy */}
+          {/* Right 60% - Our Legacy */}
           <div>
             <div className="text-center mb-6">
               <span className="text-brand-gold text-xs uppercase tracking-widest font-bold">
