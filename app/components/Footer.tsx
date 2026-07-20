@@ -84,7 +84,7 @@ export default function Footer() {
           {subDone ? (
             <div className="flex items-center gap-2 bg-white/20 px-6 py-3 rounded-2xl">
               <MdVerified size={20} className="text-green-300" />
-              <span className="text-white font-bold">You're subscribed! We'll be in touch.</span>
+              <span className="text-white font-bold">You&apos;re subscribed! We&apos;ll be in touch.</span>
             </div>
           ) : (
             <form onSubmit={handleSubscribe}
