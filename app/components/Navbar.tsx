@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
@@ -221,13 +222,16 @@ export default function Navbar() {
       <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center gap-4">
 
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-            <span className="text-white font-bold text-xs font-serif">SA</span>
-          </div>
-          <div className="hidden sm:block leading-tight">
-            <p className="text-brand-primary font-bold text-sm font-script leading-none">श्री अम्बिका</p>
-            <p className="text-[10px] text-gray-400 tracking-[0.2em] uppercase leading-none mt-0.5">Beauty Shop</p>
+        <Link href="/" className="flex-shrink-0 flex items-center group">
+          <div className="relative w-[120px] h-[44px]">
+            <Image
+              src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
+              alt="Shree Ambika Beauty Shop"
+              fill
+              className="object-contain"
+              sizes="120px"
+              priority
+            />
           </div>
         </Link>
 
@@ -309,13 +313,6 @@ export default function Navbar() {
 
           {/* Wishlist */}
           <WishlistIcon />
-
-          {/* WhatsApp CTA */}
-          <a href="https://wa.me/918291455297?text=Hi Vinod! I want to order beauty products."
-            target="_blank" rel="noopener noreferrer"
-            className="hidden xl:flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm ml-1">
-            <FaWhatsapp size={14} /> Order
-          </a>
 
           {/* Mobile toggle */}
           <button onClick={() => setMenuOpen(!menuOpen)}
