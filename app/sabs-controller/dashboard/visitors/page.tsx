@@ -47,8 +47,10 @@ export default function VisitorsPage() {
   };
 
   const flag = (code: string) => {
-    if (!code) return "🌍";
-    return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
+    if (!code || code.length < 2) return "🌍";
+    const c1 = 0x1f1e6 + code.toUpperCase().charCodeAt(0) - 65;
+    const c2 = 0x1f1e6 + code.toUpperCase().charCodeAt(1) - 65;
+    return String.fromCodePoint(c1, c2);
   };
 
   return (
