@@ -257,7 +257,23 @@ export default function ProductCard({ p }: { p: Product }) {
               if (!isLoggedIn) {
                 e.preventDefault();
                 triggerLogin("order");
+                return;
               }
+              // Track click
+              fetch("/api/track/whatsapp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  product_id: p.id,
+                  product_name: p.name,
+                  product_brand: p.brand,
+                  product_price: p.price,
+                  customer_name: customer?.full_name || null,
+                  customer_phone: customer?.phone || null,
+                  source: "product_card",
+                  page_url: window.location.href,
+                }),
+              }).catch(() => {});
             }}
             target="_blank" rel="noopener noreferrer"
             className="flex-1 flex flex-col items-center justify-center text-white py-2 rounded-xl transition-all relative overflow-hidden"

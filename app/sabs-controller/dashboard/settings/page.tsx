@@ -5,6 +5,7 @@ import { FiToggleLeft, FiToggleRight, FiSettings, FiSave } from "react-icons/fi"
 interface Settings {
   show_price: string;
   show_mrp: string;
+  site_mode: string;
 }
 
 function Toggle({ label, desc, value, onChange }: {
@@ -35,7 +36,7 @@ function Toggle({ label, desc, value, onChange }: {
 }
 
 export default function SettingsPage() {
-  const [settings, setSettings]   = useState<Settings>({ show_price: "true", show_mrp: "true" });
+  const [settings, setSettings]   = useState<Settings>({ show_price: "true", show_mrp: "true", site_mode: "full" });
   const [loading, setLoading]     = useState(true);
   const [saving, setSaving]       = useState(false);
   const [saved, setSaved]         = useState(false);
@@ -102,6 +103,19 @@ export default function SettingsPage() {
             value={settings.show_mrp === "true"}
             onChange={(v) => update("show_mrp", v)}
           />
+
+          <div className="bg-red-50 rounded-2xl p-4 border border-red-100 mt-2">
+            <p className="text-sm font-bold text-red-600 mb-1">🚧 Site Mode</p>
+            <p className="text-xs text-gray-500 mb-3">
+              <strong>Home Only</strong> mode — only the homepage is accessible. All other pages redirect to home. Use this temporarily while you set up the site before going live.
+            </p>
+            <Toggle
+              label="Full Site (All pages visible)"
+              desc={settings.site_mode === "home_only" ? "⚠️ Currently showing HOMEPAGE ONLY" : "All pages accessible normally"}
+              value={settings.site_mode !== "home_only"}
+              onChange={(v) => setSettings((p) => ({ ...p, site_mode: v ? "full" : "home_only" }))}
+            />
+          </div>
         </div>
       )}
 

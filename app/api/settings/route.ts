@@ -13,5 +13,6 @@ export async function GET() {
   return NextResponse.json({
     show_price: settings.show_price !== "false",
     show_mrp:   settings.show_mrp   !== "false",
+    site_mode:  settings.site_mode  || "full",
   });
 }

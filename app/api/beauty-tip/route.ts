@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { groqText } from "@/lib/groq";
 
 // Cache tip for the day — resets on each new serverless cold start (good enough)
 let cachedTip: {
@@ -13,9 +14,6 @@ let cachedTip: {
 } | null = null;
 
 async function generateTip(productName: string, category: string) {
-  const groqKey = process.env.GROQ_API_KEY;
-  if (!groqKey) throw new Error("No Groq key");
-
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long", month: "long", day: "numeric",
   });
@@ -32,24 +30,7 @@ Return ONLY raw JSON (no markdown):
   "detail": "2 short sentences explaining why and how. Practical, not salesy. Mention the product name naturally."
 }`;
 
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${groqKey}`,
-    },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 200,
-    }),
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || "Groq error");
-
-  const raw = data.choices?.[0]?.message?.content || "";
+  const raw = await groqText(prompt, 200, 0.7);
   const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
   const match = cleaned.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("Could not parse tip");

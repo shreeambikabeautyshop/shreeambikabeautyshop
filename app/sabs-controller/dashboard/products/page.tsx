@@ -29,6 +29,7 @@ export default function ProductsList() {
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [view, setView] = useState<"table" | "images">("table");
 
   const fetchProducts = () => {
     setLoading(true);
@@ -99,24 +100,72 @@ export default function ProductsList() {
         </Link>
       </div>
 
-      {/* Search */}
+      {/* Search + View toggle */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-5">
-        <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5">
-          <FiSearch className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name, brand, category..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent outline-none text-sm text-gray-700 flex-1"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600 text-xs">
-              ✕ Clear
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 flex-1">
+            <FiSearch className="text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, brand, category..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-transparent outline-none text-sm text-gray-700 flex-1"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600 text-xs">
+                ✕ Clear
+              </button>
+            )}
+          </div>
+          {/* View toggle */}
+          <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+            <button onClick={() => setView("table")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${view === "table" ? "bg-white shadow-sm text-gray-800" : "text-gray-500 hover:text-gray-700"}`}>
+              ☰ Table
             </button>
-          )}
+            <button onClick={() => setView("images")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${view === "images" ? "bg-white shadow-sm text-gray-800" : "text-gray-500 hover:text-gray-700"}`}>
+              🖼 Images
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Table / Image view */}
+      {view === "images" ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          {loading ? (
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
+              {Array.from({ length: 14 }).map((_, i) => (
+                <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
+              {filtered.map((p) => (
+                <Link key={p.id} href={`/sabs-controller/dashboard/products/edit/${p.id}`}
+                  className="group relative aspect-square rounded-2xl overflow-hidden bg-brand-light border border-gray-100 hover:shadow-lg transition-all hover:scale-[1.02]">
+                  {p.images?.[0] ? (
+                    <Image src={p.images[0]} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl">💄</div>
+                  )}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 w-full">
+                      <p className="text-white text-[9px] font-bold line-clamp-2 leading-tight">{p.name}</p>
+                      <p className="text-white/70 text-[8px]">₹{p.price}</p>
+                    </div>
+                  </div>
+                  {!p.in_stock && (
+                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">Out</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -273,6 +322,7 @@ export default function ProductsList() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

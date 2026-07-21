@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { groqVision } from "@/lib/groq";
 
 function isAuthenticated(req: NextRequest): boolean {
   return req.cookies.get("sabs_session")?.value === "authenticated";
@@ -34,9 +35,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
 }`;
 
 function parseJSON(raw: string) {
-  // Strip <think>...</think> blocks (qwen model thinking output)
-  const stripped = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-  const cleaned = stripped.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+  const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
   const match = cleaned.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("Could not parse AI response");
   return JSON.parse(match[0]);
@@ -47,12 +46,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const groqKey = process.env.GROQ_API_KEY;
-  if (!groqKey) {
-    return NextResponse.json({ error: "Groq API key not configured" }, { status: 500 });
-  }
-
-  // Accept either a direct URL or base64
   const body = await req.json();
   const imageUrl: string | undefined = body.imageUrl;
   const imageBase64: string | undefined = body.imageBase64;
@@ -62,36 +55,49 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "imageUrl or imageBase64 required" }, { status: 400 });
   }
 
-  // Build the image content for Groq
-  const imageContent = imageUrl
-    ? { type: "image_url", image_url: { url: imageUrl } }
-    : { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } };
+  // Use URL directly if provided, else use base64
+  const base64ToUse = imageBase64 || "";
+  const mimeToUse   = imageBase64 ? mimeType : "image/jpeg";
 
+  // If imageUrl provided, build image content differently
+  let raw: string;
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${groqKey}`,
-      },
-      body: JSON.stringify({
-        model: "qwen/qwen3.6-27b",
-        messages: [{
-          role: "user",
-          content: [imageContent, { type: "text", text: PROMPT }],
-        }],
-        temperature: 0.4,
-        max_tokens: 2048,
-        reasoning_effort: "none",
-      }),
-    });
+    if (imageUrl && !imageBase64) {
+      // Use URL path in groq directly
+      const keys = [
+        process.env.GROQ_API_KEY_1,
+        process.env.GROQ_API_KEY_2,
+        process.env.GROQ_API_KEY,
+      ].filter(Boolean) as string[];
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message || "Groq error");
+      let lastErr = "";
+      for (let i = 0; i < keys.length; i++) {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${keys[i]}` },
+          body: JSON.stringify({
+            model: "qwen/qwen3.6-27b",
+            messages: [{ role: "user", content: [
+              { type: "image_url", image_url: { url: imageUrl } },
+              { type: "text", text: PROMPT },
+            ]}],
+            temperature: 0.4,
+            max_tokens: 2048,
+            reasoning_effort: "none",
+          }),
+        });
+        const data = await res.json();
+        if (res.status === 429) { lastErr = "Rate limited"; continue; }
+        if (!res.ok) { lastErr = data?.error?.message || "Groq error"; continue; }
+        raw = (data.choices?.[0]?.message?.content || "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+        break;
+      }
+      if (!raw!) throw new Error(lastErr || "All keys failed");
+    } else {
+      raw = await groqVision(base64ToUse, mimeToUse, PROMPT, 2048, 0.4);
+    }
 
-    const raw = data.choices?.[0]?.message?.content || "";
-    const productData = parseJSON(raw);
-
+    const productData = parseJSON(raw!);
     return NextResponse.json({
       success: true,
       data: { ...productData, _imageUrl: imageUrl || null },

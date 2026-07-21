@@ -5,6 +5,7 @@ import { WishlistProvider } from "@/app/context/WishlistContext";
 import { UserProvider } from "@/app/context/UserContext";
 import { SettingsProvider } from "@/app/context/SettingsContext";
 import CustomerLoginModal from "@/app/components/CustomerLoginModal";
+import VisitorTracker from "@/app/components/VisitorTracker";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -343,6 +344,7 @@ export default function RootLayout({
           <UserProvider>
             <SettingsProvider>
               <WishlistProvider>
+                <VisitorTracker />
                 {children}
                 <CustomerLoginModal />
               </WishlistProvider>
@@ -352,3 +354,4 @@ export default function RootLayout({
     </html>
   );
 }
+
