@@ -27,7 +27,7 @@ export default function ProductSchema({
     },
     "offers": {
       "@type": "Offer",
-      "url": "https://shreeambikabeautyshop.vercel.app",
+      "url": "https://www.shreeambikabeauty.com",
       "priceCurrency": "INR",
       "price": price,
       "priceValidUntil": new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
@@ -38,7 +38,7 @@ export default function ProductSchema({
         "@type": "Organization",
         "name": "Shree Ambika Beauty Shop",
         "telephone": "+918291455297",
-        "url": "https://shreeambikabeautyshop.vercel.app",
+        "url": "https://www.shreeambikabeauty.com",
       },
     },
     "aggregateRating": {

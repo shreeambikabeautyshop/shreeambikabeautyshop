@@ -79,7 +79,7 @@ export default function WishlistPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {items.map((item) => {
                     const waMsg = encodeURIComponent(
-                      `Hi Vinod! I want to order:\n*${item.name}*\nPrice: ₹${item.price}\n\nhttps://shreeambikabeautyshop.vercel.app/products/${item.slug || item.id}`
+                      `Hi Vinod! I want to order:\n*${item.name}*\nPrice: ₹${item.price}\n\nhttps://www.shreeambikabeauty.com/products/${item.slug || item.id}`
                     );
                     return (
                       <div key={item.id}

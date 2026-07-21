@@ -90,7 +90,7 @@ export default function BestsellerProducts() {
   const visible    = products.slice(page * LIST_SIZE, page * LIST_SIZE + LIST_SIZE);
 
   const waMsg = featured ? encodeURIComponent(
-    `Hi Vinod! I want to order:\n\n*${featured.name}*\nBrand: ${featured.brand}\nPrice: ₹${featured.price}\n\nhttps://shreeambikabeautyshop.vercel.app/products/${featured.slug || featured.id}`
+    `Hi Vinod! I want to order:\n\n*${featured.name}*\nBrand: ${featured.brand}\nPrice: ₹${featured.price}\n\nhttps://www.shreeambikabeauty.com/products/${featured.slug || featured.id}`
   ) : "";
 
   const benefits  = featured?.key_benefits?.slice(0, 5) || [];

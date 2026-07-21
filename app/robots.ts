@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/sabs-controller/", "/api/admin/"],
       },
     ],
-    sitemap: "https://shreeambikabeautyshop.vercel.app/sitemap.xml",
-    host: "https://shreeambikabeautyshop.vercel.app",
+    sitemap: "https://www.shreeambikabeauty.com/sitemap.xml",
+    host: "https://www.shreeambikabeauty.com",
   };
 }

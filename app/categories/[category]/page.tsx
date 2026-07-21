@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: { params: { category: string 
   return {
     title: seo?.title || `${categoryName} Products Mumbai | Shree Ambika Beauty Shop`,
     description: seo?.desc || `Buy original ${categoryName} products in Mumbai at best price. Pan India delivery. WhatsApp: +918291455297`,
-    alternates: { canonical: `https://shreeambikabeautyshop.vercel.app/categories/${params.category}` },
+    alternates: { canonical: `https://www.shreeambikabeauty.com/categories/${params.category}` },
   };
 }
 
@@ -76,7 +76,7 @@ export default async function CategoryPage({ params }: { params: { category: str
     "@type": "CollectionPage",
     "name": `${categoryName} Products — Shree Ambika Beauty Shop Mumbai`,
     "description": `100% original ${categoryName} products at best prices. Mumbai store, Pan India delivery.`,
-    "url": `https://shreeambikabeautyshop.vercel.app/categories/${params.category}`,
+    "url": `https://www.shreeambikabeauty.com/categories/${params.category}`,
     "numberOfItems": products.length,
     "provider": {
       "@type": "Organization",

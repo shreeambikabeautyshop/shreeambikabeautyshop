@@ -46,7 +46,7 @@ export default function ProductCard({ p }: { p: Product }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const productUrl = `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`;
+  const productUrl = `https://www.shreeambikabeauty.com/products/${p.slug || p.id}`;
 
   const shareMsg = encodeURIComponent(
     `✨ Check out this amazing product!\n\n*${p.name}*\nBrand: ${p.brand}\nPrice: ₹${p.price}\n\n🛍️ Buy from Shree Ambika Beauty Shop, Mumbai\n📱 WhatsApp Vinod: +91-8291455297\n\n👉 ${productUrl}`

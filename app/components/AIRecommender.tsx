@@ -49,7 +49,7 @@ export default function AIRecommender() {
   };
 
   const waOrderMsg = (p: Product) => {
-    const url = `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`;
+    const url = `https://www.shreeambikabeauty.com/products/${p.slug || p.id}`;
     return encodeURIComponent(
       `Hi! I want to order:\n*${p.name}*\nPrice: Rs.${p.price}\n\nProduct link: ${url}\n\nMy concern: ${concern}`
     );

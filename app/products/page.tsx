@@ -11,7 +11,7 @@ import { FiShoppingCart } from "react-icons/fi";
 export const metadata: Metadata = {
   title: "All Beauty Products | Shree Ambika Beauty Shop Mumbai",
   description: "Browse 500+ original beauty products — cosmetics, makeup, skincare, haircare from top brands. Best prices in Mumbai. Pan India delivery. WhatsApp: +918291455297",
-  alternates: { canonical: "https://shreeambikabeautyshop.vercel.app/products" },
+  alternates: { canonical: "https://www.shreeambikabeauty.com/products" },
 };
 
 async function getProducts() {

@@ -45,7 +45,7 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://shreeambikabeautyshop.vercel.app"),
+  metadataBase: new URL("https://www.shreeambikabeauty.com"),
   title: {
     default: "Shree Ambika Beauty Shop Mumbai | 100% Original Beauty Products | Pan India Delivery",
     template: "%s | Shree Ambika Beauty Shop Mumbai",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     "shree ambika choice center dahisar",
     "beauty shop dahisar mumbai",
   ],
-  authors: [{ name: "Shree Ambika Beauty Shop", url: "https://shreeambikabeautyshop.vercel.app" }],
+  authors: [{ name: "Shree Ambika Beauty Shop", url: "https://www.shreeambikabeauty.com" }],
   creator: "Shree Ambika Beauty Shop",
   publisher: "Shree Ambika Beauty Shop",
   category: "Beauty & Personal Care",
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     title: "Shree Ambika Beauty Shop | 100% Original Beauty Products Mumbai",
     description:
       "Mumbai's trusted beauty shop since 2001. 500+ brands, best prices, same day delivery. WhatsApp order: +918291455297",
-    url: "https://shreeambikabeautyshop.vercel.app",
+    url: "https://www.shreeambikabeauty.com",
     siteName: "Shree Ambika Beauty Shop",
     images: [
       {
@@ -116,9 +116,9 @@ export const metadata: Metadata = {
     google: "your-google-verification-code",
   },
   alternates: {
-    canonical: "https://shreeambikabeautyshop.vercel.app",
+    canonical: "https://www.shreeambikabeauty.com",
     languages: {
-      "en-IN": "https://shreeambikabeautyshop.vercel.app",
+      "en-IN": "https://www.shreeambikabeauty.com",
     },
   },
   icons: {
@@ -151,7 +151,7 @@ export const metadata: Metadata = {
     "ai:owner": "Vinod",
     // Business metadata
     "business:contact_data:phone_number": "+918291455297",
-    "business:contact_data:website": "https://shreeambikabeautyshop.vercel.app",
+    "business:contact_data:website": "https://www.shreeambikabeauty.com",
     "business:contact_data:country_name": "India",
   },
 };
@@ -164,11 +164,11 @@ export default function RootLayout({
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "Store", "BeautySalon"],
-    "@id": "https://shreeambikabeautyshop.vercel.app/#business",
+    "@id": "https://www.shreeambikabeauty.com/#business",
     "name": "Shree Ambika Beauty Shop",
     "alternateName": ["Shree Ambika Beauty Shop Mumbai", "Shree Ambika Choice Center", "SABS"],
     "description": "Mumbai's trusted beauty shop since 2001. 100% original beauty products — cosmetics, makeup, skincare, haircare from 500+ top brands. Same day delivery in Mumbai. Pan India 4–7 days. WhatsApp order: +918291455297.",
-    "url": "https://shreeambikabeautyshop.vercel.app",
+    "url": "https://www.shreeambikabeauty.com",
     "logo": "https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png",
     "image": "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png",
     "telephone": "+918291455297",
@@ -291,7 +291,7 @@ export default function RootLayout({
         "name": "Where is Shree Ambika Beauty Shop located?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Shree Ambika Beauty Shop is located at Anand Nagar Metro Station, Dahisar East, Mumbai, Maharashtra 400068. We also have an online store at shreeambikabeautyshop.vercel.app with WhatsApp ordering.",
+          "text": "Shree Ambika Beauty Shop is located at Anand Nagar Metro Station, Dahisar East, Mumbai, Maharashtra 400068. We also have an online store at www.shreeambikabeauty.com with WhatsApp ordering.",
         },
       },
       {
@@ -310,9 +310,9 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://shreeambikabeautyshop.vercel.app" },
-      { "@type": "ListItem", "position": 2, "name": "Products", "item": "https://shreeambikabeautyshop.vercel.app/products" },
-      { "@type": "ListItem", "position": 3, "name": "Categories", "item": "https://shreeambikabeautyshop.vercel.app/categories" },
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.shreeambikabeauty.com" },
+      { "@type": "ListItem", "position": 2, "name": "Products", "item": "https://www.shreeambikabeauty.com/products" },
+      { "@type": "ListItem", "position": 3, "name": "Categories", "item": "https://www.shreeambikabeauty.com/categories" },
     ],
   };
 
@@ -321,12 +321,12 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Shree Ambika Beauty Shop",
-    "url": "https://shreeambikabeautyshop.vercel.app",
+    "url": "https://www.shreeambikabeauty.com",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://shreeambikabeautyshop.vercel.app/products?search={search_term_string}",
+        "urlTemplate": "https://www.shreeambikabeauty.com/products?search={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },

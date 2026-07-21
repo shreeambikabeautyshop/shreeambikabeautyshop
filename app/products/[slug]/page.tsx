@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description: p.seo_description || p.description,
       images: p.images?.[0] ? [{ url: p.images[0], width: 800, height: 800, alt: p.name }] : [],
     },
-    alternates: { canonical: `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}` },
+    alternates: { canonical: `https://www.shreeambikabeauty.com/products/${p.slug || p.id}` },
   };
 }
 
@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
   if (!p) notFound();
 
   const related = await getRelated(p.category, p.id);
-  const productUrl = `https://shreeambikabeautyshop.vercel.app/products/${p.slug || p.id}`;
+  const productUrl = `https://www.shreeambikabeauty.com/products/${p.slug || p.id}`;
 
   // JSON-LD schemas
   const productSchema = {
@@ -284,7 +284,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 {related.map((r: RelatedProduct) => {
                   const rWaMsg = encodeURIComponent(
-                    `Hi Vinod! I want to order:\n*${r.name}*\nPrice: ₹${r.price}\n\nhttps://shreeambikabeautyshop.vercel.app/products/${r.slug || r.id}`
+                    `Hi Vinod! I want to order:\n*${r.name}*\nPrice: ₹${r.price}\n\nhttps://www.shreeambikabeauty.com/products/${r.slug || r.id}`
                   );
                   return (
                     <div key={r.id} className="group flex flex-col border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all">

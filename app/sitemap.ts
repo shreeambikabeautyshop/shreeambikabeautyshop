@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 
-const BASE = "https://shreeambikabeautyshop.vercel.app";
+const BASE = "https://www.shreeambikabeauty.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createClient(

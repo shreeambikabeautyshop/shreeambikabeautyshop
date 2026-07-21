@@ -21,7 +21,7 @@ interface Product {
   created_at: string;
 }
 
-const BASE_URL = "https://shreeambikabeautyshop.vercel.app";
+const BASE_URL = "https://www.shreeambikabeauty.com";
 
 export default function ProductsList() {
   const [products, setProducts] = useState<Product[]>([]);

@@ -39,7 +39,7 @@ export default function TodayTipAndTrending() {
 
   const waMsg = tip
     ? encodeURIComponent(
-        `Hi Vinod! I saw today's beauty tip and want to order:\n\n*${tip.productName}*\nPrice: ₹${tip.productPrice}\n\nhttps://shreeambikabeautyshop.vercel.app/products/${tip.productSlug}`
+        `Hi Vinod! I saw today's beauty tip and want to order:\n\n*${tip.productName}*\nPrice: ₹${tip.productPrice}\n\nhttps://www.shreeambikabeauty.com/products/${tip.productSlug}`
       )
     : "";
 

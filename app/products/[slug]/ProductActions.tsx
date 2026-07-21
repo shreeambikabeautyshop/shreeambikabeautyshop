@@ -13,7 +13,7 @@ export default function ProductActions({ productName, price, slug }: Props) {
   const [qty, setQty] = useState(1);
 
   const msg = encodeURIComponent(
-    `Hi Vinod! I want to order:\n*${productName}*\nQty: ${qty}\nPrice: ₹${price} each\nTotal: ₹${price * qty}\n\nhttps://shreeambikabeautyshop.vercel.app/products/${slug}`
+    `Hi Vinod! I want to order:\n*${productName}*\nQty: ${qty}\nPrice: ₹${price} each\nTotal: ₹${price * qty}\n\nhttps://www.shreeambikabeauty.com/products/${slug}`
   );
 
   return (
