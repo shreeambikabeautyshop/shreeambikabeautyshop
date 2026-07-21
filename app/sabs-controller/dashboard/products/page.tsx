@@ -166,9 +166,8 @@ export default function ProductsList() {
           )}
         </div>
       ) : (
-
-      {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        /* Table */
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
