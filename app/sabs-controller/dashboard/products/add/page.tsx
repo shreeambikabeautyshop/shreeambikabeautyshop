@@ -104,8 +104,11 @@ export default function AddProduct() {
   const [progressLabel, setProgressLabel] = useState("");
   const [saveProgress, setSaveProgress] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [autoSaveMode, setAutoSaveMode]     = useState(true);  // default ON
+  const [autoSaveCountdown, setAutoSaveCountdown] = useState<number | null>(null);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [error, setError] = useState("");
-  const [form, setForm] = useState<FormData>({
     name: "", brand: "", category: "", price: "", mrp: "",
     description: "", in_stock: true, featured: false, trending: false,
     tags: "", seo_title: "", seo_description: "",
@@ -115,6 +118,12 @@ export default function AddProduct() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setForm((p) => ({ ...p, [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value }));
+  };
+
+  const cancelAutoSave = () => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+    setAutoSaveCountdown(null);
   };
 
   const toBase64 = (file: File): Promise<string> =>
@@ -211,6 +220,26 @@ export default function AddProduct() {
       }
       setProgress(100); setProgressLabel("✅ All details filled!");
       setAiDone(true);
+
+      // Auto-save countdown if mode is ON
+      if (autoSaveMode) {
+        let secs = 5;
+        setAutoSaveCountdown(secs);
+        countdownInterval.current = setInterval(() => {
+          secs -= 1;
+          setAutoSaveCountdown(secs);
+          if (secs <= 0) {
+            clearInterval(countdownInterval.current!);
+            setAutoSaveCountdown(null);
+          }
+        }, 1000);
+        autoSaveTimer.current = setTimeout(() => {
+          // Trigger form submit programmatically
+          document.getElementById("product-form")?.dispatchEvent(
+            new Event("submit", { cancelable: true, bubbles: true })
+          );
+        }, 5000);
+      }
     } catch (err) {
       clearInterval(interval);
       setError(err instanceof Error ? err.message : "AI generation failed");
@@ -327,15 +356,26 @@ export default function AddProduct() {
 
       <div className="flex items-center gap-3 mb-6">
         <Link href="/sabs-controller/dashboard/products" className="p-2 hover:bg-gray-200 rounded-xl transition-colors"><FiArrowLeft /></Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-800">Add New Product</h1>
           <p className="text-gray-500 text-sm">Upload product image → AI fills everything automatically</p>
+        </div>
+        {/* Auto-save toggle */}
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+          <span className="text-xs font-semibold text-gray-600">Auto Save</span>
+          <button type="button" onClick={() => { setAutoSaveMode((v) => !v); cancelAutoSave(); }}
+            className={`relative w-10 h-5 rounded-full transition-all duration-300 ${autoSaveMode ? "bg-green-500" : "bg-gray-300"}`}>
+            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-300 ${autoSaveMode ? "left-5" : "left-0.5"}`} />
+          </button>
+          <span className={`text-[10px] font-bold ${autoSaveMode ? "text-green-600" : "text-gray-400"}`}>
+            {autoSaveMode ? "ON" : "OFF"}
+          </span>
         </div>
       </div>
 
       {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 mb-5 text-sm">✗ {error}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form id="product-form" onSubmit={handleSubmit} className="space-y-5">
         {/* IMAGES */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h2 className="font-bold text-gray-700 mb-1">Product Images <span className="text-red-500">*</span></h2>
@@ -555,6 +595,25 @@ export default function AddProduct() {
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" />
           </div>
         </div>
+
+        {/* AUTO-SAVE COUNTDOWN BANNER */}
+        {autoSaveCountdown !== null && (
+          <div className="bg-green-50 border border-green-300 rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-black text-lg">
+                {autoSaveCountdown}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-green-800">Auto-saving in {autoSaveCountdown} seconds...</p>
+                <p className="text-xs text-green-600">AI has filled all details. Saving automatically.</p>
+              </div>
+            </div>
+            <button type="button" onClick={cancelAutoSave}
+              className="px-4 py-2 bg-white border border-green-300 text-green-700 font-bold rounded-xl text-sm hover:bg-green-50 transition-colors">
+              ✕ Cancel
+            </button>
+          </div>
+        )}
 
         {/* SAVE PROGRESS BAR */}
         {saveProgress > 0 && saveProgress < 100 && (
