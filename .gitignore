@@ -33,6 +33,7 @@ yarn-error.log*
 # Credentials - NEVER commit this
 website-images/CREDENTIALS.txt
 *.credentials.txt
+credentials.txt
 
 # typescript
 *.tsbuildinfo
