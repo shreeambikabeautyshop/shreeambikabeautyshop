@@ -119,6 +119,7 @@ const NAV = [
         { label: "🏪 Our Story",             href: "/about",                desc: "Since 2001, Mumbai" },
         { label: "🌟 Legacy Since 2001",     href: "/about#legacy",         desc: "24+ years of trust" },
         { label: "💬 Customer Reviews",      href: "/about#reviews",        desc: "Real customer stories" },
+        { label: "📝 Beauty Blog",           href: "/blog",                 desc: "Tips, guides & more" },
         { label: "📍 Visit Our Store",       href: "/contact",              desc: "Dahisar, Mumbai" },
         { label: "📞 Contact Us",            href: "/contact",              desc: "We're here to help" },
         { label: "❓ FAQ",                   href: "/faq",                  desc: "Common questions" },
