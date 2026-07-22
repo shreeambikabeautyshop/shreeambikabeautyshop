@@ -59,14 +59,14 @@ export default function BuyingGuides() {
             {items.map((blog) => (
               <Link key={blog.id} href={`/blog/${blog.slug}`}
                 className="group bg-brand-light hover:bg-white rounded-2xl overflow-hidden border border-pink-100 hover:border-brand-accent hover:shadow-md transition-all duration-300 flex flex-col">
-                {/* Cover image */}
-                <div className="relative aspect-video bg-brand-light overflow-hidden">
+                {/* Cover image — taller ratio for more visibility */}
+                <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: "4/3" }}>
                   {blog.cover_image ? (
                     <Image src={blog.cover_image} alt={blog.title} fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 640px) 50vw, 200px" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">💄</div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl bg-brand-light">💄</div>
                   )}
                 </div>
                 <div className="p-3.5 flex flex-col flex-1">
