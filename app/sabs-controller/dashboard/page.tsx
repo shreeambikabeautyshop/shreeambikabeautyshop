@@ -202,7 +202,7 @@ export default function DashboardHome() {
 
   const topStatCards = [
     { label: "Total Products", value: stats.totalProducts, icon: <FiPackage size={18} />, gradient: "bg-gradient-to-br from-[#1a1a2e] to-[#16213e]", sub: `${stats.inStock} in stock` },
-    { label: "Visitors (30d)", value: stats.totalVisitors, icon: <FiEye size={18} />, gradient: "bg-gradient-to-br from-[#0f3460] to-[#533483]", sub: `${stats.returningVisitors} returning` },
+    { label: "Visitors (30d)", value: stats.totalVisitors, icon: <FiEye size={18} />, gradient: "bg-gradient-to-br from-[#0f3460] to-[#533483]", sub: `${stats.totalVisitors - stats.returningVisitors} new visitors` },
     { label: "WhatsApp Orders", value: stats.totalWaClicks, icon: <FaWhatsapp size={18} />, gradient: "bg-gradient-to-br from-[#128C7E] to-[#075E54]", sub: "Last 30 days" },
     { label: "Customers", value: stats.totalCustomers, icon: <FiUsers size={18} />, gradient: "bg-gradient-to-br from-[#C41E3A] to-[#8B0000]", sub: `${stats.totalReviews} reviews` },
     { label: "Featured", value: stats.featured, icon: <FiStar size={18} />, gradient: "bg-gradient-to-br from-[#f7971e] to-[#ffd200]", sub: "Homepage products" },

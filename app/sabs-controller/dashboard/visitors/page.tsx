@@ -118,21 +118,51 @@ export default function VisitorsPage() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3 mb-6">
           {[
-            { icon: <FiUsers size={16} />,       label: "Visitors",    val: stats.total,                    color: "text-blue-600 bg-blue-50" },
-            { icon: <MdRepeat size={16} />,       label: "Returning",   val: stats.returning,                color: "text-purple-600 bg-purple-50" },
-            { icon: <FiSmartphone size={16} />,   label: "Mobile",      val: stats.mobile,                   color: "text-green-600 bg-green-50" },
-            { icon: <FiMonitor size={16} />,      label: "Desktop",     val: stats.desktop,                  color: "text-orange-600 bg-orange-50" },
-            { icon: <span className="text-sm">📱</span>, label: "Tablet", val: stats.tablet,                 color: "text-pink-600 bg-pink-50" },
-            { icon: <FiGlobe size={16} />,        label: "Countries",   val: stats.countries,                color: "text-teal-600 bg-teal-50" },
-            { icon: <FiClock size={16} />,        label: "Avg Time",    val: fmt(stats.avgTimeSeconds),      color: "text-brand-primary bg-brand-light" },
-            { icon: <FiTrendingUp size={16} />,   label: "Avg Scroll",  val: `${stats.avgScrollDepth || 0}%`, color: "text-indigo-600 bg-indigo-50" },
+            { icon: <FiUsers size={16} />,     label: "Total Sessions",  val: stats.total,                     color: "text-blue-600 bg-blue-50",    tip: "All visits in this period" },
+            { icon: <MdRepeat size={16} />,    label: "New Visitors",    val: stats.total - stats.returning,   color: "text-green-600 bg-green-50",  tip: "First-time visitors (included in total)" },
+            { icon: <FiSmartphone size={16} />,label: "Mobile",          val: stats.mobile,                    color: "text-purple-600 bg-purple-50", tip: "Visited on mobile phone" },
+            { icon: <FiMonitor size={16} />,   label: "Desktop",         val: stats.desktop,                   color: "text-orange-600 bg-orange-50", tip: "Visited on desktop/laptop" },
+            { icon: <span className="text-sm">📱</span>, label: "Tablet", val: stats.tablet,                   color: "text-pink-600 bg-pink-50",    tip: "Visited on tablet" },
+            { icon: <FiGlobe size={16} />,     label: "Countries",       val: stats.countries,                 color: "text-teal-600 bg-teal-50",    tip: "Unique countries" },
+            { icon: <FiClock size={16} />,     label: "Avg Time",        val: fmt(stats.avgTimeSeconds),       color: "text-brand-primary bg-brand-light", tip: "Average time per visit" },
+            { icon: <FiTrendingUp size={16} />,label: "Avg Scroll",      val: `${stats.avgScrollDepth || 0}%`, color: "text-indigo-600 bg-indigo-50", tip: "How deep visitors scroll" },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
+            <div key={s.label} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm relative group">
               <div className={`w-8 h-8 rounded-xl ${s.color} flex items-center justify-center mb-2`}>{s.icon}</div>
               <p className="text-lg font-bold text-gray-800">{s.val}</p>
               <p className="text-[10px] text-gray-500">{s.label}</p>
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-800 text-white text-[9px] px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
+                {s.tip}
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* New vs Returning breakdown bar */}
+      {stats && stats.total > 0 && (
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-gray-700">New vs Returning Visitors</p>
+            <p className="text-[10px] text-gray-400">{stats.total} total sessions</p>
+          </div>
+          <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
+            <div className="bg-green-500 rounded-l-full transition-all duration-700"
+              style={{ width: `${Math.round(((stats.total - stats.returning) / stats.total) * 100)}%` }} />
+            <div className="bg-purple-400 rounded-r-full transition-all duration-700"
+              style={{ width: `${Math.round((stats.returning / stats.total) * 100)}%` }} />
+          </div>
+          <div className="flex gap-4 mt-2">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0" />
+              <span className="text-[10px] text-gray-600">New: <strong>{stats.total - stats.returning}</strong> ({Math.round(((stats.total - stats.returning) / stats.total) * 100)}%)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-400 flex-shrink-0" />
+              <span className="text-[10px] text-gray-600">Returning: <strong>{stats.returning}</strong> ({Math.round((stats.returning / stats.total) * 100)}%)</span>
+            </div>
+          </div>
         </div>
       )}
 
