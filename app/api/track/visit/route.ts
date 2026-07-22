@@ -9,7 +9,6 @@ const getAdmin = () =>
   );
 
 export async function POST(req: NextRequest) {
-  // sendBeacon sends text/plain, fetch sends application/json — handle both
   let body: Record<string, unknown>;
   try {
     const text = await req.text();
@@ -19,29 +18,42 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = getAdmin();
-  const { action, session_id, ...data } = body as { action: string; session_id: string; [key: string]: unknown };
+  const { action, session_id, ...data } = body as {
+    action: string;
+    session_id: string;
+    [key: string]: unknown;
+  };
 
   if (!session_id) {
     return NextResponse.json({ ok: false, error: "Missing session_id" }, { status: 400 });
   }
 
   if (action === "start") {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      || req.headers.get("x-real-ip")
-      || "unknown";
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
 
-    // Try upsert first; if it fails (no unique constraint), fall back to insert
-    const { error: upsertErr } = await supabase.from("visitor_analytics").upsert({
-      session_id,
-      ip_address: ip,
-      ...data,
-    }, { onConflict: "session_id" });
+    const { error: upsertErr } = await supabase.from("visitor_analytics").upsert(
+      {
+        session_id,
+        ip_address:    ip,
+        hour_of_visit: data.hour_of_visit ?? null,
+        day_of_week:   data.day_of_week   ?? null,
+        search_query:  data.search_query  ?? null,
+        ...data,
+      },
+      { onConflict: "session_id" }
+    );
 
     if (upsertErr) {
-      // Fallback: plain insert (may duplicate, but at least data is captured)
+      // Fallback plain insert
       const { error: insertErr } = await supabase.from("visitor_analytics").insert({
         session_id,
-        ip_address: ip,
+        ip_address:    ip,
+        hour_of_visit: data.hour_of_visit ?? null,
+        day_of_week:   data.day_of_week   ?? null,
+        search_query:  data.search_query  ?? null,
         ...data,
       });
       if (insertErr) {
@@ -52,17 +64,19 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "update") {
-    const { error } = await supabase.from("visitor_analytics")
+    const { error } = await supabase
+      .from("visitor_analytics")
       .update({
         pages_visited:      data.pages_visited,
+        products_viewed:    data.products_viewed    ?? [],
+        categories_viewed:  data.categories_viewed  ?? [],
         time_spent_seconds: data.time_spent_seconds,
+        max_scroll_depth:   data.max_scroll_depth   ?? 0,
         last_seen_at:       new Date().toISOString(),
       })
       .eq("session_id", session_id);
 
-    if (error) {
-      console.error("[track/visit] update error:", error.message);
-    }
+    if (error) console.error("[track/visit] update error:", error.message);
   }
 
   return NextResponse.json({ ok: true });

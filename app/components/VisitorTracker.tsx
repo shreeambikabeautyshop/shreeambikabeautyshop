@@ -46,7 +46,6 @@ function isReturning(): boolean {
   return true;
 }
 
-// Parse UTM params
 function getUTM() {
   const params = new URLSearchParams(window.location.search);
   return {
@@ -56,33 +55,77 @@ function getUTM() {
   };
 }
 
+// Extract product info from product detail pages
+function getProductFromPath(path: string): { product_slug: string | null; category_viewed: string | null } {
+  const productMatch = path.match(/^\/products\/([^/]+)/);
+  const categoryMatch = path.match(/^\/categories\/([^/]+)/);
+  return {
+    product_slug:    productMatch  ? productMatch[1]  : null,
+    category_viewed: categoryMatch ? categoryMatch[1] : null,
+  };
+}
+
+// Extract search query from URL
+function getSearchQuery(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("search") || params.get("q") || null;
+}
+
+// Max scroll depth tracker
+function trackScrollDepth(onUpdate: (depth: number) => void) {
+  let maxDepth = 0;
+  const handler = () => {
+    const scrolled = window.scrollY + window.innerHeight;
+    const total    = document.documentElement.scrollHeight;
+    const depth    = Math.round((scrolled / total) * 100);
+    if (depth > maxDepth) {
+      maxDepth = depth;
+      onUpdate(maxDepth);
+    }
+  };
+  window.addEventListener("scroll", handler, { passive: true });
+  return () => window.removeEventListener("scroll", handler);
+}
+
 export default function VisitorTracker() {
   const pathname = usePathname();
-  const sessionId = useRef<string>("");
-  const startTime = useRef<number>(Date.now());
-  const pagesVisited = useRef<string[]>([]);
-  const initialized = useRef(false);
+  const sessionId      = useRef<string>("");
+  const startTime      = useRef<number>(Date.now());
+  const pagesVisited   = useRef<string[]>([]);
+  const productsViewed = useRef<string[]>([]);
+  const categoriesViewed = useRef<string[]>([]);
+  const maxScrollDepth = useRef<number>(0);
+  const initialized    = useRef(false);
 
   useEffect(() => {
-    // Skip admin pages — check BEFORE setting initialized flag
+    // Skip admin pages FIRST — before setting initialized
     if (pathname?.startsWith("/sabs-controller")) return;
     if (initialized.current) return;
     initialized.current = true;
 
-    sessionId.current = getSessionId();
-    startTime.current = Date.now();
+    sessionId.current  = getSessionId();
+    startTime.current  = Date.now();
     pagesVisited.current = [pathname || "/"];
 
-    const utm = getUTM();
+    // Track product/category from first page
+    const { product_slug, category_viewed } = getProductFromPath(pathname || "/");
+    if (product_slug)    productsViewed.current   = [product_slug];
+    if (category_viewed) categoriesViewed.current = [category_viewed];
 
-    // Fire start event — get geo from ipapi.co (free, no key needed)
+    const utm = getUTM();
+    const searchQuery = getSearchQuery();
+
+    // Scroll depth tracking
+    const removeScrollTracker = trackScrollDepth((depth) => {
+      maxScrollDepth.current = depth;
+    });
+
     const initVisitor = async () => {
       let geoData = {};
       try {
         const geo = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3000) });
         if (geo.ok) {
           const g = await geo.json();
-          // ipapi.co returns error object when rate limited
           if (!g.error) {
             geoData = {
               country:      g.country_name,
@@ -96,22 +139,25 @@ export default function VisitorTracker() {
             };
           }
         }
-      } catch { /* geo failed, still track without it */ }
+      } catch { /* geo failed */ }
 
       await fetch("/api/track/visit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action:       "start",
-          session_id:   sessionId.current,
-          device_type:  getDeviceType(),
-          os:           getOS(),
-          browser:      getBrowser(),
-          screen_width: window.screen.width,
-          screen_height: window.screen.height,
-          referrer:     document.referrer || null,
-          landing_page: pathname || "/",
-          is_returning: isReturning(),
+          action:           "start",
+          session_id:       sessionId.current,
+          device_type:      getDeviceType(),
+          os:               getOS(),
+          browser:          getBrowser(),
+          screen_width:     window.screen.width,
+          screen_height:    window.screen.height,
+          referrer:         document.referrer || null,
+          landing_page:     pathname || "/",
+          is_returning:     isReturning(),
+          search_query:     searchQuery,
+          hour_of_visit:    new Date().getHours(),
+          day_of_week:      new Date().getDay(), // 0=Sun, 6=Sat
           ...utm,
           ...geoData,
         }),
@@ -120,28 +166,43 @@ export default function VisitorTracker() {
 
     initVisitor();
 
-    // Update on unload
+    // Send full data on page leave
     const handleUnload = () => {
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
       navigator.sendBeacon("/api/track/visit", JSON.stringify({
         action:             "update",
         session_id:         sessionId.current,
         pages_visited:      pagesVisited.current,
+        products_viewed:    productsViewed.current,
+        categories_viewed:  categoriesViewed.current,
         time_spent_seconds: timeSpent,
+        max_scroll_depth:   maxScrollDepth.current,
       }));
     };
 
     window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+      removeScrollTracker();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Track page changes
+  // Track page navigation — capture products & categories viewed
   useEffect(() => {
     if (!initialized.current || !sessionId.current) return;
     if (pathname?.startsWith("/sabs-controller")) return;
+
     if (pathname && !pagesVisited.current.includes(pathname)) {
       pagesVisited.current = [...pagesVisited.current, pathname];
+    }
+
+    const { product_slug, category_viewed } = getProductFromPath(pathname || "/");
+    if (product_slug && !productsViewed.current.includes(product_slug)) {
+      productsViewed.current = [...productsViewed.current, product_slug];
+    }
+    if (category_viewed && !categoriesViewed.current.includes(category_viewed)) {
+      categoriesViewed.current = [...categoriesViewed.current, category_viewed];
     }
   }, [pathname]);
 
