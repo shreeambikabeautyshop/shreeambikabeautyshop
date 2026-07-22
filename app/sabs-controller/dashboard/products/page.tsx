@@ -350,7 +350,10 @@ export default function ProductsList() {
                   <FiZap className="text-orange-500" size={16} /> SEO Caption Ready
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  via {captionPreview.provider}
+                  via{" "}
+                  <span className={`font-bold ${captionPreview.provider === "gemini" ? "text-blue-600" : "text-orange-500"}`}>
+                    {captionPreview.provider === "gemini" ? "✓ Google Gemini" : "⚠ Groq (Gemini unavailable)"}
+                  </span>
                   <span className="ml-2 bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">cached • regenerate for new</span>
                 </p>
               </div>

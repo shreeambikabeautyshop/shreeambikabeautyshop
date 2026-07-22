@@ -4,10 +4,11 @@ function isAuthenticated(req: NextRequest): boolean {
   return req.cookies.get("sabs_session")?.value === "authenticated";
 }
 
-// Collect all configured Gemini keys (uncomment more in .env.local to enable)
+// Collect all configured Gemini keys — GEMINI_API_KEY is the primary one from Vercel
 function getGeminiKeys(): string[] {
   return [
-    process.env.GEMINI_API_KEY_1,
+    process.env.GEMINI_API_KEY,    // primary key already in Vercel
+    process.env.GEMINI_API_KEY_1,  // backup key 1
     process.env.GEMINI_API_KEY_2,
     process.env.GEMINI_API_KEY_3,
     process.env.GEMINI_API_KEY_4,
