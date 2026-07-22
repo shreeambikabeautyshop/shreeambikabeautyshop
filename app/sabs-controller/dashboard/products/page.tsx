@@ -390,17 +390,6 @@ export default function ProductsList() {
                           <FaWhatsapp size={13} />
                         </button>
 
-                        {/* View live */}
-                        <a
-                          href={getProductUrl(p)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg transition-colors"
-                          title="View live product page"
-                        >
-                          <FiExternalLink size={13} />
-                        </a>
-
                         {/* Delete */}
                         <button
                           onClick={() => handleDelete(p.id, p.name)}
@@ -426,7 +415,6 @@ export default function ProductsList() {
           </div>
         )}
       </div>
-      )}
     </div>
 
       {/* Caption Preview Modal */}
