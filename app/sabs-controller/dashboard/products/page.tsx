@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiExternalLink, FiCopy, FiZap } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiCopy, FiZap } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 
 interface Product {
@@ -24,26 +24,25 @@ interface Product {
 const BASE_URL = "https://www.shreeambikabeauty.com";
 
 export default function ProductsList() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [copied, setCopied]     = useState<string | null>(null);
-  const [shortUrls, setShortUrls] = useState<Record<string, string>>({});
+  const [products, setProducts]         = useState<Product[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [search, setSearch]             = useState("");
+  const [deleting, setDeleting]         = useState<string | null>(null);
+  const [copied, setCopied]             = useState<string | null>(null);
+  const [shortUrls, setShortUrls]       = useState<Record<string, string>>({});
   const [shortLoading, setShortLoading] = useState<string | null>(null);
   const [captionLoading, setCaptionLoading] = useState<string | null>(null);
   const [captionCopied, setCaptionCopied]   = useState<string | null>(null);
-  const [captionPreview, setCaptionPreview] = useState<{ id: string; text: string; chars: number; provider: string } | null>(null);
+  const [captionPreview, setCaptionPreview] = useState<{
+    id: string; text: string; chars: number; provider: string;
+  } | null>(null);
   const [view, setView] = useState<"table" | "images">("table");
 
   const fetchProducts = () => {
     setLoading(true);
     fetch("/api/admin/products")
       .then((r) => r.json())
-      .then(({ data }) => {
-        setProducts(data || []);
-        setLoading(false);
-      })
+      .then(({ data }) => { setProducts(data || []); setLoading(false); })
       .catch(() => setLoading(false));
   };
 
@@ -57,81 +56,45 @@ export default function ProductsList() {
     setDeleting(null);
   };
 
-  const getProductUrl = (p: Product) =>
-    `${BASE_URL}/products/${p.slug || p.id}`;
+  const getProductUrl = (p: Product) => `${BASE_URL}/products/${p.slug || p.id}`;
+
+  const getOrCreateShortUrl = async (p: Product): Promise<string> => {
+    if (shortUrls[p.id]) return shortUrls[p.id];
+    try {
+      const res  = await fetch("/api/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
+      });
+      const json = await res.json();
+      if (json.short_url) {
+        setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
+        return json.short_url;
+      }
+    } catch { /* fall through */ }
+    return getProductUrl(p);
+  };
 
   const handleCopyUrl = async (p: Product) => {
-    // Get or create short URL
-    if (!shortUrls[p.id]) {
-      setShortLoading(p.id);
-      try {
-        const res  = await fetch("/api/shorten", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
-        });
-        const json = await res.json();
-        if (json.short_url) {
-          setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
-          await navigator.clipboard.writeText(json.short_url);
-        } else {
-          await navigator.clipboard.writeText(getProductUrl(p));
-        }
-      } catch {
-        await navigator.clipboard.writeText(getProductUrl(p));
-      }
-      setShortLoading(null);
-    } else {
-      await navigator.clipboard.writeText(shortUrls[p.id]);
-    }
+    setShortLoading(p.id);
+    const url = await getOrCreateShortUrl(p);
+    await navigator.clipboard.writeText(url);
+    setShortLoading(null);
     setCopied(p.id);
     setTimeout(() => setCopied(null), 2500);
   };
 
   const handleShareWhatsApp = async (p: Product) => {
-    let shareUrl = shortUrls[p.id];
-    if (!shareUrl) {
-      try {
-        const res  = await fetch("/api/shorten", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
-        });
-        const json = await res.json();
-        shareUrl   = json.short_url || getProductUrl(p);
-        if (json.short_url) setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
-      } catch {
-        shareUrl = getProductUrl(p);
-      }
-    }
+    const shareUrl = await getOrCreateShortUrl(p);
     const msg = encodeURIComponent(
-      `*${p.name}*\n` +
-      `Price: Rs.${p.price} (MRP Rs.${p.mrp}) - ${p.discount}% OFF\n` +
-      `100% Original Product\n\n` +
-      `View Product: ${shareUrl}\n\n` +
-      `Order on WhatsApp: +918291455297\n` +
-      `Shree Ambika Beauty Shop`
+      `*${p.name}*\nPrice: Rs.${p.price} (MRP Rs.${p.mrp}) - ${p.discount}% OFF\n100% Original Product\n\nView Product: ${shareUrl}\n\nOrder on WhatsApp: +918291455297\nShree Ambika Beauty Shop`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
 
   const handleGenerateCaption = async (p: Product) => {
     setCaptionLoading(p.id);
-    // Get short URL first
-    let shortUrl = shortUrls[p.id];
-    if (!shortUrl) {
-      try {
-        const res  = await fetch("/api/shorten", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
-        });
-        const json = await res.json();
-        shortUrl   = json.short_url || getProductUrl(p);
-        if (json.short_url) setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
-      } catch { shortUrl = getProductUrl(p); }
-    }
-
+    const shortUrl = await getOrCreateShortUrl(p);
     try {
       const res  = await fetch("/api/admin/generate-caption", {
         method: "POST",
@@ -145,7 +108,7 @@ export default function ProductsList() {
       if (json.caption) {
         setCaptionPreview({ id: p.id, text: json.caption, chars: json.chars, provider: json.provider });
       }
-    } catch { /* show nothing */ }
+    } catch { /* silent */ }
     setCaptionLoading(null);
   };
 
@@ -155,15 +118,15 @@ export default function ProductsList() {
     setTimeout(() => setCaptionCopied(null), 3000);
   };
 
-  const filtered = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.brand.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase())
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.brand.toLowerCase().includes(search.toLowerCase()) ||
+    p.category.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">All Products</h1>
@@ -172,10 +135,8 @@ export default function ProductsList() {
             {search && <span className="ml-2">• {filtered.length} results</span>}
           </p>
         </div>
-        <Link
-          href="/sabs-controller/dashboard/products/add"
-          className="flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
-        >
+        <Link href="/sabs-controller/dashboard/products/add"
+          className="flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm">
           <FiPlusCircle /> Add Product
         </Link>
       </div>
@@ -185,20 +146,13 @@ export default function ProductsList() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 flex-1">
             <FiSearch className="text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by name, brand, category..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent outline-none text-sm text-gray-700 flex-1"
-            />
+            <input type="text" placeholder="Search by name, brand, category..."
+              value={search} onChange={(e) => setSearch(e.target.value)}
+              className="bg-transparent outline-none text-sm text-gray-700 flex-1" />
             {search && (
-              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600 text-xs">
-                ✕ Clear
-              </button>
+              <button onClick={() => setSearch("")} className="text-gray-400 hover:text-gray-600 text-xs">✕ Clear</button>
             )}
           </div>
-          {/* View toggle */}
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
             <button onClick={() => setView("table")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${view === "table" ? "bg-white shadow-sm text-gray-800" : "text-gray-500 hover:text-gray-700"}`}>
@@ -212,8 +166,8 @@ export default function ProductsList() {
         </div>
       </div>
 
-      {/* Table / Image view */}
-      {view === "images" ? (
+      {/* Image view */}
+      {view === "images" && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           {loading ? (
             <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
@@ -234,7 +188,6 @@ export default function ProductsList() {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 w-full">
                       <p className="text-white text-[9px] font-bold line-clamp-2 leading-tight">{p.name}</p>
-                      <p className="text-white/70 text-[8px]">₹{p.price}</p>
                     </div>
                   </div>
                   {!p.in_stock && (
@@ -245,178 +198,136 @@ export default function ProductsList() {
             </div>
           )}
         </div>
-      ) : (
-        /* Table */
+      )}
+
+      {/* Table view */}
+      {view === "table" && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <FiPlusCircle size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="font-medium">No products found</p>
-            <Link href="/sabs-controller/dashboard/products/add" className="text-brand-primary text-sm hover:underline mt-1 inline-block">
-              Add your first product →
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-center px-3 py-3 font-semibold text-gray-500 w-10">#</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Product</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Brand</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Price</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Tags</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((p, idx) => (
-                  <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    {/* Sr No */}
-                    <td className="px-3 py-3 text-center">
-                      <span className="w-7 h-7 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center mx-auto">
-                        {idx + 1}
-                      </span>
-                    </td>
-
-                    {/* Image + Name */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-brand-light overflow-hidden flex-shrink-0 flex items-center justify-center">
-                          {p.images?.[0] ? (
-                            <Image src={p.images[0]} alt={p.name} width={48} height={48} className="object-cover w-full h-full" />
-                          ) : (
-                            <span className="text-xl">📦</span>
-                          )}
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-800 line-clamp-1 max-w-[160px] block">{p.name}</span>
-                          {/* Product URL preview */}
-                          <a
-                            href={getProductUrl(p)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[10px] text-gray-400 hover:text-brand-primary truncate max-w-[160px] block flex items-center gap-1"
-                          >
-                            <FiExternalLink size={9} />
-                            /products/{(p.slug || p.id).slice(0, 25)}...
-                          </a>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3 text-gray-600 text-xs">{p.brand}</td>
-                    <td className="px-4 py-3">
-                      <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full">{p.category}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-bold text-gray-800">₹{p.price}</p>
-                      <p className="text-xs text-gray-400 line-through">₹{p.mrp}</p>
-                      <p className="text-xs text-green-600 font-semibold">{p.discount}% OFF</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.in_stock ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"}`}>
-                        {p.in_stock ? "In Stock" : "Out of Stock"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1 flex-wrap">
-                        {p.featured && <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">⭐</span>}
-                        {p.trending && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">🔥</span>}
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-
-                        {/* ✨ Caption — FIRST & prominent */}
-                        <button
-                          onClick={() => handleGenerateCaption(p)}
-                          disabled={captionLoading === p.id}
-                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors text-[11px] font-bold ${
-                            captionCopied === p.id
-                              ? "bg-green-100 text-green-600"
-                              : captionLoading === p.id
-                              ? "bg-orange-100 text-orange-400 animate-pulse"
-                              : "bg-orange-500 hover:bg-orange-600 text-white"
-                          }`}
-                          title="Generate SEO Caption (260-280 chars)"
-                        >
-                          {captionLoading === p.id
-                            ? <><span className="animate-spin">✨</span> <span>AI...</span></>
-                            : captionCopied === p.id
-                            ? <><FiCopy size={11} /> <span>Copied!</span></>
-                            : <><FiZap size={11} /> <span>Caption</span></>}
-                        </button>
-
-                        {/* Edit */}
-                        <Link
-                          href={`/sabs-controller/dashboard/products/edit/${p.id}`}
-                          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <FiEdit2 size={13} />
-                        </Link>
-
-                        {/* Copy Short URL */}
-                        <button
-                          onClick={() => handleCopyUrl(p)}
-                          disabled={shortLoading === p.id}
-                          className={`p-2 rounded-lg transition-colors text-xs font-bold ${
-                            copied === p.id
-                              ? "bg-green-100 text-green-600"
-                              : shortLoading === p.id
-                              ? "bg-gray-100 text-gray-400 animate-pulse"
-                              : "bg-gray-50 hover:bg-gray-100 text-gray-500"
-                          }`}
-                          title={shortUrls[p.id] ? `Copy: ${shortUrls[p.id]}` : "Copy short URL"}
-                        >
-                          {copied === p.id ? "✓" : shortLoading === p.id ? "..." : <FiShare2 size={13} />}
-                        </button>
-
-                        {/* Share on WhatsApp */}
-                        <button
-                          onClick={() => handleShareWhatsApp(p)}
-                          className="p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors"
-                          title="Share on WhatsApp"
-                        >
-                          <FaWhatsapp size={13} />
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          onClick={() => handleDelete(p.id, p.name)}
-                          disabled={deleting === p.id}
-                          className="p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors disabled:opacity-50"
-                          title="Delete"
-                        >
-                          <FiTrash2 size={13} />
-                        </button>
-
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Footer summary */}
-            <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 flex justify-between">
-              <span>Showing {filtered.length} of {products.length} products</span>
-              <span>Total value: ₹{products.reduce((sum, p) => sum + p.price, 0).toLocaleString("en-IN")}</span>
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
             </div>
-          </div>
-        )}
-      </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <FiPlusCircle size={40} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium">No products found</p>
+              <Link href="/sabs-controller/dashboard/products/add" className="text-brand-primary text-sm hover:underline mt-1 inline-block">
+                Add your first product →
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="text-center px-3 py-3 font-semibold text-gray-500 w-10">#</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Product</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Brand</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Price</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Tags</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p, idx) => (
+                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="px-3 py-3 text-center">
+                        <span className="w-7 h-7 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center mx-auto">
+                          {idx + 1}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-brand-light overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            {p.images?.[0] ? (
+                              <Image src={p.images[0]} alt={p.name} width={48} height={48} className="object-cover w-full h-full" />
+                            ) : (
+                              <span className="text-xl">📦</span>
+                            )}
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-800 line-clamp-1 max-w-[160px] block">{p.name}</span>
+                            <span className="text-[10px] text-gray-400 truncate max-w-[160px] block">
+                              /products/{(p.slug || p.id).slice(0, 22)}...
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 text-xs">{p.brand}</td>
+                      <td className="px-4 py-3">
+                        <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full">{p.category}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-bold text-gray-800">₹{p.price}</p>
+                        <p className="text-xs text-gray-400 line-through">₹{p.mrp}</p>
+                        <p className="text-xs text-green-600 font-semibold">{p.discount}% OFF</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.in_stock ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"}`}>
+                          {p.in_stock ? "In Stock" : "Out of Stock"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1 flex-wrap">
+                          {p.featured && <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">⭐</span>}
+                          {p.trending && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">🔥</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {/* Caption */}
+                          <button onClick={() => handleGenerateCaption(p)} disabled={captionLoading === p.id}
+                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+                              captionCopied === p.id ? "bg-green-100 text-green-600"
+                              : captionLoading === p.id ? "bg-orange-100 text-orange-400 animate-pulse"
+                              : "bg-orange-500 hover:bg-orange-600 text-white"}`}
+                            title="Generate SEO Caption">
+                            {captionLoading === p.id ? <span>✨ AI...</span>
+                              : captionCopied === p.id ? <><FiCopy size={11} /><span>Copied!</span></>
+                              : <><FiZap size={11} /><span>Caption</span></>}
+                          </button>
+                          {/* Edit */}
+                          <Link href={`/sabs-controller/dashboard/products/edit/${p.id}`}
+                            className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors" title="Edit">
+                            <FiEdit2 size={13} />
+                          </Link>
+                          {/* Copy short URL */}
+                          <button onClick={() => handleCopyUrl(p)} disabled={shortLoading === p.id}
+                            className={`p-2 rounded-lg transition-colors text-xs font-bold ${
+                              copied === p.id ? "bg-green-100 text-green-600"
+                              : shortLoading === p.id ? "bg-gray-100 text-gray-400 animate-pulse"
+                              : "bg-gray-50 hover:bg-gray-100 text-gray-500"}`}
+                            title="Copy short URL">
+                            {copied === p.id ? "✓" : shortLoading === p.id ? "..." : <FiShare2 size={13} />}
+                          </button>
+                          {/* WhatsApp */}
+                          <button onClick={() => handleShareWhatsApp(p)}
+                            className="p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors" title="Share on WhatsApp">
+                            <FaWhatsapp size={13} />
+                          </button>
+                          {/* Delete */}
+                          <button onClick={() => handleDelete(p.id, p.name)} disabled={deleting === p.id}
+                            className="p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors disabled:opacity-50" title="Delete">
+                            <FiTrash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 flex justify-between">
+                <span>Showing {filtered.length} of {products.length} products</span>
+                <span>Total value: ₹{products.reduce((sum, p) => sum + p.price, 0).toLocaleString("en-IN")}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Caption Preview Modal — must be inside root div */}
+      {/* Caption Preview Modal */}
       {captionPreview && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
           onClick={() => setCaptionPreview(null)}>
@@ -428,9 +339,9 @@ export default function ProductsList() {
                   <FiZap className="text-orange-500" size={16} /> SEO Caption Ready
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {captionPreview.chars} characters • via {captionPreview.provider}
+                  {captionPreview.chars} chars • via {captionPreview.provider}
                   {captionPreview.chars >= 260 && captionPreview.chars <= 280
-                    ? <span className="text-green-600 font-bold ml-1">✓ Perfect length</span>
+                    ? <span className="text-green-600 font-bold ml-1">✓ Perfect</span>
                     : <span className="text-orange-500 font-bold ml-1">⚠ Check length</span>}
                 </p>
               </div>
@@ -444,20 +355,29 @@ export default function ProductsList() {
             </div>
             <div className="mb-4">
               <div className="flex justify-between text-[10px] text-gray-400 mb-1">
-                <span>0</span><span className="text-green-600 font-bold">260-280 ideal</span><span>300</span>
+                <span>0</span><span className="text-green-600 font-bold">260–280 ideal</span><span>300</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${captionPreview.chars >= 260 && captionPreview.chars <= 280 ? "bg-green-500" : captionPreview.chars < 260 ? "bg-orange-400" : "bg-red-400"}`}
+                <div className={`h-full rounded-full transition-all ${
+                  captionPreview.chars >= 260 && captionPreview.chars <= 280 ? "bg-green-500"
+                  : captionPreview.chars < 260 ? "bg-orange-400" : "bg-red-400"}`}
                   style={{ width: `${Math.min((captionPreview.chars / 300) * 100, 100)}%` }} />
               </div>
             </div>
             <div className="flex gap-3">
               <button onClick={() => handleCopyCaption(captionPreview.text, captionPreview.id)}
-                className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all text-sm ${captionCopied === captionPreview.id ? "bg-green-500 text-white" : "bg-brand-primary text-white hover:bg-brand-dark"}`}>
+                className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm transition-all ${
+                  captionCopied === captionPreview.id ? "bg-green-500 text-white" : "bg-brand-primary text-white hover:bg-brand-dark"}`}>
                 <FiCopy size={14} />
                 {captionCopied === captionPreview.id ? "Copied! ✓ Paste anywhere" : "Copy Caption"}
               </button>
-              <button onClick={() => { setCaptionPreview(null); handleGenerateCaption(products.find(x => x.id === captionPreview.id)!); }}
+              <button
+                onClick={() => {
+                  const id = captionPreview.id;
+                  setCaptionPreview(null);
+                  const prod = products.find((x) => x.id === id);
+                  if (prod) handleGenerateCaption(prod);
+                }}
                 className="px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold rounded-xl text-sm transition-all">
                 🔄 Regenerate
               </button>
