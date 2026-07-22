@@ -335,6 +335,27 @@ export default function ProductsList() {
                     {/* Actions */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5 flex-wrap">
+
+                        {/* ✨ Caption — FIRST & prominent */}
+                        <button
+                          onClick={() => handleGenerateCaption(p)}
+                          disabled={captionLoading === p.id}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors text-[11px] font-bold ${
+                            captionCopied === p.id
+                              ? "bg-green-100 text-green-600"
+                              : captionLoading === p.id
+                              ? "bg-orange-100 text-orange-400 animate-pulse"
+                              : "bg-orange-500 hover:bg-orange-600 text-white"
+                          }`}
+                          title="Generate SEO Caption (260-280 chars)"
+                        >
+                          {captionLoading === p.id
+                            ? <><span className="animate-spin">✨</span> <span>AI...</span></>
+                            : captionCopied === p.id
+                            ? <><FiCopy size={11} /> <span>Copied!</span></>
+                            : <><FiZap size={11} /> <span>Caption</span></>}
+                        </button>
+
                         {/* Edit */}
                         <Link
                           href={`/sabs-controller/dashboard/products/edit/${p.id}`}
@@ -390,21 +411,6 @@ export default function ProductsList() {
                           <FiTrash2 size={13} />
                         </button>
 
-                        {/* Generate SEO Caption */}
-                        <button
-                          onClick={() => handleGenerateCaption(p)}
-                          disabled={captionLoading === p.id}
-                          className={`p-2 rounded-lg transition-colors text-xs font-bold ${
-                            captionCopied === p.id
-                              ? "bg-green-100 text-green-600"
-                              : captionLoading === p.id
-                              ? "bg-orange-100 text-orange-400 animate-pulse"
-                              : "bg-orange-50 hover:bg-orange-100 text-orange-500"
-                          }`}
-                          title="Generate SEO Caption (260-280 chars)"
-                        >
-                          {captionCopied === p.id ? <FiCopy size={13} /> : captionLoading === p.id ? "✨" : <FiZap size={13} />}
-                        </button>
                       </div>
                     </td>
                   </tr>
