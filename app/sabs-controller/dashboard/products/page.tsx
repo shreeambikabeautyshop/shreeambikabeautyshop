@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiExternalLink } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiExternalLink, FiCopy, FiZap } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 
 interface Product {
@@ -31,6 +31,9 @@ export default function ProductsList() {
   const [copied, setCopied]     = useState<string | null>(null);
   const [shortUrls, setShortUrls] = useState<Record<string, string>>({});
   const [shortLoading, setShortLoading] = useState<string | null>(null);
+  const [captionLoading, setCaptionLoading] = useState<string | null>(null);
+  const [captionCopied, setCaptionCopied]   = useState<string | null>(null);
+  const [captionPreview, setCaptionPreview] = useState<{ id: string; text: string; chars: number; provider: string } | null>(null);
   const [view, setView] = useState<"table" | "images">("table");
 
   const fetchProducts = () => {
@@ -110,6 +113,46 @@ export default function ProductsList() {
       `Shree Ambika Beauty Shop`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
+  };
+
+  const handleGenerateCaption = async (p: Product) => {
+    setCaptionLoading(p.id);
+    // Get short URL first
+    let shortUrl = shortUrls[p.id];
+    if (!shortUrl) {
+      try {
+        const res  = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
+        });
+        const json = await res.json();
+        shortUrl   = json.short_url || getProductUrl(p);
+        if (json.short_url) setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
+      } catch { shortUrl = getProductUrl(p); }
+    }
+
+    try {
+      const res  = await fetch("/api/admin/generate-caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: p.name, brand: p.brand, category: p.category,
+          price: p.price, slug: p.slug || p.id, shortUrl,
+        }),
+      });
+      const json = await res.json();
+      if (json.caption) {
+        setCaptionPreview({ id: p.id, text: json.caption, chars: json.chars, provider: json.provider });
+      }
+    } catch { /* show nothing */ }
+    setCaptionLoading(null);
+  };
+
+  const handleCopyCaption = async (text: string, id: string) => {
+    await navigator.clipboard.writeText(text);
+    setCaptionCopied(id);
+    setTimeout(() => setCaptionCopied(null), 3000);
   };
 
   const filtered = products.filter(
@@ -346,6 +389,22 @@ export default function ProductsList() {
                         >
                           <FiTrash2 size={13} />
                         </button>
+
+                        {/* Generate SEO Caption */}
+                        <button
+                          onClick={() => handleGenerateCaption(p)}
+                          disabled={captionLoading === p.id}
+                          className={`p-2 rounded-lg transition-colors text-xs font-bold ${
+                            captionCopied === p.id
+                              ? "bg-green-100 text-green-600"
+                              : captionLoading === p.id
+                              ? "bg-orange-100 text-orange-400 animate-pulse"
+                              : "bg-orange-50 hover:bg-orange-100 text-orange-500"
+                          }`}
+                          title="Generate SEO Caption (260-280 chars)"
+                        >
+                          {captionCopied === p.id ? <FiCopy size={13} /> : captionLoading === p.id ? "✨" : <FiZap size={13} />}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -361,6 +420,77 @@ export default function ProductsList() {
           </div>
         )}
       </div>
+      )}
+    </div>
+
+      {/* Caption Preview Modal */}
+      {captionPreview && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setCaptionPreview(null)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <FiZap className="text-orange-500" size={16} /> SEO Caption Ready
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {captionPreview.chars} characters • via {captionPreview.provider}
+                  {captionPreview.chars >= 260 && captionPreview.chars <= 280
+                    ? <span className="text-green-600 font-bold ml-1">✓ Perfect length</span>
+                    : <span className="text-orange-500 font-bold ml-1">⚠ Check length</span>}
+                </p>
+              </div>
+              <button onClick={() => setCaptionPreview(null)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+            </div>
+
+            {/* Caption text */}
+            <div className="bg-gray-50 rounded-2xl p-4 mb-4 relative">
+              <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed">{captionPreview.text}</pre>
+              <div className="absolute top-2 right-2 bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {captionPreview.chars} chars
+              </div>
+            </div>
+
+            {/* Char bar */}
+            <div className="mb-4">
+              <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+                <span>0</span><span className="text-green-600 font-bold">260-280 ideal</span><span>300</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    captionPreview.chars >= 260 && captionPreview.chars <= 280
+                      ? "bg-green-500" : captionPreview.chars < 260 ? "bg-orange-400" : "bg-red-400"
+                  }`}
+                  style={{ width: `${Math.min((captionPreview.chars / 300) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleCopyCaption(captionPreview.text, captionPreview.id)}
+                className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all text-sm ${
+                  captionCopied === captionPreview.id
+                    ? "bg-green-500 text-white"
+                    : "bg-brand-primary text-white hover:bg-brand-dark"
+                }`}>
+                <FiCopy size={14} />
+                {captionCopied === captionPreview.id ? "Copied! ✓ Paste anywhere" : "Copy Caption"}
+              </button>
+              <button
+                onClick={() => { setCaptionPreview(null); handleGenerateCaption(products.find(x => x.id === captionPreview.id)!); }}
+                className="px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold rounded-xl text-sm transition-all">
+                🔄 Regenerate
+              </button>
+            </div>
+
+            <p className="text-[10px] text-gray-400 text-center mt-3">
+              Copy &amp; paste on Instagram, Twitter/X, Facebook, Telegram, WhatsApp Status
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );
