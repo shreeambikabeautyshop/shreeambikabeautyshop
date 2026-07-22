@@ -228,7 +228,7 @@ export default function VisitorsPage() {
                 <div className="space-y-1.5">
                   {topSearches.map((s, i) => (
                     <div key={i} className="flex items-center justify-between bg-blue-50 rounded-xl px-3 py-1.5">
-                      <span className="text-xs font-semibold text-blue-700">"{s.query}"</span>
+                      <span className="text-xs font-semibold text-blue-700">&quot;{s.query}&quot;</span>
                       <span className="text-xs text-blue-500 font-bold">{s.count}x</span>
                     </div>
                   ))}
@@ -289,7 +289,7 @@ export default function VisitorsPage() {
           <div className="space-y-5">
             <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
               <p className="text-sm font-bold text-green-800 flex items-center gap-2"><FaWhatsapp size={16} /> WhatsApp Reach Strategy</p>
-              <p className="text-xs text-green-700 mt-1">These are real cities where your visitors came from. Click "Message" to open a pre-filled WhatsApp to promote your products to that area.</p>
+              <p className="text-xs text-green-700 mt-1">These are real cities where your visitors came from. Click &quot;Message&quot; to open a pre-filled WhatsApp to promote your products to that area.</p>
             </div>
 
             {/* City-wise visitor table with WhatsApp reach button */}
