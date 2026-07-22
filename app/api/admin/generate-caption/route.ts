@@ -32,32 +32,51 @@ function buildPrompt(product: {
   price?: number; slug: string; shortUrl?: string;
 }): string {
   const productUrl = product.shortUrl || `${SHOP_URL}/products/${product.slug}`;
+  // Shorten product name to max 35 chars for character budget
+  const shortName = product.name.length > 35 ? product.name.slice(0, 33) + "…" : product.name;
+  const shortBrand = product.brand.length > 15 ? product.brand.slice(0, 14) + "…" : product.brand;
+  const shortCat = product.category.length > 12 ? product.category.slice(0, 11) + "…" : product.category;
 
-  return `You are a creative Indian beauty social media expert for "Shree Ambika Beauty Shop", Mumbai.
+  // Fixed template — count chars carefully
+  // Template (without hook) = ~230 chars, so hook must be 40-50 chars
+  const template = `[HOOK]
+✨ ${shortName}
+🏷️ ${shortBrand} | ${shortCat}
+🛒 ${productUrl}
+🌐 shreeambikabeauty.com
+📞 +91 82914 55297
+📍 Dahisar, Mumbai 400068
+#${product.brand.replace(/\s+/g, "")} #MumbaiBeauty #Beauty`;
 
-I need you to fill in ONLY 2 things in this caption template:
-1. [HOOK] — One catchy, emotional hook sentence (max 60 chars) with 1-2 emojis about the product benefit
-2. [BENEFIT] — One unique selling point sentence (max 70 chars) about why to buy this product
+  const templateWithoutHook = template.replace("[HOOK]\n", "");
+  const remainingChars = 275 - templateWithoutHook.length;
 
-Product: ${product.name}
-Brand: ${product.brand}
-Category: ${product.category}
+  return `Write ONE catchy hook sentence for this beauty product caption.
+Product: ${product.name} by ${product.brand} (${product.category})
+The hook must be EXACTLY between ${Math.max(remainingChars - 5, 30)} and ${remainingChars} characters (including spaces and emojis).
+Make it emotional, engaging, with 1-2 emojis. Mumbai audience. No hashtags.
+Return ONLY the hook sentence, nothing else.`;
+}
 
-Return ONLY this exact template with [HOOK] and [BENEFIT] replaced — nothing else, no extra text:
+// Build the final caption by injecting AI hook into template
+function buildCaption(product: {
+  name: string; brand: string; category: string; slug: string; shortUrl?: string;
+}, hook: string): string {
+  const productUrl = product.shortUrl || `${SHOP_URL}/products/${product.slug}`;
+  const shortName  = product.name.length > 35 ? product.name.slice(0, 33) + "…" : product.name;
+  const shortBrand = product.brand.length > 15 ? product.brand.slice(0, 14) + "…" : product.brand;
+  const shortCat   = product.category.length > 12 ? product.category.slice(0, 11) + "…" : product.category;
+  const tag1 = product.brand.replace(/\s+/g, "");
+  const tag2 = product.category.replace(/\s+/g, "");
 
-[HOOK]
-
-✨ ${product.name}
-🏷️ ${product.brand} | ${product.category}
-
-[BENEFIT]
-
-🛒 Buy: ${productUrl}
-🌐 ${SHOP_URL}
-📞 WhatsApp: ${WHATSAPP}
-📍 ${SHOP_LOCATION}
-
-#${product.brand.replace(/\s+/g, "")} #MumbaiBeauty #${product.category.replace(/\s+/g, "")}`;
+  return `${hook.trim()}
+✨ ${shortName}
+🏷️ ${shortBrand} | ${shortCat}
+🛒 ${productUrl}
+🌐 shreeambikabeauty.com
+📞 +91 82914 55297
+📍 Dahisar, Mumbai 400068
+#${tag1} #MumbaiBeauty #${tag2}`;
 }
 
 async function callGemini(key: string, prompt: string): Promise<string> {
@@ -122,32 +141,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "name and slug required" }, { status: 400 });
   }
 
-  const prompt   = buildPrompt({ name, brand, category, price, slug, shortUrl });
+  const product    = { name, brand, category, price, slug, shortUrl };
+  const prompt     = buildPrompt(product);
   const geminiKeys = getGeminiKeys();
   const groqKeys   = getGroqKeys();
 
-  let caption = "";
+  let hook = "";
   let provider = "";
   let lastError = "";
 
   // Try Gemini keys first (rotate on 429)
   for (const key of geminiKeys) {
     try {
-      caption  = await callGemini(key, prompt);
+      hook     = await callGemini(key, prompt);
       provider = "gemini";
       break;
     } catch (e) {
       lastError = e instanceof Error ? e.message : "Unknown";
-      if (lastError !== "RATE_LIMIT") break; // Non-rate-limit error — stop trying
-      continue; // Rate limit — try next key
+      if (lastError !== "RATE_LIMIT") break;
+      continue;
     }
   }
 
-  // Fallback to Groq if Gemini failed
-  if (!caption) {
+  // Fallback to Groq
+  if (!hook) {
     for (const key of groqKeys) {
       try {
-        caption  = await callGroq(key, prompt);
+        hook     = await callGroq(key, prompt);
         provider = "groq";
         break;
       } catch (e) {
@@ -158,18 +178,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (!caption) {
+  if (!hook) {
     return NextResponse.json(
       { error: `Caption generation failed: ${lastError}` },
       { status: 500 }
     );
   }
 
-  const finalCaption = adjustCaption(caption);
+  // Build full caption with hook injected into hardcoded template
+  const caption = adjustCaption(buildCaption(product, hook));
 
   return NextResponse.json({
-    caption: finalCaption,
-    chars: finalCaption.length,
+    caption,
+    chars: caption.length,
     provider,
   });
 }
