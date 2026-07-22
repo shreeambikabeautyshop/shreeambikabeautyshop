@@ -415,9 +415,8 @@ export default function ProductsList() {
           </div>
         )}
       </div>
-    </div>
 
-      {/* Caption Preview Modal */}
+      {/* Caption Preview Modal — must be inside root div */}
       {captionPreview && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
           onClick={() => setCaptionPreview(null)}>
@@ -437,49 +436,32 @@ export default function ProductsList() {
               </div>
               <button onClick={() => setCaptionPreview(null)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
-
-            {/* Caption text */}
             <div className="bg-gray-50 rounded-2xl p-4 mb-4 relative">
               <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed">{captionPreview.text}</pre>
               <div className="absolute top-2 right-2 bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
                 {captionPreview.chars} chars
               </div>
             </div>
-
-            {/* Char bar */}
             <div className="mb-4">
               <div className="flex justify-between text-[10px] text-gray-400 mb-1">
                 <span>0</span><span className="text-green-600 font-bold">260-280 ideal</span><span>300</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    captionPreview.chars >= 260 && captionPreview.chars <= 280
-                      ? "bg-green-500" : captionPreview.chars < 260 ? "bg-orange-400" : "bg-red-400"
-                  }`}
-                  style={{ width: `${Math.min((captionPreview.chars / 300) * 100, 100)}%` }}
-                />
+                <div className={`h-full rounded-full transition-all ${captionPreview.chars >= 260 && captionPreview.chars <= 280 ? "bg-green-500" : captionPreview.chars < 260 ? "bg-orange-400" : "bg-red-400"}`}
+                  style={{ width: `${Math.min((captionPreview.chars / 300) * 100, 100)}%` }} />
               </div>
             </div>
-
             <div className="flex gap-3">
-              <button
-                onClick={() => handleCopyCaption(captionPreview.text, captionPreview.id)}
-                className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all text-sm ${
-                  captionCopied === captionPreview.id
-                    ? "bg-green-500 text-white"
-                    : "bg-brand-primary text-white hover:bg-brand-dark"
-                }`}>
+              <button onClick={() => handleCopyCaption(captionPreview.text, captionPreview.id)}
+                className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl transition-all text-sm ${captionCopied === captionPreview.id ? "bg-green-500 text-white" : "bg-brand-primary text-white hover:bg-brand-dark"}`}>
                 <FiCopy size={14} />
                 {captionCopied === captionPreview.id ? "Copied! ✓ Paste anywhere" : "Copy Caption"}
               </button>
-              <button
-                onClick={() => { setCaptionPreview(null); handleGenerateCaption(products.find(x => x.id === captionPreview.id)!); }}
+              <button onClick={() => { setCaptionPreview(null); handleGenerateCaption(products.find(x => x.id === captionPreview.id)!); }}
                 className="px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold rounded-xl text-sm transition-all">
                 🔄 Regenerate
               </button>
             </div>
-
             <p className="text-[10px] text-gray-400 text-center mt-3">
               Copy &amp; paste on Instagram, Twitter/X, Facebook, Telegram, WhatsApp Status
             </p>
