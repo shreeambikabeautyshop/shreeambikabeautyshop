@@ -3,23 +3,59 @@ import { useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { useUser } from "@/app/context/UserContext";
+import { useSettings } from "@/app/context/SettingsContext";
 
 interface Props {
   productName: string;
   price: number;
+  mrp: number;
   slug: string;
 }
 
-export default function ProductActions({ productName, price, slug }: Props) {
+export default function ProductActions({ productName, price, mrp, slug }: Props) {
   const [qty, setQty] = useState(1);
   const { customer, isLoggedIn, triggerLogin } = useUser();
+  const { show_price, show_mrp } = useSettings();
 
   const msg = encodeURIComponent(
-    `Hi Vinod! I want to order:\n*${productName}*\nQty: ${qty}\nPrice: ₹${price} each\nTotal: ₹${price * qty}\n\nhttps://www.shreeambikabeauty.com/products/${slug}`
+    `Hi Vinod! I want to order:\n*${productName}*\nQty: ${qty}\n\nhttps://www.shreeambikabeauty.com/products/${slug}`
   );
 
   return (
     <div className="flex flex-col gap-3">
+
+      {/* Price block — respects show_price / show_mrp settings */}
+      <div className="flex items-end gap-3 bg-gray-50 rounded-xl px-4 py-3">
+        {show_price ? (
+          <div>
+            <p className="text-xs text-gray-500 font-medium">Our Price</p>
+            <p className="text-4xl font-black text-gray-900 leading-none">
+              <span className="text-xl font-normal">₹</span>{price.toLocaleString("en-IN")}
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-xs text-gray-500 font-medium">Price</p>
+            <span className="text-sm text-brand-primary font-semibold bg-brand-light px-3 py-1.5 rounded-full inline-block mt-1">
+              Contact for Price
+            </span>
+          </div>
+        )}
+        {show_price && show_mrp && mrp > price && (
+          <div className="pb-1">
+            <p className="text-xs text-gray-400">MRP</p>
+            <p className="text-sm text-gray-400 line-through">₹{mrp.toLocaleString("en-IN")}</p>
+          </div>
+        )}
+        {show_price && mrp > price && (
+          <div className="ml-auto pb-1">
+            <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+              Save ₹{(mrp - price).toLocaleString("en-IN")}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* Quantity */}
       <div className="flex items-center gap-4">
         <span className="text-sm font-semibold text-gray-700">Quantity</span>
@@ -34,7 +70,7 @@ export default function ProductActions({ productName, price, slug }: Props) {
             <FiPlus size={14} />
           </button>
         </div>
-        {qty > 1 && (
+        {qty > 1 && show_price && (
           <span className="text-xs text-gray-500">
             Total: <span className="font-bold text-gray-900">₹{(price * qty).toLocaleString("en-IN")}</span>
           </span>
@@ -49,7 +85,6 @@ export default function ProductActions({ productName, price, slug }: Props) {
             triggerLogin("order");
             return;
           }
-          // Track WhatsApp click using sendBeacon
           const trackingData = JSON.stringify({
             product_id: slug,
             product_name: productName,

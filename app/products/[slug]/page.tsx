@@ -164,28 +164,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 {p.in_stock && <span className="text-xs text-gray-400 border-l border-gray-200 pl-2">250+ Sold</span>}
               </div>
 
-              {/* Price */}
-              <div className="flex items-end gap-3 bg-gray-50 rounded-xl px-4 py-3">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Our Price</p>
-                  <p className="text-4xl font-black text-gray-900 leading-none">
-                    <span className="text-xl font-normal">₹</span>{p.price.toLocaleString("en-IN")}
-                  </p>
-                </div>
-                {p.mrp > p.price && (
-                  <div className="pb-1">
-                    <p className="text-xs text-gray-400">MRP</p>
-                    <p className="text-sm text-gray-400 line-through">₹{p.mrp.toLocaleString("en-IN")}</p>
-                  </div>
-                )}
-                <div className="ml-auto pb-1">
-                  <div className={`flex items-center gap-1.5 text-sm font-semibold ${p.in_stock ? "text-green-600" : "text-red-500"}`}>
-                    <span className={`w-2 h-2 rounded-full ${p.in_stock ? "bg-green-500" : "bg-red-500"}`} />
-                    {p.in_stock ? "In Stock" : "Out of Stock"}
-                  </div>
-                  {p.in_stock && <p className="text-[10px] text-gray-400">Ready to Ship</p>}
-                </div>
-              </div>
+              {/* Price — controlled by settings via ProductActions */}
 
               {/* Suitable for */}
               {p.suitable_for && (
@@ -215,8 +194,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 </p>
               </div>
 
-              {/* Quantity + Buy (client component) */}
-              <ProductActions productName={p.name} price={p.price} slug={p.slug || p.id} />
+              {/* Quantity + Buy (client component handles price display + settings) */}
+              <ProductActions productName={p.name} price={p.price} mrp={p.mrp} slug={p.slug || p.id} />
 
               <p className="text-[11px] text-gray-400 text-center">
                 Est. 2001 · Mumbai&apos;s trusted beauty store · 25+ years of service

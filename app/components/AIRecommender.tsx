@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FiX, FiStar, FiShoppingCart, FiMapPin } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+import { useSettings } from "@/app/context/SettingsContext";
 
 interface Product {
   id: string; name: string; slug: string; brand: string; category: string;
@@ -14,6 +15,7 @@ interface Product {
 const PER_PAGE = 15; // 5 rows × 3 columns
 
 export default function AIRecommender() {
+  const { show_price, show_mrp } = useSettings();
   const [concern, setConcern] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -202,8 +204,14 @@ export default function AIRecommender() {
                             </div>
                           )}
                           <div className="flex items-center gap-1.5 mb-3">
-                            <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
-                            {p.mrp > p.price && <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>}
+                            {show_price ? (
+                              <>
+                                <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
+                                {show_mrp && p.mrp > p.price && <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>}
+                              </>
+                            ) : (
+                              <span className="text-xs text-brand-primary font-semibold bg-brand-light px-2 py-0.5 rounded-full">Contact for Price</span>
+                            )}
                           </div>
                           <div className="flex gap-1.5">
                             <Link href={`/products/${p.slug || p.id}`}
