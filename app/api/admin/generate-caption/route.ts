@@ -23,32 +23,39 @@ function getGroqKeys(): string[] {
   ].filter(Boolean) as string[];
 }
 
-const SHOP_URL = "https://www.shreeambikabeauty.com";
-const WHATSAPP = "+918291455297";
+const SHOP_URL      = "https://www.shreeambikabeauty.com";
+const WHATSAPP      = "+91 82914 55297";
+const SHOP_LOCATION = "Dahisar, Mumbai, Maharashtra 400068";
 
 function buildPrompt(product: {
   name: string; brand: string; category: string;
   price?: number; slug: string; shortUrl?: string;
 }): string {
-  const url = product.shortUrl || `${SHOP_URL}/products/${product.slug}`;
-  return `You are an expert Indian beauty product social media copywriter for "Shree Ambika Beauty Shop" Mumbai.
+  const productUrl  = product.shortUrl || `${SHOP_URL}/products/${product.slug}`;
 
-Write ONE perfect social media caption for this product listing. Rules:
-- TOTAL characters: between 260 and 280 (count every character including spaces, emojis, newlines)
-- Language: Mix of friendly English + 1-2 Hindi words is fine
-- Start with a catchy hook line with emoji
-- Include product name: "${product.name}"
-- Include brand: "${product.brand}"  
-- Include category: "${product.category}"
-- Include ranking keywords naturally (e.g. "best ${product.category} Mumbai", "original ${product.brand}", "100% original")
-- Include: "Order: ${WHATSAPP}"
-- End with this exact URL on last line: ${url}
-- Use 3-5 relevant hashtags at end (ranking ones for beauty/Mumbai/India)
-- NO price (we hide prices sometimes)
-- Sound like a trusted Mumbai beauty shop owner, warm & confident
-- MUST be between 260-280 characters total — count carefully before responding
+  return `You are a creative Indian beauty brand social media expert for "Shree Ambika Beauty Shop", Mumbai.
 
-Return ONLY the caption text, nothing else. No explanation, no labels, just the caption.`;
+Write ONE stunning social media caption. Output EXACTLY this structure (no changes to labels or emojis in the fixed lines):
+
+Line 1: 1 catchy hook sentence with 2 emojis — make it engaging & emotional about the product benefit
+Line 2: blank line
+Line 3: ✨ Product: ${product.name}
+Line 4: 🏷️ Brand: ${product.brand} | ${product.category}
+Line 5: blank line
+Line 6: 1 short sentence about what makes this product special (unique benefit, why buy it)
+Line 7: blank line
+Line 8: 🛒 Buy Now: ${productUrl}
+Line 9: 🌐 Website: ${SHOP_URL}
+Line 10: 📞 Order on WhatsApp: ${WHATSAPP}
+Line 11: 📍 ${SHOP_LOCATION}
+Line 12: blank line
+Line 13: 3 hashtags — mix of product + Mumbai + beauty ranking keywords
+
+Rules:
+- Keep Line 1 and Line 6 short and punchy
+- Hashtags must be relevant to ${product.category} + Mumbai + India beauty market
+- Output ONLY the caption, nothing else
+- No explanations, no labels like "Caption:", just the text`;
 }
 
 async function callGemini(key: string, prompt: string): Promise<string> {
@@ -98,22 +105,9 @@ async function callGroq(key: string, prompt: string): Promise<string> {
   return text.trim();
 }
 
-// Trim/pad caption to be within 260-280 characters
+// Clean up caption formatting
 function adjustCaption(caption: string): string {
-  // Clean up extra whitespace
-  let c = caption.replace(/\r\n/g, "\n").replace(/ +\n/g, "\n").trim();
-  if (c.length >= 260 && c.length <= 280) return c;
-
-  // Too long — trim from hashtags area
-  if (c.length > 280) {
-    while (c.length > 280) {
-      // Remove last word/hashtag
-      c = c.replace(/\s+\S+$/, "").trim();
-    }
-  }
-
-  // Still outside range — just return as-is (AI did its best)
-  return c;
+  return caption.replace(/\r\n/g, "\n").replace(/ +\n/g, "\n").trim();
 }
 
 export async function POST(req: NextRequest) {

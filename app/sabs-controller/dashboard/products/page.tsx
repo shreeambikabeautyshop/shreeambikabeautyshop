@@ -350,10 +350,7 @@ export default function ProductsList() {
                   <FiZap className="text-orange-500" size={16} /> SEO Caption Ready
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {captionPreview.chars} chars • via {captionPreview.provider}
-                  {captionPreview.chars >= 260 && captionPreview.chars <= 280
-                    ? <span className="text-green-600 font-bold ml-1">✓ Perfect</span>
-                    : <span className="text-orange-500 font-bold ml-1">⚠ Check length</span>}
+                  via {captionPreview.provider}
                   <span className="ml-2 bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">cached • regenerate for new</span>
                 </p>
               </div>
@@ -363,17 +360,6 @@ export default function ProductsList() {
               <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed">{captionPreview.text}</pre>
               <div className="absolute top-2 right-2 bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
                 {captionPreview.chars} chars
-              </div>
-            </div>
-            <div className="mb-4">
-              <div className="flex justify-between text-[10px] text-gray-400 mb-1">
-                <span>0</span><span className="text-green-600 font-bold">260–280 ideal</span><span>300</span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${
-                  captionPreview.chars >= 260 && captionPreview.chars <= 280 ? "bg-green-500"
-                  : captionPreview.chars < 260 ? "bg-orange-400" : "bg-red-400"}`}
-                  style={{ width: `${Math.min((captionPreview.chars / 300) * 100, 100)}%` }} />
               </div>
             </div>
             <div className="flex gap-3">
