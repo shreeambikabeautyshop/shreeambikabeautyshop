@@ -64,11 +64,10 @@ export default function VisitorTracker() {
   const initialized = useRef(false);
 
   useEffect(() => {
+    // Skip admin pages — check BEFORE setting initialized flag
+    if (pathname?.startsWith("/sabs-controller")) return;
     if (initialized.current) return;
     initialized.current = true;
-
-    // Skip admin pages
-    if (pathname?.startsWith("/sabs-controller")) return;
 
     sessionId.current = getSessionId();
     startTime.current = Date.now();
@@ -83,16 +82,19 @@ export default function VisitorTracker() {
         const geo = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3000) });
         if (geo.ok) {
           const g = await geo.json();
-          geoData = {
-            country:      g.country_name,
-            country_code: g.country_code,
-            region:       g.region,
-            city:         g.city,
-            latitude:     g.latitude,
-            longitude:    g.longitude,
-            timezone:     g.timezone,
-            isp:          g.org,
-          };
+          // ipapi.co returns error object when rate limited
+          if (!g.error) {
+            geoData = {
+              country:      g.country_name,
+              country_code: g.country_code,
+              region:       g.region,
+              city:         g.city,
+              latitude:     g.latitude,
+              longitude:    g.longitude,
+              timezone:     g.timezone,
+              isp:          g.org,
+            };
+          }
         }
       } catch { /* geo failed, still track without it */ }
 

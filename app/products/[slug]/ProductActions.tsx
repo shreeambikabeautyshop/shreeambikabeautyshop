@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiMinus, FiPlus } from "react-icons/fi";
+import { useUser } from "@/app/context/UserContext";
 
 interface Props {
   productName: string;
@@ -11,6 +12,7 @@ interface Props {
 
 export default function ProductActions({ productName, price, slug }: Props) {
   const [qty, setQty] = useState(1);
+  const { customer, isLoggedIn, triggerLogin } = useUser();
 
   const msg = encodeURIComponent(
     `Hi Vinod! I want to order:\n*${productName}*\nQty: ${qty}\nPrice: ₹${price} each\nTotal: ₹${price * qty}\n\nhttps://www.shreeambikabeauty.com/products/${slug}`
@@ -41,6 +43,34 @@ export default function ProductActions({ productName, price, slug }: Props) {
 
       {/* Buy on WhatsApp */}
       <a href={`https://wa.me/918291455297?text=${msg}`}
+        onClick={(e) => {
+          if (!isLoggedIn) {
+            e.preventDefault();
+            triggerLogin("order");
+            return;
+          }
+          // Track WhatsApp click using sendBeacon
+          const trackingData = JSON.stringify({
+            product_id: slug,
+            product_name: productName,
+            product_brand: null,
+            product_price: price,
+            customer_name: customer?.full_name || null,
+            customer_phone: customer?.phone || null,
+            source: "product_detail",
+            page_url: window.location.href,
+          });
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon("/api/track/whatsapp", new Blob([trackingData], { type: "application/json" }));
+          } else {
+            fetch("/api/track/whatsapp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: trackingData,
+              keepalive: true,
+            }).catch(() => {});
+          }
+        }}
         target="_blank" rel="noopener noreferrer"
         className="w-full flex items-center justify-center gap-3 text-white font-bold py-4 rounded-2xl relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}>
