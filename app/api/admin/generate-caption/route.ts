@@ -31,31 +31,33 @@ function buildPrompt(product: {
   name: string; brand: string; category: string;
   price?: number; slug: string; shortUrl?: string;
 }): string {
-  const productUrl  = product.shortUrl || `${SHOP_URL}/products/${product.slug}`;
+  const productUrl = product.shortUrl || `${SHOP_URL}/products/${product.slug}`;
 
-  return `You are a creative Indian beauty brand social media expert for "Shree Ambika Beauty Shop", Mumbai.
+  return `You are a creative Indian beauty social media expert for "Shree Ambika Beauty Shop", Mumbai.
 
-Write ONE stunning social media caption. Output EXACTLY this structure (no changes to labels or emojis in the fixed lines):
+I need you to fill in ONLY 2 things in this caption template:
+1. [HOOK] — One catchy, emotional hook sentence (max 60 chars) with 1-2 emojis about the product benefit
+2. [BENEFIT] — One unique selling point sentence (max 70 chars) about why to buy this product
 
-Line 1: 1 catchy hook sentence with 2 emojis — make it engaging & emotional about the product benefit
-Line 2: blank line
-Line 3: ✨ Product: ${product.name}
-Line 4: 🏷️ Brand: ${product.brand} | ${product.category}
-Line 5: blank line
-Line 6: 1 short sentence about what makes this product special (unique benefit, why buy it)
-Line 7: blank line
-Line 8: 🛒 Buy Now: ${productUrl}
-Line 9: 🌐 Website: ${SHOP_URL}
-Line 10: 📞 Order on WhatsApp: ${WHATSAPP}
-Line 11: 📍 ${SHOP_LOCATION}
-Line 12: blank line
-Line 13: 3 hashtags — mix of product + Mumbai + beauty ranking keywords
+Product: ${product.name}
+Brand: ${product.brand}
+Category: ${product.category}
 
-Rules:
-- Keep Line 1 and Line 6 short and punchy
-- Hashtags must be relevant to ${product.category} + Mumbai + India beauty market
-- Output ONLY the caption, nothing else
-- No explanations, no labels like "Caption:", just the text`;
+Return ONLY this exact template with [HOOK] and [BENEFIT] replaced — nothing else, no extra text:
+
+[HOOK]
+
+✨ ${product.name}
+🏷️ ${product.brand} | ${product.category}
+
+[BENEFIT]
+
+🛒 Buy: ${productUrl}
+🌐 ${SHOP_URL}
+📞 WhatsApp: ${WHATSAPP}
+📍 ${SHOP_LOCATION}
+
+#${product.brand.replace(/\s+/g, "")} #MumbaiBeauty #${product.category.replace(/\s+/g, "")}`;
 }
 
 async function callGemini(key: string, prompt: string): Promise<string> {
@@ -109,7 +111,6 @@ async function callGroq(key: string, prompt: string): Promise<string> {
 function adjustCaption(caption: string): string {
   return caption.replace(/\r\n/g, "\n").replace(/ +\n/g, "\n").trim();
 }
-
 export async function POST(req: NextRequest) {
   if (!isAuthenticated(req))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
