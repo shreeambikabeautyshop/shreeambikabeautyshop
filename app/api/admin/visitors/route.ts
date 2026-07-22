@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     mobile:         visitors.filter((v) => v.device_type === "mobile").length,
     desktop:        visitors.filter((v) => v.device_type === "desktop").length,
     tablet:         visitors.filter((v) => v.device_type === "tablet").length,
-    countries:      [...new Set(visitors.map((v) => v.country).filter(Boolean))].length,
+    countries:      visitors.map((v) => v.country).filter(Boolean).filter((c, i, a) => a.indexOf(c) === i).length,
     avgTimeSeconds: visitors.length
       ? Math.round(visitors.reduce((s, v) => s + (v.time_spent_seconds || 0), 0) / visitors.length)
       : 0,
