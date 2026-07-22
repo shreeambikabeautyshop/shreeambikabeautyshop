@@ -36,6 +36,8 @@ export default function ProductsList() {
   const [captionPreview, setCaptionPreview] = useState<{
     id: string; text: string; chars: number; provider: string;
   } | null>(null);
+  // Cache: product_id -> caption data (no repeated API calls)
+  const [captionCache, setCaptionCache] = useState<Record<string, { text: string; chars: number; provider: string }>>({});
   const [view, setView] = useState<"table" | "images">("table");
 
   const fetchProducts = () => {
@@ -92,7 +94,12 @@ export default function ProductsList() {
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
 
-  const handleGenerateCaption = async (p: Product) => {
+  const handleGenerateCaption = async (p: Product, forceRegenerate = false) => {
+    // If cached and not forced, show existing caption instantly (no API call)
+    if (!forceRegenerate && captionCache[p.id]) {
+      setCaptionPreview({ id: p.id, ...captionCache[p.id] });
+      return;
+    }
     setCaptionLoading(p.id);
     const shortUrl = await getOrCreateShortUrl(p);
     try {
@@ -106,7 +113,9 @@ export default function ProductsList() {
       });
       const json = await res.json();
       if (json.caption) {
-        setCaptionPreview({ id: p.id, text: json.caption, chars: json.chars, provider: json.provider });
+        const cached = { text: json.caption, chars: json.chars, provider: json.provider };
+        setCaptionCache((prev) => ({ ...prev, [p.id]: cached }));
+        setCaptionPreview({ id: p.id, ...cached });
       }
     } catch { /* silent */ }
     setCaptionLoading(null);
@@ -280,12 +289,14 @@ export default function ProductsList() {
                           {/* Caption */}
                           <button onClick={() => handleGenerateCaption(p)} disabled={captionLoading === p.id}
                             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                              captionCopied === p.id ? "bg-green-100 text-green-600"
-                              : captionLoading === p.id ? "bg-orange-100 text-orange-400 animate-pulse"
+                              captionLoading === p.id ? "bg-orange-100 text-orange-400 animate-pulse"
+                              : captionCache[p.id] ? "bg-green-500 hover:bg-green-600 text-white"
                               : "bg-orange-500 hover:bg-orange-600 text-white"}`}
-                            title="Generate SEO Caption">
-                            {captionLoading === p.id ? <span>✨ AI...</span>
-                              : captionCopied === p.id ? <><FiCopy size={11} /><span>Copied!</span></>
+                            title={captionCache[p.id] ? "Caption ready — click to view" : "Generate SEO Caption"}>
+                            {captionLoading === p.id
+                              ? <span>✨ AI...</span>
+                              : captionCache[p.id]
+                              ? <><FiCopy size={11} /><span>Caption ✓</span></>
                               : <><FiZap size={11} /><span>Caption</span></>}
                           </button>
                           {/* Edit */}
@@ -343,6 +354,7 @@ export default function ProductsList() {
                   {captionPreview.chars >= 260 && captionPreview.chars <= 280
                     ? <span className="text-green-600 font-bold ml-1">✓ Perfect</span>
                     : <span className="text-orange-500 font-bold ml-1">⚠ Check length</span>}
+                  <span className="ml-2 bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">cached • regenerate for new</span>
                 </p>
               </div>
               <button onClick={() => setCaptionPreview(null)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
@@ -376,7 +388,7 @@ export default function ProductsList() {
                   const id = captionPreview.id;
                   setCaptionPreview(null);
                   const prod = products.find((x) => x.id === id);
-                  if (prod) handleGenerateCaption(prod);
+                  if (prod) handleGenerateCaption(prod, true); // force new API call
                 }}
                 className="px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold rounded-xl text-sm transition-all">
                 🔄 Regenerate
