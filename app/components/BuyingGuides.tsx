@@ -95,13 +95,7 @@ export default function BuyingGuides() {
           </div>
         )}
 
-        {/* View All button */}
-        <div className="text-center mt-8">
-          <Link href="/blog"
-            className="inline-flex items-center gap-2 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-semibold px-8 py-2.5 rounded-full transition-all text-sm">
-            View All Beauty Blogs →
-          </Link>
-        </div>
+        {/* View All button — already in header, removed duplicate */}
       </div>
     </section>
   );
