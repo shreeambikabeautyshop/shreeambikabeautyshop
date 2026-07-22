@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Poppins, Playfair_Display, Cormorant_Garamond, Dancing_Script, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { WishlistProvider } from "@/app/context/WishlistContext";
@@ -332,6 +333,8 @@ export default function RootLayout({
     },
   };
 
+  const GA_ID = "G-B27MG5YKBR";
+
   return (
     <html lang="en" className={`${poppins.variable} ${playfair.variable} ${cormorant.variable} ${dancing.variable} ${dmSerif.variable}`}>
       <head>
@@ -341,16 +344,32 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       </head>
       <body className="font-sans antialiased">
-          <UserProvider>
-            <SettingsProvider>
-              <WishlistProvider>
-                <VisitorTracker />
-                {children}
-                <CustomerLoginModal />
-              </WishlistProvider>
-            </SettingsProvider>
-          </UserProvider>
-        </body>
+        {/* Google Analytics 4 — G-B27MG5YKBR */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}', {
+              page_path: window.location.pathname,
+              send_page_view: true
+            });
+          `}
+        </Script>
+        <UserProvider>
+          <SettingsProvider>
+            <WishlistProvider>
+              <VisitorTracker />
+              {children}
+              <CustomerLoginModal />
+            </WishlistProvider>
+          </SettingsProvider>
+        </UserProvider>
+      </body>
     </html>
   );
 }
