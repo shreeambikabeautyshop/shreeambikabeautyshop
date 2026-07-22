@@ -35,35 +35,28 @@ export default function CategoryGrid() {
 
   const activeCategory = categories[activeIndex];
 
-  // On mount: find the first category that has products and auto-select it
+  // On mount: start with Makeup (index 1) by default — user can change
   useEffect(() => {
+    const defaultIndex = 1; // Makeup
+    setActiveIndex(defaultIndex);
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const findFirstWithProducts = async () => {
-      for (let i = 0; i < categories.length; i++) {
-        const { data } = await supabase
-          .from("products")
-          .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock,key_benefits,suitable_for")
-          .eq("category", categories[i].name)
-          .eq("in_stock", true)
-          .order("created_at", { ascending: false })
-          .limit(20);
-        if (data && data.length > 0) {
-          setActiveIndex(i);
-          setProducts(data);
-          setLoading(false);
-          setInitialized(true);
-          return;
-        }
-      }
-      setLoading(false);
-      setInitialized(true);
-    };
-
-    findFirstWithProducts();
+    supabase
+      .from("products")
+      .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock,key_benefits,suitable_for")
+      .eq("category", categories[defaultIndex].name)
+      .eq("in_stock", true)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        setProducts(data || []);
+        setLoading(false);
+        setInitialized(true);
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
