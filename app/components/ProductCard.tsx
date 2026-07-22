@@ -9,7 +9,6 @@ import { useUser } from "@/app/context/UserContext";
 import WishlistToast from "./WishlistToast";
 import { SiInstagram } from "react-icons/si";
 import { useSettings } from "@/app/context/SettingsContext";
-
 interface Product {
   id: string; name: string; slug: string; brand: string; category: string;
   price: number; mrp: number; discount: number; images: string[];
@@ -34,9 +33,12 @@ export default function ProductCard({ p }: { p: Product }) {
   const { customer, isLoggedIn, triggerLogin } = useUser();
   const { show_price, show_mrp } = useSettings();
   const wishlisted = has(p.id);
-  const [showShare, setShowShare] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showShare, setShowShare]   = useState(false);
+  const [copied, setCopied]         = useState(false);
+  const [shortUrl, setShortUrl]     = useState<string | null>(null);
+  const [shortLoading, setShortLoading] = useState(false);
   const [toast, setToast] = useState<{ name: string; image?: string; added: boolean } | null>(null);
+
   const shareRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
     const handler = (e: MouseEvent) => {
@@ -48,12 +50,35 @@ export default function ProductCard({ p }: { p: Product }) {
 
   const productUrl = `https://www.shreeambikabeauty.com/products/${p.slug || p.id}`;
 
+  // Get or create short URL on first share popup open
+  const handleOpenShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowShare(!showShare);
+    if (!shortUrl && !shortLoading) {
+      setShortLoading(true);
+      try {
+        const res = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
+        });
+        const json = await res.json();
+        if (json.short_url) setShortUrl(json.short_url);
+      } catch { /* fallback to full URL */ }
+      setShortLoading(false);
+    }
+  };
+
+  // Share URL — use short if available, fallback to full
+  const shareLink = shortUrl || productUrl;
+
   const shareMsg = encodeURIComponent(
-    `✨ Check out this amazing product!\n\n*${p.name}*\nBrand: ${p.brand}\nPrice: ₹${p.price}\n\n🛍️ Buy from Shree Ambika Beauty Shop, Mumbai\n📱 WhatsApp Vinod: +91-8291455297\n\n👉 ${productUrl}`
+    `✨ Check out this amazing product!\n\n*${p.name}*\nBrand: ${p.brand}\nPrice: ₹${p.price}\n\n🛍️ Buy from Shree Ambika Beauty Shop, Mumbai\n📱 WhatsApp Vinod: +91-8291455297\n\n👉 ${shareLink}`
   );
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(productUrl);
+    await navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -69,19 +94,19 @@ export default function ProductCard({ p }: { p: Product }) {
       name: "Facebook",
       icon: <FaFacebook size={18} />,
       color: "bg-blue-600 hover:bg-blue-700",
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}&quote=${encodeURIComponent(`Check out ${p.name} at Shree Ambika Beauty Shop!`)}`,
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`,
     },
     {
       name: "Twitter",
       icon: <FaTwitter size={18} />,
       color: "bg-sky-500 hover:bg-sky-600",
-      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`✨ ${p.name} | ₹${p.price} | Shree Ambika Beauty Shop Mumbai`)}&url=${encodeURIComponent(productUrl)}`,
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`✨ ${p.name} | ₹${p.price} | Shree Ambika Beauty Shop Mumbai`)}&url=${encodeURIComponent(shareLink)}`,
     },
     {
       name: "Telegram",
       icon: <FaTelegram size={18} />,
       color: "bg-blue-500 hover:bg-blue-600",
-      url: `https://t.me/share/url?url=${encodeURIComponent(productUrl)}&text=${shareMsg}`,
+      url: `https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${shareMsg}`,
     },
   ];
 
@@ -121,7 +146,7 @@ export default function ProductCard({ p }: { p: Product }) {
         {/* Share + Wishlist — bottom RIGHT, column-wise, dark visible */}
         <div className="absolute bottom-3 right-3 flex flex-col gap-2 z-10" ref={shareRef}>
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowShare(!showShare); }}
+            onClick={handleOpenShare}
             className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 border border-white/30
               ${showShare ? "bg-brand-primary scale-110" : "bg-gray-800/80 hover:bg-gray-900 hover:scale-110 active:scale-95"}`}
             title="Share"
@@ -131,7 +156,7 @@ export default function ProductCard({ p }: { p: Product }) {
 
           {/* Share Popup */}
           {showShare && (
-            <div className="absolute bottom-12 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 w-48 z-50 animate-fade-in">
+            <div className="absolute bottom-12 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 w-52 z-50 animate-fade-in">
               {/* Header */}
               <div className="flex items-center justify-between mb-2.5">
                 <p className="text-xs font-bold text-gray-700">Share Product</p>
@@ -141,9 +166,17 @@ export default function ProductCard({ p }: { p: Product }) {
               </div>
 
               {/* Product mini preview */}
-              <div className="bg-gray-50 rounded-xl p-2 mb-3">
+              <div className="bg-gray-50 rounded-xl p-2 mb-2">
                 <p className="text-[10px] font-semibold text-gray-700 line-clamp-1">{p.name}</p>
                 <p className="text-[10px] text-brand-primary font-bold">₹{p.price}</p>
+              </div>
+
+              {/* Short URL display */}
+              <div className="bg-brand-light rounded-xl px-2.5 py-1.5 mb-2.5 flex items-center gap-1.5">
+                <span className="text-[9px] text-brand-primary font-mono font-bold flex-1 truncate">
+                  {shortLoading ? "Generating..." : shortUrl ? shortUrl.replace("https://www.", "") : productUrl.replace("https://www.", "").slice(0, 30) + "..."}
+                </span>
+                {shortUrl && <span className="text-[8px] bg-green-100 text-green-600 px-1 rounded font-bold">SHORT</span>}
               </div>
 
               {/* Social buttons */}
@@ -157,13 +190,13 @@ export default function ProductCard({ p }: { p: Product }) {
                 ))}
               </div>
 
-              {/* Copy URL */}
+              {/* Copy short URL */}
               <button onClick={handleCopy}
                 className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-bold transition-all ${
                   copied ? "bg-green-100 text-green-600" : "bg-gray-100 hover:bg-gray-200 text-gray-600"
                 }`}>
                 <FiCopy size={11} />
-                {copied ? "Link Copied! ✓" : "Copy Link"}
+                {copied ? "Copied! ✓" : shortUrl ? "Copy Short Link" : "Copy Link"}
               </button>
             </div>
           )}

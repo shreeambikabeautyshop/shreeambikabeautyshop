@@ -28,7 +28,9 @@ export default function ProductsList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, setCopied]     = useState<string | null>(null);
+  const [shortUrls, setShortUrls] = useState<Record<string, string>>({});
+  const [shortLoading, setShortLoading] = useState<string | null>(null);
   const [view, setView] = useState<"table" | "images">("table");
 
   const fetchProducts = () => {
@@ -56,19 +58,54 @@ export default function ProductsList() {
     `${BASE_URL}/products/${p.slug || p.id}`;
 
   const handleCopyUrl = async (p: Product) => {
-    const url = getProductUrl(p);
-    await navigator.clipboard.writeText(url);
+    // Get or create short URL
+    if (!shortUrls[p.id]) {
+      setShortLoading(p.id);
+      try {
+        const res  = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
+        });
+        const json = await res.json();
+        if (json.short_url) {
+          setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
+          await navigator.clipboard.writeText(json.short_url);
+        } else {
+          await navigator.clipboard.writeText(getProductUrl(p));
+        }
+      } catch {
+        await navigator.clipboard.writeText(getProductUrl(p));
+      }
+      setShortLoading(null);
+    } else {
+      await navigator.clipboard.writeText(shortUrls[p.id]);
+    }
     setCopied(p.id);
-    setTimeout(() => setCopied(null), 2000);
+    setTimeout(() => setCopied(null), 2500);
   };
 
-  const handleShareWhatsApp = (p: Product) => {
-    const url = getProductUrl(p);
+  const handleShareWhatsApp = async (p: Product) => {
+    let shareUrl = shortUrls[p.id];
+    if (!shareUrl) {
+      try {
+        const res  = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: p.id, product_slug: p.slug || p.id, product_name: p.name }),
+        });
+        const json = await res.json();
+        shareUrl   = json.short_url || getProductUrl(p);
+        if (json.short_url) setShortUrls((prev) => ({ ...prev, [p.id]: json.short_url }));
+      } catch {
+        shareUrl = getProductUrl(p);
+      }
+    }
     const msg = encodeURIComponent(
       `*${p.name}*\n` +
       `Price: Rs.${p.price} (MRP Rs.${p.mrp}) - ${p.discount}% OFF\n` +
       `100% Original Product\n\n` +
-      `View Product: ${url}\n\n` +
+      `View Product: ${shareUrl}\n\n` +
       `Order on WhatsApp: +918291455297\n` +
       `Shree Ambika Beauty Shop`
     );
@@ -264,17 +301,20 @@ export default function ProductsList() {
                           <FiEdit2 size={13} />
                         </Link>
 
-                        {/* Copy URL */}
+                        {/* Copy Short URL */}
                         <button
                           onClick={() => handleCopyUrl(p)}
+                          disabled={shortLoading === p.id}
                           className={`p-2 rounded-lg transition-colors text-xs font-bold ${
                             copied === p.id
                               ? "bg-green-100 text-green-600"
+                              : shortLoading === p.id
+                              ? "bg-gray-100 text-gray-400 animate-pulse"
                               : "bg-gray-50 hover:bg-gray-100 text-gray-500"
                           }`}
-                          title="Copy product URL"
+                          title={shortUrls[p.id] ? `Copy: ${shortUrls[p.id]}` : "Copy short URL"}
                         >
-                          {copied === p.id ? "✓" : <FiShare2 size={13} />}
+                          {copied === p.id ? "✓" : shortLoading === p.id ? "..." : <FiShare2 size={13} />}
                         </button>
 
                         {/* Share on WhatsApp */}
