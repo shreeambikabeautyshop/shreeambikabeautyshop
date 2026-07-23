@@ -1,39 +1,32 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
-import { FiHeart, FiMessageCircle, FiExternalLink } from "react-icons/fi";
 
-// Instagram post IDs + thumbnail images (use Cloudinary thumbnails or product images)
+// Your real Instagram post IDs
 const POSTS = [
-  {
-    id: "DavkfX_n7k8",
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png",
-    caption: "Top 10 Beauty Essentials",
-  },
-  {
-    id: "Davi8UijaxF",
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784471137/today-beauty-tips_tkzbog.png",
-    caption: "Hair Care Routine Guide",
-  },
-  {
-    id: "DaviEoIDdjO",
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784225462/beauty_myth_vs_truth_vrngh7.png",
-    caption: "Sunscreen SPF Guide",
-  },
-  {
-    id: "DavhBqvH8r4",
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-2_rtcjzp.png",
-    caption: "Foundation Shade Guide",
-  },
-  {
-    id: "DavfxROn0b8",
-    img: "https://res.cloudinary.com/zjlchjal/image/upload/v1784221445/wedding_ro6df3.png",
-    caption: "Lipstick Tips for Your Skin Tone",
-  },
+  "DavkfX_n7k8",
+  "Davi8UijaxF",
+  "DaviEoIDdjO",
+  "DavhBqvH8r4",
+  "DavfxROn0b8",
 ];
 
 export default function InstagramFeed() {
-  const [hovered, setHovered] = useState<string | null>(null);
+  // Load Instagram embed script
+  useEffect(() => {
+    const existing = document.querySelector('script[src="//www.instagram.com/embed.js"]');
+    if (!existing) {
+      const script = document.createElement("script");
+      script.src = "//www.instagram.com/embed.js";
+      script.async = true;
+      document.body.appendChild(script);
+    } else {
+      // Re-process embeds if script already loaded
+      if (window.instgrm) {
+        window.instgrm.Embeds.process();
+      }
+    }
+  }, []);
 
   return (
     <section className="py-12 bg-white" aria-labelledby="instagram-heading">
@@ -52,47 +45,31 @@ export default function InstagramFeed() {
               className="font-semibold text-pink-500 hover:underline">
               @shreeambikabeautyshop
             </a>
-            {" "}— Follow for daily beauty tips, offers & product updates
+            {" "}— Stay updated with latest beauty trends &amp; offers
           </p>
         </div>
 
-        {/* Image-only Instagram grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
-          {POSTS.map((post) => (
-            <a
-              key={post.id}
-              href={`https://www.instagram.com/p/${post.id}/`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              onMouseEnter={() => setHovered(post.id)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {/* Post image */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={post.img}
-                alt={post.caption}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        {/* Instagram embeds — horizontal scroll on mobile, wrap on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8 items-start">
+          {POSTS.map((id) => (
+            <div key={id} className="w-full overflow-hidden rounded-2xl">
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={`https://www.instagram.com/p/${id}/?utm_source=ig_embed&utm_campaign=loading`}
+                data-instgrm-version="14"
+                style={{
+                  background: "#FFF",
+                  border: 0,
+                  borderRadius: "12px",
+                  boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
+                  margin: 0,
+                  maxWidth: "100%",
+                  minWidth: "0",
+                  padding: 0,
+                  width: "100%",
+                }}
               />
-
-              {/* Instagram gradient overlay on hover */}
-              <div className={`absolute inset-0 transition-opacity duration-300 ${hovered === post.id ? "opacity-100" : "opacity-0"}`}
-                style={{ background: "linear-gradient(135deg, rgba(131,58,180,0.75) 0%, rgba(253,29,29,0.75) 50%, rgba(252,176,69,0.75) 100%)" }} />
-
-              {/* View on Instagram badge */}
-              <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 ${hovered === post.id ? "opacity-100" : "opacity-0"}`}>
-                <FaInstagram size={28} className="text-white drop-shadow-lg" />
-                <span className="text-white text-xs font-bold drop-shadow-lg flex items-center gap-1">
-                  View on Instagram <FiExternalLink size={11} />
-                </span>
-              </div>
-
-              {/* Instagram icon badge always visible (bottom right) */}
-              <div className="absolute bottom-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md">
-                <FaInstagram size={14} className="text-pink-500" />
-              </div>
-            </a>
+            </div>
           ))}
         </div>
 
@@ -102,8 +79,7 @@ export default function InstagramFeed() {
             href="https://instagram.com/shreeambikabeautyshop"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-opacity shadow-md"
-            style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)" }}
+            className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-opacity shadow-md"
           >
             <FaInstagram size={18} />
             Follow Us on Instagram
@@ -121,4 +97,15 @@ export default function InstagramFeed() {
       </div>
     </section>
   );
+}
+
+// Extend window type for Instagram embed
+declare global {
+  interface Window {
+    instgrm?: {
+      Embeds: {
+        process: () => void;
+      };
+    };
+  }
 }
