@@ -1,8 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
-import { FiUsers, FiGlobe, FiSmartphone, FiMonitor, FiRefreshCw, FiClock, FiSearch, FiTrendingUp } from "react-icons/fi";
+import { useEffect, useState, useMemo } from "react";
+import { FiUsers, FiGlobe, FiSmartphone, FiMonitor, FiRefreshCw, FiClock, FiSearch, FiTrendingUp, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { MdRepeat } from "react-icons/md";
 import { FaWhatsapp } from "react-icons/fa";
+
+// Known datacenter/bot IP ranges (city names that are almost always crawlers)
+const BOT_CITIES = ["Roubaix", "Villeurbanne", "Boardman", "Mountain View", "Ashburn", "Council Bluffs", "Des Moines", "The Dalles"];
+const isLikelyBot = (v: Visitor) => {
+  if (BOT_CITIES.includes(v.city)) return true;
+  if (v.time_spent_seconds === 0 && !v.products_viewed?.length) return true;
+  return false;
+};
 
 interface Visitor {
   id: string; session_id: string; ip_address: string;
@@ -47,6 +55,10 @@ export default function VisitorsPage() {
   const [days, setDays]                 = useState(30);
   const [selected, setSelected]         = useState<Visitor | null>(null);
   const [tab, setTab]                   = useState<"overview"|"products"|"reach"|"visitors">("overview");
+  const [page, setPage]                 = useState(1);
+  const [filterBots, setFilterBots]     = useState(true);
+  const [visitorSearch, setVisitorSearch] = useState("");
+  const PAGE_SIZE = 25;
 
   const load = async (d: number) => {
     setLoading(true);
@@ -59,12 +71,36 @@ export default function VisitorsPage() {
     setTopCats(json.topCategories || []);
     setPeakHours(json.peakHours   || []);
     setTrafficSrc(json.trafficSources || []);
-    setTopSearches(json.topSearches   || []);
+    // Fix: filter out URL template strings from search queries
+    const rawSearches: SearchQ[] = json.topSearches || [];
+    setTopSearches(rawSearches.filter(s => s.query && !s.query.includes("{") && s.query.trim().length > 1));
     setVisitsByDay(json.visitsByDay   || []);
     setLoading(false);
   };
 
   useEffect(() => { load(days); }, [days]);
+
+  // Filtered + paginated visitors
+  const filteredVisitors = useMemo(() => {
+    let list = visitors;
+    if (filterBots) list = list.filter(v => !isLikelyBot(v));
+    if (visitorSearch.trim()) {
+      const q = visitorSearch.toLowerCase();
+      list = list.filter(v =>
+        (v.city || "").toLowerCase().includes(q) ||
+        (v.country || "").toLowerCase().includes(q) ||
+        (v.ip_address || "").includes(q) ||
+        (v.browser || "").toLowerCase().includes(q) ||
+        (v.os || "").toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [visitors, filterBots, visitorSearch]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredVisitors.length / PAGE_SIZE));
+  const pagedVisitors = filteredVisitors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const botCount = visitors.filter(isLikelyBot).length;
+  const humanCount = visitors.length - botCount;
 
   const fmt = (secs: number) => {
     if (!secs) return "< 1s";
@@ -374,80 +410,172 @@ export default function VisitorsPage() {
 
         {/* ── ALL VISITORS TAB ── */}
         {tab === "visitors" && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            {visitors.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
-                <FiUsers size={40} className="mx-auto mb-3 opacity-30" />
-                <p>No visitor data yet.</p>
+          <div className="space-y-4">
+            {/* Controls bar */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-wrap items-center gap-3">
+              {/* Search */}
+              <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 flex-1 min-w-[180px]">
+                <FiSearch size={13} className="text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search city, country, IP, browser..."
+                  value={visitorSearch}
+                  onChange={(e) => { setVisitorSearch(e.target.value); setPage(1); }}
+                  className="bg-transparent outline-none text-xs text-gray-700 flex-1"
+                />
+                {visitorSearch && (
+                  <button onClick={() => setVisitorSearch("")} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                )}
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100 text-xs">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Location</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Device</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Source</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Landing</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Products</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Time</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Scroll</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Type</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visitors.map((v) => (
-                      <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => setSelected(v)}>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-base">{flag(v.country_code)}</span>
-                            <div>
-                              <p className="font-semibold text-gray-800 text-xs">{v.city || v.region || v.country || "Unknown"}</p>
-                              <p className="text-[10px] text-gray-400">{v.country}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-1">
-                            {v.device_type === "mobile" ? <FiSmartphone size={12} className="text-green-500" /> : <FiMonitor size={12} className="text-blue-500" />}
-                            <span className="text-xs text-gray-600 capitalize">{v.device_type}</span>
-                          </div>
-                          <p className="text-[10px] text-gray-400">{v.browser} / {v.os}</p>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          {v.utm_source
-                            ? <span className="text-xs bg-orange-50 text-orange-600 font-semibold px-2 py-0.5 rounded-full">{v.utm_source}</span>
-                            : v.referrer
-                              ? <span className="text-xs text-gray-500">{v.referrer.replace("https://","").slice(0,20)}</span>
-                              : <span className="text-xs text-gray-300">Direct</span>}
-                        </td>
-                        <td className="px-4 py-2.5 text-xs text-gray-600 truncate max-w-[80px]">{v.landing_page || "/"}</td>
-                        <td className="px-4 py-2.5">
-                          <span className="text-xs font-bold text-brand-primary">{v.products_viewed?.length || 0}</span>
-                          <span className="text-[10px] text-gray-400 ml-0.5">products</span>
-                        </td>
-                        <td className="px-4 py-2.5 text-xs font-semibold text-gray-700">{fmt(v.time_spent_seconds)}</td>
-                        <td className="px-4 py-2.5">
-                          <span className={`text-xs font-bold ${(v.max_scroll_depth || 0) >= 75 ? "text-green-600" : (v.max_scroll_depth || 0) >= 40 ? "text-orange-500" : "text-gray-400"}`}>
-                            {v.max_scroll_depth || 0}%
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          {v.is_returning
-                            ? <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-1.5 py-0.5 rounded-full">Return</span>
-                            : <span className="text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded-full">New</span>}
-                        </td>
-                        <td className="px-4 py-2.5 text-[10px] text-gray-400">
-                          {new Date(v.created_at).toLocaleDateString("en-IN")}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Bot filter toggle */}
+              <button
+                onClick={() => { setFilterBots(!filterBots); setPage(1); }}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all ${filterBots ? "bg-green-100 text-green-700" : "bg-red-50 text-red-500"}`}
+              >
+                {filterBots ? "🤖 Bots Hidden" : "🤖 Bots Visible"}
+              </button>
+              {/* Count info */}
+              <div className="text-xs text-gray-500">
+                <span className="font-bold text-gray-800">{filteredVisitors.length}</span> visitors
+                {filterBots && botCount > 0 && (
+                  <span className="ml-1 text-orange-500">({botCount} bots filtered)</span>
+                )}
+                {!filterBots && botCount > 0 && (
+                  <span className="ml-1 text-orange-400">incl. {botCount} likely bots</span>
+                )}
+              </div>
+            </div>
+
+            {/* Bot info banner */}
+            {filterBots && botCount > 0 && (
+              <div className="bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 flex items-start gap-2">
+                <span className="text-orange-500 text-lg">🤖</span>
+                <div>
+                  <p className="text-xs font-bold text-orange-800">
+                    {botCount} likely bot/crawler sessions hidden (Roubaix France, Mountain View USA etc.)
+                  </p>
+                  <p className="text-[10px] text-orange-600 mt-0.5">
+                    Real humans: <strong>{humanCount}</strong> — these are actual visitors to your store. Toggle &quot;Bots Hidden&quot; to see all.
+                  </p>
+                </div>
               </div>
             )}
+
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              {filteredVisitors.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                  <FiUsers size={40} className="mx-auto mb-3 opacity-30" />
+                  <p>No visitors found.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100 text-xs">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Location</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Device</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Source</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Landing</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Products</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Time</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Scroll</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Type</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pagedVisitors.map((v) => (
+                          <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => setSelected(v)}>
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-base">{flag(v.country_code)}</span>
+                                <div>
+                                  <p className="font-semibold text-gray-800 text-xs">{v.city || v.region || v.country || "Unknown"}</p>
+                                  <p className="text-[10px] text-gray-400">{v.country}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-1">
+                                {v.device_type === "mobile" ? <FiSmartphone size={12} className="text-green-500" /> : <FiMonitor size={12} className="text-blue-500" />}
+                                <span className="text-xs text-gray-600 capitalize">{v.device_type}</span>
+                              </div>
+                              <p className="text-[10px] text-gray-400">{v.browser} / {v.os}</p>
+                            </td>
+                            <td className="px-4 py-2.5">
+                              {v.utm_source
+                                ? <span className="text-xs bg-orange-50 text-orange-600 font-semibold px-2 py-0.5 rounded-full">{v.utm_source}</span>
+                                : v.referrer
+                                  ? <span className="text-xs text-gray-500">{v.referrer.replace("https://","").slice(0,20)}</span>
+                                  : <span className="text-xs text-gray-300">Direct</span>}
+                            </td>
+                            <td className="px-4 py-2.5 text-xs text-gray-600 truncate max-w-[80px]">{v.landing_page || "/"}</td>
+                            <td className="px-4 py-2.5">
+                              <span className="text-xs font-bold text-brand-primary">{v.products_viewed?.length || 0}</span>
+                              <span className="text-[10px] text-gray-400 ml-0.5">products</span>
+                            </td>
+                            <td className="px-4 py-2.5 text-xs font-semibold text-gray-700">{fmt(v.time_spent_seconds)}</td>
+                            <td className="px-4 py-2.5">
+                              <span className={`text-xs font-bold ${(v.max_scroll_depth || 0) >= 75 ? "text-green-600" : (v.max_scroll_depth || 0) >= 40 ? "text-orange-500" : "text-gray-400"}`}>
+                                {v.max_scroll_depth || 0}%
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5">
+                              {v.is_returning
+                                ? <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-1.5 py-0.5 rounded-full">Return</span>
+                                : <span className="text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded-full">New</span>}
+                            </td>
+                            <td className="px-4 py-2.5 text-[10px] text-gray-400">
+                              {new Date(v.created_at).toLocaleDateString("en-IN")}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+                    <p className="text-xs text-gray-500">
+                      Showing <strong>{(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filteredVisitors.length)}</strong> of <strong>{filteredVisitors.length}</strong> visitors
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setPage(1)} disabled={page === 1}
+                        className="px-2 py-1.5 rounded-lg text-xs font-bold bg-white border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-colors"
+                      >«</button>
+                      <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                        className="p-1.5 rounded-lg bg-white border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-colors"
+                      ><FiChevronLeft size={13} /></button>
+
+                      {/* Page number buttons */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+                        const p = start + i;
+                        return (
+                          <button key={p} onClick={() => setPage(p)}
+                            className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors ${p === page ? "bg-brand-primary text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"}`}>
+                            {p}
+                          </button>
+                        );
+                      })}
+
+                      <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                        className="p-1.5 rounded-lg bg-white border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-colors"
+                      ><FiChevronRight size={13} /></button>
+                      <button
+                        onClick={() => setPage(totalPages)} disabled={page === totalPages}
+                        className="px-2 py-1.5 rounded-lg text-xs font-bold bg-white border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-colors"
+                      >»</button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
         </>

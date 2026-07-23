@@ -68,7 +68,10 @@ function getProductFromPath(path: string): { product_slug: string | null; catego
 // Extract search query from URL
 function getSearchQuery(): string | null {
   const params = new URLSearchParams(window.location.search);
-  return params.get("search") || params.get("q") || null;
+  const q = params.get("search") || params.get("q") || null;
+  // Filter out URL template strings (e.g. from sitemap/schema potentialAction)
+  if (!q || q.includes("{") || q.includes("}") || q.trim().length < 2) return null;
+  return q;
 }
 
 // Max scroll depth tracker
