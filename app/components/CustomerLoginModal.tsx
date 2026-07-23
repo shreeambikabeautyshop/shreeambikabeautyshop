@@ -105,9 +105,12 @@ export default function CustomerLoginModal() {
           {/* Trust message */}
           <div className="bg-white/15 rounded-xl px-4 py-2.5 flex items-start gap-2">
             <FiShield size={14} className="text-white/80 flex-shrink-0 mt-0.5" />
-            <p className="text-white/90 text-xs leading-relaxed">
-              Your details are <strong>100% safe & private</strong>. We will <strong>never</strong> call, WhatsApp or email you for promotions. Used only for your orders.
-            </p>
+              <p className="text-white/90 text-xs leading-relaxed">
+              {pendingAction === "order"
+                ? <>Login once so Vinod knows <strong>who you are</strong> — your name, address & phone auto-fill in every WhatsApp order. No more typing each time! ⚡</>
+                : <>Your details are <strong>100% safe & private</strong>. We will <strong>never</strong> call, WhatsApp or email you for promotions. Used only for your orders.</>
+              }
+              </p>
           </div>
         </div>
 

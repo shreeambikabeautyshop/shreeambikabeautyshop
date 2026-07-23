@@ -8,6 +8,7 @@ import {
   FiSearch, FiMic, FiMicOff, FiUpload, FiX, FiFilter,
   FiChevronDown, FiGrid, FiList, FiShuffle,
 } from "react-icons/fi";
+import { useWhatsAppOrder } from "@/app/hooks/useWhatsAppOrder";
 
 interface Product {
   id: string; name: string; slug: string; brand: string; category: string;
@@ -37,9 +38,11 @@ const SORT_OPTIONS = [
 ];
 
 // ── Product Card ─────────────────────────────────────────────────────────────
-function ProductCard({ p, view }: { p: Product; view: "grid" | "list" }) {
-  const waMsg = encodeURIComponent(`Hi Vinod! I want to order *${p.name}* (₹${p.price}). Please confirm availability.\nShree Ambika Beauty Shop`);
-
+function ProductCard({ p, view, onOrder }: {
+  p: Product;
+  view: "grid" | "list";
+  onOrder: (p: Product) => void;
+}) {
   if (view === "list") {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-4 p-3">
@@ -62,10 +65,10 @@ function ProductCard({ p, view }: { p: Product; view: "grid" | "list" }) {
             {p.discount > 0 && <span className="text-xs text-green-600 font-bold">{p.discount}% OFF</span>}
           </div>
         </div>
-        <a href={`https://wa.me/918291455297?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+        <button onClick={() => onOrder(p)}
           className="flex-shrink-0 self-center bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold px-3 py-2 rounded-xl flex items-center gap-1 transition-colors">
           <FaWhatsapp size={12} /> Order
-        </a>
+        </button>
       </div>
     );
   }
@@ -93,10 +96,10 @@ function ProductCard({ p, view }: { p: Product; view: "grid" | "list" }) {
           <span className="font-bold text-gray-900 text-sm">₹{p.price}</span>
           {p.mrp > p.price && <span className="text-[10px] text-gray-400 line-through">₹{p.mrp}</span>}
         </div>
-        <a href={`https://wa.me/918291455297?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+        <button onClick={() => onOrder(p)}
           className="w-full flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold py-2 rounded-xl transition-colors">
           <FaWhatsapp size={11} /> Order on WhatsApp
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -106,6 +109,17 @@ function ProductCard({ p, view }: { p: Product; view: "grid" | "list" }) {
 export default function ProductsClient({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { openWhatsApp } = useWhatsAppOrder();
+
+  const handleOrder = useCallback((p: Product) => {
+    openWhatsApp({
+      productId: p.id,
+      productName: p.name,
+      productBrand: p.brand,
+      productPrice: p.price,
+      source: "search_page",
+    });
+  }, [openWhatsApp]);
 
   const [query, setQuery]             = useState(searchParams.get("search") || "");
   const [category, setCategory]       = useState(searchParams.get("category") || "All");
@@ -150,16 +164,18 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
   // ── Voice Search ────────────────────────────────────────────────────────────
   const startVoice = useCallback(() => {
-    const SR = (window as typeof window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition
-      || (window as typeof window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SR) return;
     const rec = new SR();
     rec.lang = "en-IN";
     rec.continuous = false;
     rec.interimResults = true;
     rec.onstart = () => setListening(true);
-    rec.onresult = (e: SpeechRecognitionEvent) => {
-      const transcript = Array.from(e.results).map(r => r[0].transcript).join("");
+    rec.onresult = (e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
+      const transcript = Array.from(e.results as unknown as ArrayLike<{ [key: number]: { transcript: string } }>)
+        .map(r => r[0].transcript).join("");
       setQuery(transcript);
     };
     rec.onend = () => setListening(false);
@@ -457,20 +473,20 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 className="flex items-center justify-center gap-2 bg-brand-primary text-white font-bold px-6 py-3 rounded-xl">
                 <FiShuffle size={14} /> Clear Filters
               </button>
-              <a href={`https://wa.me/918291455297?text=Hi Vinod! I'm looking for "${query || concern || category}" products. Do you have it?`}
-                target="_blank" rel="noopener noreferrer"
+              <button
+                onClick={() => openWhatsApp({ source: "search_no_results", customMessage: `Hi Vinod! I'm looking for "${query || concern || category}" products. Do you have it? 🛍️\n\nShree Ambika Beauty Shop` })}
                 className="flex items-center justify-center gap-2 bg-green-500 text-white font-bold px-6 py-3 rounded-xl">
                 <FaWhatsapp size={14} /> Ask on WhatsApp
-              </a>
+              </button>
             </div>
           </div>
         ) : view === "grid" ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {filtered.map(p => <ProductCard key={p.id} p={p} view="grid" />)}
+            {filtered.map(p => <ProductCard key={p.id} p={p} view="grid" onOrder={handleOrder} />)}
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map(p => <ProductCard key={p.id} p={p} view="list" />)}
+            {filtered.map(p => <ProductCard key={p.id} p={p} view="list" onOrder={handleOrder} />)}
           </div>
         )}
       </div>

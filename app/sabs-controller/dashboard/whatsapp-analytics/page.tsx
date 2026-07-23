@@ -112,38 +112,54 @@ export default function WhatsAppAnalytics() {
           )}
         </div>
 
-        {/* Recent Clicks */}
+        {/* Recent Clicks — enhanced with source + page + customer */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h2 className="font-bold text-gray-800">🕐 Recent Clicks</h2>
+            <p className="text-[10px] text-gray-400 mt-0.5">Source page + customer info for every click</p>
           </div>
           {loading ? (
-            <div className="flex items-center justify-center py-10">
-              <div className="w-6 h-6 border-3 border-green-500 border-t-transparent rounded-full animate-spin" />
-            </div>
+            <div className="h-20 animate-pulse bg-gray-50 m-4 rounded-xl" />
           ) : clicks.length === 0 ? (
             <p className="text-center text-gray-400 py-10 text-sm">No clicks yet</p>
           ) : (
-            <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
-              {clicks.slice(0, 50).map((c) => (
-                <div key={c.id} className="px-5 py-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 line-clamp-1">{c.product_name || "Unknown Product"}</p>
-                      {c.customer_name && (
-                        <p className="text-xs text-brand-primary font-semibold">👤 {c.customer_name} · {c.customer_phone}</p>
-                      )}
-                      <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                        <span className="capitalize">{c.source?.replace("_", " ")}</span>
-                        {c.product_price && <span>· ₹{c.product_price}</span>}
-                      </p>
+            <div className="divide-y divide-gray-50 max-h-[400px] overflow-y-auto">
+              {clicks.slice(0, 50).map((c) => {
+                let pagePath = c.page_url || "";
+                try { pagePath = new URL(c.page_url).pathname; } catch {}
+                return (
+                  <div key={c.id} className="px-4 py-3 hover:bg-gray-50">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        {/* Product */}
+                        <p className="text-xs font-semibold text-gray-800 line-clamp-1">{c.product_name || "Unknown"}{c.product_price ? ` · ₹${c.product_price}` : ""}</p>
+                        {/* Customer or guest */}
+                        {c.customer_name ? (
+                          <p className="text-[10px] font-bold text-brand-primary">
+                            👤 {c.customer_name}
+                            {c.customer_phone && (
+                              <a href={`https://wa.me/91${c.customer_phone}`} target="_blank" rel="noopener noreferrer"
+                                className="ml-1 text-green-600 hover:underline">· {c.customer_phone}</a>
+                            )}
+                          </p>
+                        ) : (
+                          <span className="text-[9px] bg-orange-100 text-orange-600 font-bold px-1.5 py-0.5 rounded-full">Guest — not logged in</span>
+                        )}
+                        {/* Source + page */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${SOURCE_LABEL_COLORS[c.source] || "bg-gray-100 text-gray-600"}`}>
+                            {SOURCE_EMOJIS[c.source] || "📲"} {SOURCE_NAMES[c.source] || c.source || "unknown"}
+                          </span>
+                          {pagePath && <span className="text-[9px] text-gray-400 truncate max-w-[120px]">{pagePath}</span>}
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                        {new Date(c.created_at).toLocaleDateString("en-IN", { day:"2-digit", month:"short" })}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-gray-400 whitespace-nowrap">
-                      {new Date(c.created_at).toLocaleDateString("en-IN")}
-                    </span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -151,3 +167,22 @@ export default function WhatsAppAnalytics() {
     </div>
   );
 }
+
+// Source label helpers (kept outside component for perf)
+const SOURCE_NAMES: Record<string, string> = {
+  "search_page":"Search Page","product_page":"Product Page","home_hero":"Home Hero",
+  "category_page":"Category","trending_section":"Trending","bestseller_section":"Bestsellers",
+  "search_no_results":"No Results","product_card":"Product Card","whatsapp_float":"Float Button",
+};
+const SOURCE_EMOJIS: Record<string, string> = {
+  "search_page":"🔍","product_page":"🛍️","home_hero":"🏠","category_page":"📂",
+  "trending_section":"🔥","bestseller_section":"⭐","search_no_results":"🤔",
+  "product_card":"💳","whatsapp_float":"💬",
+};
+const SOURCE_LABEL_COLORS: Record<string, string> = {
+  "search_page":"bg-blue-100 text-blue-700","product_page":"bg-purple-100 text-purple-700",
+  "home_hero":"bg-pink-100 text-pink-700","category_page":"bg-orange-100 text-orange-700",
+  "trending_section":"bg-red-100 text-red-700","bestseller_section":"bg-yellow-100 text-yellow-700",
+  "search_no_results":"bg-gray-100 text-gray-600","product_card":"bg-teal-100 text-teal-700",
+  "whatsapp_float":"bg-green-100 text-green-700",
+};
