@@ -4,14 +4,6 @@ import { FiUsers, FiGlobe, FiSmartphone, FiMonitor, FiRefreshCw, FiClock, FiSear
 import { MdRepeat } from "react-icons/md";
 import { FaWhatsapp } from "react-icons/fa";
 
-// Known datacenter/bot IP ranges (city names that are almost always crawlers)
-const BOT_CITIES = ["Roubaix", "Villeurbanne", "Boardman", "Mountain View", "Ashburn", "Council Bluffs", "Des Moines", "The Dalles"];
-const isLikelyBot = (v: Visitor) => {
-  if (BOT_CITIES.includes(v.city)) return true;
-  if (v.time_spent_seconds === 0 && !v.products_viewed?.length) return true;
-  return false;
-};
-
 interface Visitor {
   id: string; session_id: string; ip_address: string;
   country: string; country_code: string; region: string; city: string;
@@ -56,8 +48,8 @@ export default function VisitorsPage() {
   const [selected, setSelected]         = useState<Visitor | null>(null);
   const [tab, setTab]                   = useState<"overview"|"products"|"reach"|"visitors">("overview");
   const [page, setPage]                 = useState(1);
-  const [filterBots, setFilterBots]     = useState(true);
   const [visitorSearch, setVisitorSearch] = useState("");
+  const [goodBotCount, setGoodBotCount] = useState(0);
   const PAGE_SIZE = 25;
 
   const load = async (d: number) => {
@@ -71,6 +63,7 @@ export default function VisitorsPage() {
     setTopCats(json.topCategories || []);
     setPeakHours(json.peakHours   || []);
     setTrafficSrc(json.trafficSources || []);
+    setGoodBotCount(json.goodBotCount || 0);
     // Fix: filter out URL template strings from search queries
     const rawSearches: SearchQ[] = json.topSearches || [];
     setTopSearches(rawSearches.filter(s => s.query && !s.query.includes("{") && s.query.trim().length > 1));
@@ -82,25 +75,19 @@ export default function VisitorsPage() {
 
   // Filtered + paginated visitors
   const filteredVisitors = useMemo(() => {
-    let list = visitors;
-    if (filterBots) list = list.filter(v => !isLikelyBot(v));
-    if (visitorSearch.trim()) {
-      const q = visitorSearch.toLowerCase();
-      list = list.filter(v =>
-        (v.city || "").toLowerCase().includes(q) ||
-        (v.country || "").toLowerCase().includes(q) ||
-        (v.ip_address || "").includes(q) ||
-        (v.browser || "").toLowerCase().includes(q) ||
-        (v.os || "").toLowerCase().includes(q)
-      );
-    }
-    return list;
-  }, [visitors, filterBots, visitorSearch]);
+    if (!visitorSearch.trim()) return visitors;
+    const q = visitorSearch.toLowerCase();
+    return visitors.filter(v =>
+      (v.city || "").toLowerCase().includes(q) ||
+      (v.country || "").toLowerCase().includes(q) ||
+      (v.ip_address || "").includes(q) ||
+      (v.browser || "").toLowerCase().includes(q) ||
+      (v.os || "").toLowerCase().includes(q)
+    );
+  }, [visitors, visitorSearch]);
 
   const totalPages = Math.max(1, Math.ceil(filteredVisitors.length / PAGE_SIZE));
   const pagedVisitors = filteredVisitors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const botCount = visitors.filter(isLikelyBot).length;
-  const humanCount = visitors.length - botCount;
 
   const fmt = (secs: number) => {
     if (!secs) return "< 1s";
@@ -427,39 +414,26 @@ export default function VisitorsPage() {
                   <button onClick={() => setVisitorSearch("")} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
                 )}
               </div>
-              {/* Bot filter toggle */}
-              <button
-                onClick={() => { setFilterBots(!filterBots); setPage(1); }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all ${filterBots ? "bg-green-100 text-green-700" : "bg-red-50 text-red-500"}`}
-              >
-                {filterBots ? "🤖 Bots Hidden" : "🤖 Bots Visible"}
-              </button>
               {/* Count info */}
               <div className="text-xs text-gray-500">
-                <span className="font-bold text-gray-800">{filteredVisitors.length}</span> visitors
-                {filterBots && botCount > 0 && (
-                  <span className="ml-1 text-orange-500">({botCount} bots filtered)</span>
-                )}
-                {!filterBots && botCount > 0 && (
-                  <span className="ml-1 text-orange-400">incl. {botCount} likely bots</span>
-                )}
+                <span className="font-bold text-gray-800">{filteredVisitors.length}</span> real humans
               </div>
             </div>
 
-            {/* Bot info banner */}
-            {filterBots && botCount > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 flex items-start gap-2">
-                <span className="text-orange-500 text-lg">🤖</span>
-                <div>
-                  <p className="text-xs font-bold text-orange-800">
-                    {botCount} likely bot/crawler sessions hidden (Roubaix France, Mountain View USA etc.)
-                  </p>
-                  <p className="text-[10px] text-orange-600 mt-0.5">
-                    Real humans: <strong>{humanCount}</strong> — these are actual visitors to your store. Toggle &quot;Bots Hidden&quot; to see all.
-                  </p>
-                </div>
+            {/* AI filter info banner */}
+            <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-start gap-2">
+              <span className="text-green-600 text-lg">🤖</span>
+              <div>
+                <p className="text-xs font-bold text-green-800">
+                  AI Bot Filter Active — showing only real human visitors
+                </p>
+                <p className="text-[10px] text-green-600 mt-0.5">
+                  Bad bots (scrapers, attackers) are blocked at entry — never saved. 
+                  {goodBotCount > 0 && <> Good bots (Googlebot, SEO crawlers): <strong>{goodBotCount}</strong> — saved separately, not counted here.</>}
+                  {goodBotCount === 0 && <> Good SEO bots are saved but not counted in your stats.</>}
+                </p>
               </div>
-            )}
+            </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {filteredVisitors.length === 0 ? (

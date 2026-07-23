@@ -18,18 +18,38 @@ export async function GET(req: NextRequest) {
   const supabase = getAdmin();
   const { searchParams } = new URL(req.url);
   const days = parseInt(searchParams.get("days") || "30");
+  const includeGoodBots = searchParams.get("include_bots") === "1";
 
   const since = new Date();
   since.setDate(since.getDate() - days);
 
-  const { data, error } = await supabase
+  // Base query — always exclude bad bots (they are never saved)
+  // By default only humans; with include_bots=1 also show good_bots
+  let query = supabase
     .from("visitor_analytics")
     .select("*")
     .gte("created_at", since.toISOString())
     .order("created_at", { ascending: false })
     .limit(1000);
 
+  if (!includeGoodBots) {
+    // Only real humans
+    query = query.or("visitor_type.eq.human,visitor_type.is.null");
+  } else {
+    // Humans + good bots (SEO crawlers)
+    query = query.in("visitor_type", ["human", "good_bot"]);
+  }
+
+  const { data, error } = await query;
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Also get good bot count separately for info
+  const { count: goodBotCount } = await supabase
+    .from("visitor_analytics")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", since.toISOString())
+    .eq("visitor_type", "good_bot");
 
   const visitors = data || [];
 
@@ -141,5 +161,6 @@ export async function GET(req: NextRequest) {
     trafficSources,
     topSearches,
     visitsByDay,
+    goodBotCount: goodBotCount || 0,
   });
 }
