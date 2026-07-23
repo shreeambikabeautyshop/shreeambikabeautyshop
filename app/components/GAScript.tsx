@@ -2,12 +2,11 @@
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 
-const GA_ID = "G-B27MG5YKBR";
-
 export default function GAScript({ gaId }: { gaId: string }) {
   const pathname = usePathname();
 
-  // Do NOT fire Google Analytics on admin pages
+  // Extra safety — don't render on admin pages
+  // Primary block is in sabs-controller/layout.tsx via window['ga-disable-*']
   if (pathname?.startsWith("/sabs-controller")) return null;
 
   return (
