@@ -76,7 +76,7 @@ function assembleCaptionSafe(hook: string, fixedLines: string): string {
   return caption.trim();
 }
 
-// ── INSTAGRAM CAPTION (470–500 chars) ─────────────────────────────────────────
+// ── INSTAGRAM CAPTION (620–650 chars) ─────────────────────────────────────────
 function buildIGPrompt(product: {
   name: string; brand: string; category: string;
   price: number; mrp: number; discount: number;
@@ -85,8 +85,8 @@ function buildIGPrompt(product: {
   const productUrl = product.shortUrl || `https://www.shreeambikabeauty.com/products/${product.slug}`;
   const discount   = product.discount || Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
-  return `You are an Instagram SEO expert for Shree Ambika Beauty Shop, Mumbai.
-Write an Instagram caption for this product. Follow ALL rules exactly.
+  return `You are an Instagram SEO expert for Shree Ambika Beauty Shop, Mumbai (since 2001).
+Write an Instagram caption. Follow ALL rules EXACTLY.
 
 Product: ${product.name}
 Brand: ${product.brand}
@@ -96,18 +96,30 @@ Shop URL: ${productUrl}
 WhatsApp: +91 82914 55297
 Location: Dahisar, Mumbai
 
-RULES:
-1. Start with a POWERFUL attention-grabbing headline (1 line, all caps or bold feel, with emoji)
-2. 2-3 lines of benefit-focused product info (what it does, why buy it, what makes it special)
-3. Price + discount line: "💸 Only ₹${product.price} (Save ${discount}%!) ✅ 100% Original"
-4. Call to action: WhatsApp order + link
-5. Location line: "📍 Dahisar, Mumbai | Pan India Delivery 🚀"
-6. End with 15-20 HIGHLY RELEVANT hashtags — mix of: brand-specific, category, Mumbai local, beauty trend, product-specific keywords
-7. Total caption must be between 470 and 500 characters EXACTLY (count every char including spaces, newlines, emojis)
-8. Hashtags must include: #MumbaiBeauty #ShreeAmbikaBeautyShop #DahisarMumbai + brand + category tags
-9. No placeholder text. Make every word count for SEO and engagement.
+CAPTION STRUCTURE (follow this order):
+Line 1: POWERFUL headline — ALL CAPS feel, 1 strong emoji, attention-grabbing (mention product benefit)
+Line 2-3: 2 lines of product benefits (what it does, skin type, finish, why it's best)
+Line 4: "💸 Only ₹${product.price} (MRP ₹${product.mrp}) — ${discount}% OFF! ✅ 100% Original Guaranteed"
+Line 5: "📲 Order on WhatsApp: +91 82914 55297"
+Line 6: "🛒 " + product URL
+Line 7: "📍 Dahisar, Mumbai | 🚀 Pan India Delivery Available"
+Line 8: blank line
+Line 9-10: 25 HASHTAGS — must include ALL of these types:
+  - Brand: #${product.brand.replace(/\s+/g, "")} #${product.brand.replace(/\s+/g, "")}India
+  - Product category: #${product.category.replace(/\s+/g, "")} #${product.category.replace(/\s+/g, "")}India
+  - Mumbai local: #MumbaiBeauty #MumbaiMakeup #DahisarMumbai #MumbaiGirls #MumbaiFashion
+  - Shop: #ShreeAmbikaBeautyShop #ShreeAmbikaBeauty #BeautyShopMumbai
+  - Trending: #BeautyTips #MakeupLovers #IndianBeauty #SkincareIndia #BeautyBloggerIndia
+  - Price/deal: #AffordableBeauty #BudgetBeauty #BeautyDeals #OriginalProducts
+  - Engagement: #BeautyCommunity #GlowUp #MakeupOfTheDay #MOTD
 
-Return ONLY the caption text — no explanation, no quotes, nothing else.`;
+STRICT RULES:
+- Total caption MUST be between 620 and 650 characters EXACTLY (count every char, space, newline, emoji)
+- No placeholder text
+- Make every word count for SEO, discoverability and engagement
+- Hashtags on last 2 lines, space-separated
+
+Return ONLY the caption — no explanation, no quotes.`;
 }
 
 // ── IMAGE ALT TEXT ─────────────────────────────────────────────────────────────
@@ -135,20 +147,16 @@ Example format: "Swiss Beauty Compact Powder by Swiss Beauty - Buy Makeup Online
 Return ONLY the alt text.`;
 }
 
-// ── Assemble IG caption with hard 470-500 enforcement ─────────────────────────
+// ── Assemble IG caption with hard 620-650 enforcement ─────────────────────────
 function assembleIGCaption(raw: string): string {
   let c = raw.replace(/^["'`]|["'`]$/g, "").trim();
 
-  // Hard trim at 500
-  if (c.length > 500) {
-    // Try to cut at last hashtag boundary within 500 chars
-    const trimmed = c.slice(0, 500);
-    const lastHash = trimmed.lastIndexOf(" #");
-    if (lastHash > 400) {
-      c = trimmed.slice(0, lastHash).trim();
-    } else {
-      c = trimmed.trim();
-    }
+  // Hard trim at 650
+  if (c.length > 650) {
+    const trimmed = c.slice(0, 650);
+    // Try to cut at last complete hashtag
+    const lastSpace = trimmed.lastIndexOf(" ");
+    c = (lastSpace > 580 ? trimmed.slice(0, lastSpace) : trimmed).trim();
   }
 
   return c;
@@ -249,10 +257,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ alt, chars: alt.length, provider });
   }
 
-  // ── Instagram Caption (500 chars) ───────────────────────────────────────────
+  // ── Instagram Caption (650 chars) ───────────────────────────────────────────
   if (type === "instagram") {
     const prompt = buildIGPrompt(product);
-    const { text, provider } = await generateWithAI(prompt, 400);
+    const { text, provider } = await generateWithAI(prompt, 550);
     const caption = assembleIGCaption(text);
     return NextResponse.json({ caption, chars: caption.length, provider });
   }

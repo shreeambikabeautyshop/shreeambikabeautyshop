@@ -23,25 +23,27 @@ interface Product {
 
 const BASE_URL = "https://www.shreeambikabeauty.com";
 
-// Caption type
 type CaptionType = "whatsapp" | "instagram" | "alt";
 
-interface CaptionData { text: string; chars: number; provider: string; captionType: CaptionType; }
+interface CaptionData { text: string; chars: number; provider: string; }
+// Cache key: "productId:type"
+type CaptionCache = Record<string, CaptionData>;
 
 export default function ProductsList() {
-  const [products, setProducts]         = useState<Product[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [search, setSearch]             = useState("");
-  const [deleting, setDeleting]         = useState<string | null>(null);
-  const [copied, setCopied]             = useState<string | null>(null);
-  const [shortUrls, setShortUrls]       = useState<Record<string, string>>({});
+  const [products, setProducts]     = useState<Product[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [search, setSearch]         = useState("");
+  const [deleting, setDeleting]     = useState<string | null>(null);
+  const [copied, setCopied]         = useState<string | null>(null);
+  const [shortUrls, setShortUrls]   = useState<Record<string, string>>({});
   const [shortLoading, setShortLoading] = useState<string | null>(null);
-  // Loading state: "productId:type"
-  const [captionLoading, setCaptionLoading] = useState<string | null>(null);
-  const [captionCopied, setCaptionCopied]   = useState<string | null>(null);
-  const [captionPreview, setCaptionPreview] = useState<(CaptionData & { id: string }) | null>(null);
-  // Cache per product per type: "productId:type" -> CaptionData
-  const [captionCache, setCaptionCache] = useState<Record<string, CaptionData>>({});
+
+  // Single popup for all caption types
+  const [captionModal, setCaptionModal] = useState<{ product: Product } | null>(null);
+  const [activeTab, setActiveTab]       = useState<CaptionType>("whatsapp");
+  const [loadingType, setLoadingType]   = useState<CaptionType | null>(null);
+  const [captionCache, setCaptionCache] = useState<CaptionCache>({});
+  const [copiedKey, setCopiedKey]       = useState<string | null>(null);
   const [view, setView] = useState<"table" | "images">("table");
 
   const fetchProducts = () => {
@@ -100,11 +102,8 @@ export default function ProductsList() {
 
   const handleGenerateCaption = async (p: Product, type: CaptionType = "whatsapp", forceRegenerate = false) => {
     const cacheKey = `${p.id}:${type}`;
-    if (!forceRegenerate && captionCache[cacheKey]) {
-      setCaptionPreview({ id: p.id, ...captionCache[cacheKey] });
-      return;
-    }
-    setCaptionLoading(`${p.id}:${type}`);
+    if (!forceRegenerate && captionCache[cacheKey]) return; // already cached
+    setLoadingType(type);
     const shortUrl = await getOrCreateShortUrl(p);
     try {
       const res = await fetch("/api/admin/generate-caption", {
@@ -119,18 +118,34 @@ export default function ProductsList() {
       const json = await res.json();
       const resultText = type === "alt" ? json.alt : json.caption;
       if (resultText) {
-        const cached: CaptionData = { text: resultText, chars: json.chars, provider: json.provider, captionType: type };
-        setCaptionCache((prev) => ({ ...prev, [cacheKey]: cached }));
-        setCaptionPreview({ id: p.id, ...cached });
+        setCaptionCache(prev => ({ ...prev, [cacheKey]: { text: resultText, chars: json.chars, provider: json.provider } }));
       }
     } catch { /* silent */ }
-    setCaptionLoading(null);
+    setLoadingType(null);
   };
 
-  const handleCopyCaption = async (text: string, id: string) => {
+  const openCaptionModal = async (p: Product) => {
+    setCaptionModal({ product: p });
+    setActiveTab("whatsapp");
+    // Auto-generate WhatsApp caption immediately if not cached
+    const waKey = `${p.id}:whatsapp`;
+    if (!captionCache[waKey]) {
+      handleGenerateCaption(p, "whatsapp");
+    }
+  };
+
+  const handleTabChange = (p: Product, type: CaptionType) => {
+    setActiveTab(type);
+    const key = `${p.id}:${type}`;
+    if (!captionCache[key]) {
+      handleGenerateCaption(p, type);
+    }
+  };
+
+  const handleCopyText = async (text: string, key: string) => {
     await navigator.clipboard.writeText(text);
-    setCaptionCopied(id);
-    setTimeout(() => setCaptionCopied(null), 3000);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2500);
   };
 
   const filtered = products.filter((p) =>
@@ -292,55 +307,21 @@ export default function ProductsList() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          {/* WhatsApp Caption */}
-                          <button onClick={() => handleGenerateCaption(p, "whatsapp")}
-                            disabled={captionLoading === `${p.id}:whatsapp`}
-                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                              captionLoading === `${p.id}:whatsapp`
-                                ? "bg-orange-100 text-orange-400 animate-pulse"
-                                : captionCache[`${p.id}:whatsapp`]
+                          {/* Single Caption button — opens unified modal */}
+                          <button
+                            onClick={() => openCaptionModal(p)}
+                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+                              captionCache[`${p.id}:whatsapp`] || captionCache[`${p.id}:instagram`]
                                 ? "bg-green-500 hover:bg-green-600 text-white"
-                                : "bg-orange-500 hover:bg-orange-600 text-white"}`}
-                            title="WhatsApp Caption (280 chars)">
-                            {captionLoading === `${p.id}:whatsapp`
-                              ? <span>✨...</span>
-                              : captionCache[`${p.id}:whatsapp`]
-                              ? <><FaWhatsapp size={10} /><span>WA ✓</span></>
-                              : <><FiZap size={10} /><span>WA</span></>}
-                          </button>
-
-                          {/* Instagram Caption */}
-                          <button onClick={() => handleGenerateCaption(p, "instagram")}
-                            disabled={captionLoading === `${p.id}:instagram`}
-                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                              captionLoading === `${p.id}:instagram`
-                                ? "bg-pink-100 text-pink-400 animate-pulse"
-                                : captionCache[`${p.id}:instagram`]
-                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"}`}
-                            title="Instagram Caption (500 chars + hashtags)">
-                            {captionLoading === `${p.id}:instagram`
-                              ? <span>📸...</span>
-                              : captionCache[`${p.id}:instagram`]
-                              ? <><FaInstagram size={10} /><span>IG ✓</span></>
-                              : <><FaInstagram size={10} /><span>IG</span></>}
-                          </button>
-
-                          {/* Image Alt Text */}
-                          <button onClick={() => handleGenerateCaption(p, "alt")}
-                            disabled={captionLoading === `${p.id}:alt`}
-                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                              captionLoading === `${p.id}:alt`
-                                ? "bg-blue-100 text-blue-400 animate-pulse"
-                                : captionCache[`${p.id}:alt`]
-                                ? "bg-blue-500 hover:bg-blue-600 text-white"
-                                : "bg-blue-500 hover:bg-blue-600 text-white"}`}
-                            title="SEO Image Alt Text (for crawlers)">
-                            {captionLoading === `${p.id}:alt`
-                              ? <span>🖼...</span>
-                              : captionCache[`${p.id}:alt`]
-                              ? <><FiImage size={10} /><span>Alt ✓</span></>
-                              : <><FiImage size={10} /><span>Alt</span></>}
+                                : "bg-orange-500 hover:bg-orange-600 text-white"
+                            }`}
+                            title="Generate WA Caption + IG Caption + Alt Text"
+                          >
+                            <FiZap size={11} />
+                            <span>
+                              {captionCache[`${p.id}:whatsapp`] || captionCache[`${p.id}:instagram`]
+                                ? "Caption ✓" : "Caption"}
+                            </span>
                           </button>
                           {/* Edit */}
                           <Link href={`/sabs-controller/dashboard/products/edit/${p.id}`}
@@ -381,92 +362,122 @@ export default function ProductsList() {
         </div>
       )}
 
-      {/* Caption Preview Modal */}
-      {captionPreview && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={() => setCaptionPreview(null)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}>
+      {/* ── Unified Caption Modal ── */}
+      {captionModal && (() => {
+        const p = captionModal.product;
+        const waKey  = `${p.id}:whatsapp`;
+        const igKey  = `${p.id}:instagram`;
+        const altKey = `${p.id}:alt`;
+        const current = captionCache[`${p.id}:${activeTab}`];
+        const isLoading = loadingType === activeTab;
 
-            {/* Modal header */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                  {captionPreview.captionType === "whatsapp" && <><FiZap className="text-orange-500" size={16} /> WhatsApp Caption</>}
-                  {captionPreview.captionType === "instagram" && <><FaInstagram className="text-pink-500" size={16} /> Instagram Caption</>}
-                  {captionPreview.captionType === "alt" && <><FiImage className="text-blue-500" size={16} /> Image Alt Text</>}
-                </h3>
-                <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
-                  <span className={`font-bold ${captionPreview.provider === "gemini" ? "text-blue-600" : "text-orange-500"}`}>
-                    via {captionPreview.provider === "gemini" ? "✓ Gemini" : "⚡ Groq"}
-                  </span>
-                  <span className="bg-gray-100 text-gray-500 text-[9px] px-1.5 py-0.5 rounded-full">
-                    {captionPreview.chars} chars
-                    {captionPreview.captionType === "whatsapp" && " (target 260-280)"}
-                    {captionPreview.captionType === "instagram" && " (target 470-500)"}
-                    {captionPreview.captionType === "alt" && " (target 100-125)"}
-                  </span>
-                </p>
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={() => setCaptionModal(null)}>
+            <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden"
+              onClick={e => e.stopPropagation()}>
+
+              {/* Modal header */}
+              <div className="px-6 pt-5 pb-3 border-b border-gray-100">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-base">AI Caption Generator</h3>
+                    <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[340px]">{p.name}</p>
+                  </div>
+                  <button onClick={() => setCaptionModal(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex gap-1.5 mt-4">
+                  {([
+                    { type: "whatsapp" as CaptionType, label: "💬 WhatsApp", sublabel: "280 chars", color: "bg-green-500" },
+                    { type: "instagram" as CaptionType, label: "📸 Instagram", sublabel: "650 chars + hashtags", color: "bg-gradient-to-r from-purple-500 to-pink-500" },
+                    { type: "alt" as CaptionType, label: "🖼 Image Alt", sublabel: "SEO crawler", color: "bg-blue-500" },
+                  ]).map(tab => (
+                    <button key={tab.type}
+                      onClick={() => handleTabChange(p, tab.type)}
+                      className={`flex-1 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 ${
+                        activeTab === tab.type
+                          ? "border-brand-primary bg-brand-light text-brand-primary"
+                          : "border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100"
+                      }`}>
+                      <div>{tab.label}</div>
+                      <div className={`text-[9px] mt-0.5 font-normal ${activeTab === tab.type ? "text-brand-primary/70" : "text-gray-400"}`}>
+                        {captionCache[`${p.id}:${tab.type}`] ? "✓ Ready" : tab.sublabel}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <button onClick={() => setCaptionPreview(null)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+
+              {/* Content area */}
+              <div className="px-6 py-4">
+                {/* Description strip */}
+                <div className={`rounded-xl px-3 py-2 mb-3 text-xs font-medium ${
+                  activeTab === "whatsapp" ? "bg-green-50 text-green-700" :
+                  activeTab === "instagram" ? "bg-pink-50 text-pink-700" :
+                  "bg-blue-50 text-blue-700"}`}>
+                  {activeTab === "whatsapp" && "💬 Compact 260-280 chars — product link, contact & location. For WhatsApp Status, forwards, business."}
+                  {activeTab === "instagram" && "📸 650 chars with headline, benefits, price, CTA + 25 keyword hashtags for max reach & discoverability."}
+                  {activeTab === "alt" && "🤖 SEO image alt text — Google image crawlers read this. Boosts ranking in Google Image Search."}
+                </div>
+
+                {/* Caption box */}
+                <div className="bg-gray-50 rounded-2xl p-4 min-h-[120px] max-h-[260px] overflow-y-auto relative mb-4">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center h-24 gap-3">
+                      <div className="w-5 h-5 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs text-gray-400">
+                        {activeTab === "whatsapp" ? "Crafting WhatsApp caption..." :
+                         activeTab === "instagram" ? "Writing Instagram caption + hashtags..." :
+                         "Generating SEO alt text..."}
+                      </span>
+                    </div>
+                  ) : current ? (
+                    <>
+                      <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed">{current.text}</pre>
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
+                        <span className="text-[10px] text-gray-400">{current.chars} chars</span>
+                        <span className={`text-[10px] font-semibold ${current.provider === "gemini" ? "text-blue-500" : "text-orange-500"}`}>
+                          via {current.provider}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-24 text-gray-400 text-xs">
+                      Click a tab to generate
+                    </div>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => current && handleCopyText(current.text, `${p.id}:${activeTab}`)}
+                    disabled={!current || isLoading}
+                    className={`flex-1 flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-40 ${
+                      copiedKey === `${p.id}:${activeTab}`
+                        ? "bg-green-500 text-white"
+                        : activeTab === "instagram"
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                        : activeTab === "alt"
+                        ? "bg-blue-500 text-white"
+                        : "bg-brand-primary text-white"}`}>
+                    <FiCopy size={14} />
+                    {copiedKey === `${p.id}:${activeTab}` ? "Copied! ✓" : "Copy"}
+                  </button>
+                  <button
+                    onClick={() => handleGenerateCaption(p, activeTab, true)}
+                    disabled={isLoading}
+                    className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-all disabled:opacity-40">
+                    🔄
+                  </button>
+                </div>
+              </div>
             </div>
-
-            {/* Type description */}
-            {captionPreview.captionType === "alt" && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 mb-3 text-xs text-blue-700">
-                🤖 <strong>For image SEO:</strong> Paste this in your product image alt= attribute. Crawlers read this — it boosts Google Image Search ranking.
-              </div>
-            )}
-            {captionPreview.captionType === "instagram" && (
-              <div className="bg-pink-50 border border-pink-100 rounded-xl px-3 py-2 mb-3 text-xs text-pink-700">
-                📸 <strong>Instagram optimized:</strong> Headline + benefits + price + CTA + 15-20 keyword hashtags. Copy & paste directly.
-              </div>
-            )}
-            {captionPreview.captionType === "whatsapp" && (
-              <div className="bg-green-50 border border-green-100 rounded-xl px-3 py-2 mb-3 text-xs text-green-700">
-                💬 <strong>WhatsApp optimized:</strong> Compact 260-280 chars with product link, contact & location.
-              </div>
-            )}
-
-            {/* Caption text */}
-            <div className="bg-gray-50 rounded-2xl p-4 mb-4 relative max-h-60 overflow-y-auto">
-              <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed">{captionPreview.text}</pre>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              <button onClick={() => handleCopyCaption(captionPreview.text, captionPreview.id)}
-                className={`flex-1 flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm transition-all ${
-                  captionCopied === captionPreview.id
-                    ? "bg-green-500 text-white"
-                    : captionPreview.captionType === "instagram"
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                    : captionPreview.captionType === "alt"
-                    ? "bg-blue-500 text-white"
-                    : "bg-brand-primary text-white hover:bg-brand-dark"}`}>
-                <FiCopy size={14} />
-                {captionCopied === captionPreview.id ? "Copied! ✓" : "Copy"}
-              </button>
-              <button
-                onClick={() => {
-                  const { id, captionType } = captionPreview;
-                  setCaptionPreview(null);
-                  const prod = products.find((x) => x.id === id);
-                  if (prod) handleGenerateCaption(prod, captionType, true);
-                }}
-                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-all">
-                🔄 Redo
-              </button>
-            </div>
-
-            <p className="text-[10px] text-gray-400 text-center mt-3">
-              {captionPreview.captionType === "whatsapp" && "For WhatsApp Status, Business, forwards"}
-              {captionPreview.captionType === "instagram" && "For Instagram feed posts, reels caption, stories link"}
-              {captionPreview.captionType === "alt" && "Paste in product image alt attribute for SEO"}
-            </p>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
