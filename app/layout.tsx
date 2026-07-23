@@ -7,6 +7,7 @@ import { UserProvider } from "@/app/context/UserContext";
 import { SettingsProvider } from "@/app/context/SettingsContext";
 import CustomerLoginModal from "@/app/components/CustomerLoginModal";
 import VisitorTracker from "@/app/components/VisitorTracker";
+import GAScript from "@/app/components/GAScript";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -344,22 +345,8 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       </head>
       <body className="font-sans antialiased">
-        {/* Google Analytics 4 — G-B27MG5YKBR */}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="ga4-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_ID}', {
-              page_path: window.location.pathname,
-              send_page_view: true
-            });
-          `}
-        </Script>
+        {/* Google Analytics 4 — only for public pages, not admin */}
+        <GAScript gaId={GA_ID} />
         <UserProvider>
           <SettingsProvider>
             <WishlistProvider>

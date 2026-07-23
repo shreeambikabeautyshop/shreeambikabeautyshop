@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiHome, FiStar, FiSettings, FiUsers, FiDollarSign, FiActivity } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiHome, FiStar, FiSettings, FiUsers, FiDollarSign, FiActivity, FiShield } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 
 const navItems = [
@@ -13,12 +14,22 @@ const navItems = [
   { label: "WhatsApp Analytics", href: "/sabs-controller/dashboard/whatsapp-analytics",        icon: <FaWhatsapp /> },
   { label: "Visitor Analytics",  href: "/sabs-controller/dashboard/visitors",                  icon: <FiActivity /> },
   { label: "Customers",          href: "/sabs-controller/dashboard/customers",                 icon: <FiUsers /> },
+  { label: "Security",           href: "/sabs-controller/dashboard/security",                  icon: <FiShield /> },
   { label: "Settings",           href: "/sabs-controller/dashboard/settings",                  icon: <FiSettings /> },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [failedAttempts, setFailedAttempts] = useState(0);
+
+  // Check for failed login attempts to show alert badge
+  useEffect(() => {
+    fetch("/api/admin/login-attempts")
+      .then((r) => r.json())
+      .then((d) => setFailedAttempts(d.stats?.failCount || 0))
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -55,7 +66,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}
             >
               <span className="text-base">{item.icon}</span>
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.label === "Security" && failedAttempts > 0 && (
+                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {failedAttempts > 99 ? "99+" : failedAttempts}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
