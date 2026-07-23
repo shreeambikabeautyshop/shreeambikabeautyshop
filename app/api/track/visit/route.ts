@@ -43,24 +43,22 @@ export async function POST(req: NextRequest) {
     // ── Classify: human / good_bot / bad_bot ─────────────────────────────
     const classification = await classifyVisitor({ ua, ip, city, country, isp });
 
-    // Block bad bots entirely — don't save to DB, return 200 silently
-    if (classification.type === "bad_bot") {
-      console.log(`[track] blocked bad_bot ip=${ip} city=${city} reason=${classification.reason}`);
+    // Block ALL bots — good or bad — don't waste DB storage
+    // Good bots (Googlebot etc.) bring SEO value but don't need to be stored
+    // Bad bots (scrapers/attackers) should never be stored
+    if (classification.type !== "human") {
+      console.log(`[track] skipped ${classification.type} ip=${ip} city=${city} reason=${classification.reason}`);
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    // Good bots get saved but flagged — they inflate numbers otherwise
-    // Real humans also get saved (visitor_type = "human")
+    // Only real humans reach here — save to DB
     const { error: upsertErr } = await supabase.from("visitor_analytics").upsert(
       {
         session_id,
-        ip_address:      ip,
-        user_agent:      ua,
-        visitor_type:    classification.type,       // "human" | "good_bot"
-        bot_reason:      classification.type !== "human" ? classification.reason : null,
-        hour_of_visit:   data.hour_of_visit ?? null,
-        day_of_week:     data.day_of_week   ?? null,
-        search_query:    data.search_query  ?? null,
+        ip_address:    ip,
+        hour_of_visit: data.hour_of_visit ?? null,
+        day_of_week:   data.day_of_week   ?? null,
+        search_query:  data.search_query  ?? null,
         ...data,
       },
       { onConflict: "session_id" }
@@ -69,13 +67,10 @@ export async function POST(req: NextRequest) {
     if (upsertErr) {
       const { error: insertErr } = await supabase.from("visitor_analytics").insert({
         session_id,
-        ip_address:      ip,
-        user_agent:      ua,
-        visitor_type:    classification.type,
-        bot_reason:      classification.type !== "human" ? classification.reason : null,
-        hour_of_visit:   data.hour_of_visit ?? null,
-        day_of_week:     data.day_of_week   ?? null,
-        search_query:    data.search_query  ?? null,
+        ip_address:    ip,
+        hour_of_visit: data.hour_of_visit ?? null,
+        day_of_week:   data.day_of_week   ?? null,
+        search_query:  data.search_query  ?? null,
         ...data,
       });
       if (insertErr) {

@@ -49,7 +49,6 @@ export default function VisitorsPage() {
   const [tab, setTab]                   = useState<"overview"|"products"|"reach"|"visitors">("overview");
   const [page, setPage]                 = useState(1);
   const [visitorSearch, setVisitorSearch] = useState("");
-  const [goodBotCount, setGoodBotCount] = useState(0);
   const PAGE_SIZE = 25;
 
   const load = async (d: number) => {
@@ -63,7 +62,6 @@ export default function VisitorsPage() {
     setTopCats(json.topCategories || []);
     setPeakHours(json.peakHours   || []);
     setTrafficSrc(json.trafficSources || []);
-    setGoodBotCount(json.goodBotCount || 0);
     // Fix: filter out URL template strings from search queries
     const rawSearches: SearchQ[] = json.topSearches || [];
     setTopSearches(rawSearches.filter(s => s.query && !s.query.includes("{") && s.query.trim().length > 1));
@@ -424,13 +422,10 @@ export default function VisitorsPage() {
             <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-start gap-2">
               <span className="text-green-600 text-lg">🤖</span>
               <div>
-                <p className="text-xs font-bold text-green-800">
-                  AI Bot Filter Active — showing only real human visitors
-                </p>
+                <p className="text-xs font-bold text-green-800">AI Bot Filter Active — only real humans shown</p>
                 <p className="text-[10px] text-green-600 mt-0.5">
-                  Bad bots (scrapers, attackers) are blocked at entry — never saved. 
-                  {goodBotCount > 0 && <> Good bots (Googlebot, SEO crawlers): <strong>{goodBotCount}</strong> — saved separately, not counted here.</>}
-                  {goodBotCount === 0 && <> Good SEO bots are saved but not counted in your stats.</>}
+                  All bots (scrapers, crawlers, attackers) are blocked at entry and never saved to database.
+                  Every visitor here is a real person.
                 </p>
               </div>
             </div>
