@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 import ProductsClient from "./ProductsClient";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "All Beauty Products | Shree Ambika Beauty Shop Mumbai",
@@ -29,7 +32,13 @@ export default async function ProductsPage() {
   return (
     <>
       <Navbar />
-      <ProductsClient products={products} />
+      <Suspense fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }>
+        <ProductsClient products={products} />
+      </Suspense>
       <Footer />
       <WhatsAppFloat />
     </>
