@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
@@ -90,6 +92,30 @@ const CAT_COLORS: Record<string, string> = {
   "Buying Guide": "bg-blue-100 text-blue-700",
 };
 
+const trustBadges = [
+  {
+    emoji: "🏆",
+    title: "24+ Years Experience",
+    desc: "Trusted by Mumbai families since 2001",
+    color: "bg-amber-50 border-amber-200",
+    textColor: "text-amber-700",
+  },
+  {
+    emoji: "🌸",
+    title: "500+ Brands",
+    desc: "India's top beauty & personal care brands",
+    color: "bg-pink-50 border-pink-200",
+    textColor: "text-pink-700",
+  },
+  {
+    emoji: "✅",
+    title: "100% Original",
+    desc: "Sourced from authorised brand distributors",
+    color: "bg-green-50 border-green-200",
+    textColor: "text-green-700",
+  },
+];
+
 export default async function BeautyTipsPage() {
   const blogs = await getLatestBlogs();
 
@@ -98,48 +124,62 @@ export default async function BeautyTipsPage() {
       <Navbar />
       <main className="min-h-screen bg-gray-50">
 
-        {/* Hero */}
-        <div className="bg-brand-primary text-white py-14 px-4">
-          <div className="max-w-[1200px] mx-auto">
+        {/* Hero — with subtle dot pattern */}
+        <div className="relative bg-brand-primary text-white py-14 px-4 overflow-hidden">
+          {/* Subtle background pattern */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, #fff 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+            }}
+          />
+          {/* Decorative circles */}
+          <div aria-hidden="true" className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-white/5" />
+
+          <div className="relative max-w-[1200px] mx-auto">
             <nav className="text-xs text-white/60 mb-4">
-              <Link href="/" className="hover:text-white">Home</Link>
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
               <span className="mx-2">›</span>
               <span>Beauty Tips</span>
             </nav>
             <p className="font-script text-brand-accent text-xl mb-2">From Mumbai&apos;s Beauty Experts</p>
-            <h1 className="text-4xl md:text-5xl font-heading italic text-white mb-4">
-              Beauty Tips & Guides
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading italic text-white mb-4 leading-tight">
+              Beauty Tips &amp; Guides
             </h1>
-            <p className="text-white/80 text-base max-w-xl leading-relaxed">
+            <p className="text-white/80 text-sm sm:text-base max-w-xl leading-relaxed">
               Practical, expert advice on skincare, hair care, makeup, and buying the right beauty products — backed by 24+ years of experience.
             </p>
           </div>
         </div>
 
         {/* Topic Cards */}
-        <section className="max-w-[1200px] mx-auto px-4 py-14">
-          <div className="text-center mb-10">
+        <section className="max-w-[1200px] mx-auto px-4 py-12 sm:py-14">
+          <div className="text-center mb-8 sm:mb-10">
             <p className="label-caps text-brand-primary mb-2">Explore by Topic</p>
-            <h2 className="text-3xl font-serif font-bold text-gray-900">What Would You Like to Learn?</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">What Would You Like to Learn?</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {topicCards.map((card) => (
               <Link
                 key={card.slug}
                 href={`/beauty-tips/${card.slug}`}
-                className={`group ${card.color} border-2 rounded-3xl p-6 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col`}
+                className={`group ${card.color} border-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="text-5xl">{card.emoji}</span>
-                  <span className={`${card.badge} text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0`}>
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <span className="text-3xl sm:text-5xl">{card.emoji}</span>
+                  <span className={`${card.badge} text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex-shrink-0`}>
                     Guide
                   </span>
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-brand-primary transition-colors">
+                <h3 className="font-bold text-gray-900 text-sm sm:text-lg mb-1 sm:mb-2 group-hover:text-brand-primary transition-colors leading-snug">
                   {card.title}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed flex-1">{card.desc}</p>
-                <div className="mt-4 text-sm font-bold text-brand-primary group-hover:translate-x-1 transition-transform">
+                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed flex-1 hidden sm:block">{card.desc}</p>
+                <div className="mt-3 sm:mt-4 text-xs sm:text-sm font-bold text-brand-primary group-hover:translate-x-1 transition-transform">
                   Read Guide →
                 </div>
               </Link>
@@ -147,17 +187,41 @@ export default async function BeautyTipsPage() {
           </div>
         </section>
 
-        {/* Latest Blog Posts */}
-        <section className="bg-white py-14 px-4">
+        {/* Why Trust Our Advice */}
+        <section className="bg-white py-10 sm:py-14 px-4 border-y border-gray-100">
           <div className="max-w-[1200px] mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="text-center mb-8">
+              <p className="label-caps text-brand-primary mb-2">Why Trust Our Advice</p>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Expert Guidance You Can Rely On</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {trustBadges.map((badge) => (
+                <div
+                  key={badge.title}
+                  className={`${badge.color} border-2 rounded-2xl p-6 text-center flex flex-col items-center gap-3`}
+                >
+                  <span className="text-4xl" aria-hidden="true">{badge.emoji}</span>
+                  <div>
+                    <p className={`font-black text-base sm:text-lg ${badge.textColor}`}>{badge.title}</p>
+                    <p className="text-gray-600 text-sm mt-1">{badge.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Latest Blog Posts */}
+        <section className="bg-gray-50 py-12 sm:py-14 px-4">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
                 <p className="label-caps text-brand-primary mb-1">Latest Articles</p>
-                <h2 className="text-2xl font-serif font-bold text-gray-900">Beauty Blog</h2>
+                <h2 className="text-xl sm:text-2xl font-serif font-bold text-gray-900">Beauty Blog</h2>
               </div>
               <Link
                 href="/blog"
-                className="text-sm font-bold text-brand-primary hover:text-brand-secondary transition-colors"
+                className="text-sm font-bold text-brand-primary hover:text-brand-secondary transition-colors whitespace-nowrap"
               >
                 View All →
               </Link>
@@ -169,12 +233,12 @@ export default async function BeautyTipsPage() {
                 <p className="font-semibold">Blog posts coming soon!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {blogs.map((blog) => (
                   <Link
                     key={blog.id}
                     href={`/blog/${blog.slug}`}
-                    className="group bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                    className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
                   >
                     {/* Cover Image */}
                     <div className="relative aspect-video bg-brand-light overflow-hidden">
@@ -197,8 +261,8 @@ export default async function BeautyTipsPage() {
                       </span>
                     </div>
                     {/* Content */}
-                    <div className="p-5 flex flex-col flex-1">
-                      <h3 className="font-bold text-gray-900 text-base leading-snug mb-2 group-hover:text-brand-primary transition-colors line-clamp-2">
+                    <div className="p-4 sm:p-5 flex flex-col flex-1">
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-snug mb-2 group-hover:text-brand-primary transition-colors line-clamp-2">
                         {blog.title}
                       </h3>
                       <p className="text-sm text-gray-500 line-clamp-2 flex-1 mb-4">{blog.excerpt}</p>
@@ -222,10 +286,10 @@ export default async function BeautyTipsPage() {
         </section>
 
         {/* CTA */}
-        <section className="bg-brand-primary py-14 px-4">
+        <section className="bg-brand-primary py-12 sm:py-14 px-4">
           <div className="max-w-[700px] mx-auto text-center text-white">
             <p className="text-3xl mb-3">💬</p>
-            <h2 className="font-heading italic text-3xl mb-3">Need a Personal Recommendation?</h2>
+            <h2 className="font-heading italic text-2xl sm:text-3xl mb-3">Need a Personal Recommendation?</h2>
             <p className="text-white/80 text-sm mb-6 max-w-md mx-auto">
               WhatsApp Vinod and describe your skin type, hair concern, or beauty goal — he&apos;ll recommend the perfect products personally.
             </p>

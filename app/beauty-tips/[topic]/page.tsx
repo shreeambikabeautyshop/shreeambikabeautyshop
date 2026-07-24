@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -6,6 +8,8 @@ import Image from "next/image";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
+import ProductGrid from "@/app/components/ProductGrid";
+import { ProductCardData } from "@/app/components/ProductCard";
 
 type TopicMeta = {
   title: string;
@@ -182,6 +186,23 @@ async function getTopicBlogs(category: string): Promise<BlogPost[]> {
   return data || [];
 }
 
+async function getTopicProducts(category: string): Promise<ProductCardData[]> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from("products")
+    .select(
+      "id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock,featured,trending,tags"
+    )
+    .eq("category", category)
+    .eq("in_stock", true)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  return (data || []) as ProductCardData[];
+}
+
 const CAT_COLORS: Record<string, string> = {
   "Skin Care": "bg-pink-100 text-pink-700",
   "Hair Care": "bg-purple-100 text-purple-700",
@@ -226,7 +247,10 @@ export default async function BeautyTipTopicPage({
   const meta = TOPICS[params.topic];
   if (!meta) notFound();
 
-  const blogs = await getTopicBlogs(meta.dbCategory);
+  const [blogs, products] = await Promise.all([
+    getTopicBlogs(meta.dbCategory),
+    getTopicProducts(meta.dbCategory),
+  ]);
 
   return (
     <>
@@ -234,47 +258,50 @@ export default async function BeautyTipTopicPage({
       <main className="min-h-screen bg-gray-50">
 
         {/* Hero */}
-        <div className="bg-brand-primary text-white py-14 px-4">
+        <div className="bg-brand-primary text-white py-12 sm:py-14 px-4">
           <div className="max-w-[1200px] mx-auto">
             <nav className="text-xs text-white/60 mb-4">
-              <Link href="/" className="hover:text-white">Home</Link>
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
               <span className="mx-2">›</span>
-              <Link href="/beauty-tips" className="hover:text-white">Beauty Tips</Link>
+              <Link href="/beauty-tips" className="hover:text-white transition-colors">Beauty Tips</Link>
               <span className="mx-2">›</span>
               <span className="capitalize">{params.topic.replace(/-/g, " ")}</span>
             </nav>
-            <div className="flex items-start gap-5">
-              <span className="text-6xl flex-shrink-0" aria-hidden="true">{meta.emoji}</span>
+            <div className="flex items-start gap-4 sm:gap-5">
+              <span className="text-4xl sm:text-6xl flex-shrink-0" aria-hidden="true">{meta.emoji}</span>
               <div>
-                <p className="font-script text-brand-accent text-lg mb-1">Expert Beauty Advice</p>
-                <h1 className="text-4xl font-heading italic text-white mb-3">{meta.heroText}</h1>
-                <p className="text-white/80 text-base max-w-xl leading-relaxed">{meta.heroSub}</p>
+                <p className="font-script text-brand-accent text-base sm:text-lg mb-1">Expert Beauty Advice</p>
+                <h1 className="text-3xl sm:text-4xl font-heading italic text-white mb-2 sm:mb-3 leading-tight">{meta.heroText}</h1>
+                <p className="text-white/80 text-sm sm:text-base max-w-xl leading-relaxed">{meta.heroSub}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-[1100px] mx-auto px-4 py-14">
+        <div className="max-w-[1100px] mx-auto px-4 py-10 sm:py-14">
 
           {/* Expert Tips Section */}
-          <div className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
+          <div className="mb-12 sm:mb-16">
+            <div className="flex items-center gap-3 mb-6 sm:mb-8">
               <div className="h-px flex-1 bg-gray-200" />
-              <h2 className="text-sm font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">
+              <h2 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">
                 {meta.emoji} Expert Tips
               </h2>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               {meta.tips.map((tip, i) => (
-                <div key={tip.heading} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-all">
-                  <div className="flex items-start gap-4">
-                    <span className="w-8 h-8 rounded-full bg-brand-primary text-white text-sm font-black flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div
+                  key={tip.heading}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-brand-primary text-white text-xs sm:text-sm font-black flex items-center justify-center flex-shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <div>
-                      <h3 className="font-bold text-gray-900 text-base mb-2">{tip.heading}</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">{tip.body}</p>
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base mb-1 sm:mb-2">{tip.heading}</h3>
+                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{tip.body}</p>
                     </div>
                   </div>
                 </div>
@@ -282,21 +309,36 @@ export default async function BeautyTipTopicPage({
             </div>
           </div>
 
+          {/* Recommended Products */}
+          <div className="mb-12 sm:mb-16">
+            <div className="flex items-center gap-3 mb-6 sm:mb-8">
+              <div className="h-px flex-1 bg-gray-200" />
+              <h2 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">
+                🛍 Shop {meta.dbCategory} Products
+              </h2>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+            <p className="text-center text-xs sm:text-sm text-gray-500 -mt-4 mb-6">
+              100% original products • Best prices • Mumbai store
+            </p>
+            <ProductGrid products={products} source="beauty_tips_page" />
+          </div>
+
           {/* Related Blog Posts */}
           {blogs.length > 0 && (
-            <div className="mb-14">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-serif font-bold text-gray-900">
+            <div className="mb-12 sm:mb-14">
+              <div className="flex items-center justify-between mb-5 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-serif font-bold text-gray-900">
                   {meta.dbCategory} Articles
                 </h2>
                 <Link
                   href="/blog"
-                  className="text-sm font-bold text-brand-primary hover:text-brand-secondary"
+                  className="text-sm font-bold text-brand-primary hover:text-brand-secondary transition-colors whitespace-nowrap"
                 >
                   View All →
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 {blogs.map((blog) => (
                   <Link
                     key={blog.id}
@@ -324,7 +366,7 @@ export default async function BeautyTipTopicPage({
                         {blog.category}
                       </span>
                     </div>
-                    <div className="p-5 flex flex-col flex-1">
+                    <div className="p-4 sm:p-5 flex flex-col flex-1">
                       <h3 className="font-bold text-gray-900 text-sm leading-snug mb-2 group-hover:text-brand-primary transition-colors line-clamp-2">
                         {blog.title}
                       </h3>
@@ -348,8 +390,8 @@ export default async function BeautyTipTopicPage({
           )}
 
           {/* Other Topics */}
-          <div className="mb-14">
-            <h3 className="font-bold text-gray-900 text-lg mb-5">Explore Other Topics</h3>
+          <div className="mb-12 sm:mb-14">
+            <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-4 sm:mb-5">Explore Other Topics</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {Object.entries(TOPICS)
                 .filter(([slug]) => slug !== params.topic)
@@ -357,19 +399,19 @@ export default async function BeautyTipTopicPage({
                   <Link
                     key={slug}
                     href={`/beauty-tips/${slug}`}
-                    className="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-brand-primary rounded-2xl p-4 text-center text-sm font-semibold text-gray-600 hover:text-brand-primary transition-all hover:shadow-sm"
+                    className="flex flex-col items-center gap-2 bg-white border border-gray-200 hover:border-brand-primary rounded-2xl p-3 sm:p-4 text-center text-xs sm:text-sm font-semibold text-gray-600 hover:text-brand-primary transition-all hover:shadow-sm"
                   >
-                    <span className="text-3xl">{t.emoji}</span>
-                    <span>{t.heroText}</span>
+                    <span className="text-2xl sm:text-3xl">{t.emoji}</span>
+                    <span className="leading-tight">{t.heroText}</span>
                   </Link>
                 ))}
             </div>
           </div>
 
           {/* Shop CTA */}
-          <div className="bg-brand-primary rounded-3xl p-8 text-center text-white">
+          <div className="bg-brand-primary rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center text-white">
             <p className="text-3xl mb-3">🛍</p>
-            <h2 className="font-bold text-2xl mb-2">Shop the Products You Need</h2>
+            <h2 className="font-bold text-xl sm:text-2xl mb-2">Shop the Products You Need</h2>
             <p className="text-white/80 text-sm mb-6 max-w-md mx-auto">
               WhatsApp Vinod for personalised product recommendations based on your skin type and concerns, or browse our full collection online.
             </p>
