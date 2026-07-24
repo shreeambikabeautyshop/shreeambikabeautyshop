@@ -1,11 +1,10 @@
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import Image from "next/image";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
-import CategoryProductsClient from "./CategoryProductsClient";
+import ProductGrid from "@/app/components/ProductGrid";
 
 const CATEGORY_MAP: Record<string, string> = {
   "cosmetics":        "Cosmetics",
@@ -159,10 +158,12 @@ export default async function CategoryPage({ params }: { params: { category: str
         </div>
 
         <div className="max-w-[1400px] mx-auto px-4 py-8">
-          <CategoryProductsClient
+          <ProductGrid
             products={products}
-            categoryName={categoryName}
-            categorySlug={params.category}
+            source="category_page"
+            emptyTitle="Products Coming Soon!"
+            emptyMessage={`WhatsApp us to check availability of any ${categoryName} product.`}
+            emptyWhatsAppMsg={`Hi Vinod! Do you have ${categoryName} products? Please suggest.`}
           />
         </div>
       </main>

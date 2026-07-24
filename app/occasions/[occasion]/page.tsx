@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
+import ProductGrid from "@/app/components/ProductGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -136,63 +136,13 @@ async function getOccasionProducts(occasion: string) {
   return all || [];
 }
 
+// Types used by ProductGrid
 type Product = {
-  id: string;
-  name: string;
-  slug: string;
-  brand: string;
-  category: string;
-  price: number;
-  mrp: number;
-  discount: number;
-  images: string[];
-  rating: number;
-  reviews_count: number;
-  in_stock: boolean;
+  id: string; name: string; slug: string; brand: string; category: string;
+  price: number; mrp: number; discount: number; images: string[];
+  rating: number; reviews_count: number; in_stock: boolean;
+  featured?: boolean; trending?: boolean;
 };
-
-function ProductCard({ p }: { p: Product }) {
-  return (
-    <Link
-      href={`/products/${p.slug || p.id}`}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
-    >
-      <div className="relative aspect-square bg-brand-light overflow-hidden">
-        {p.images?.[0] ? (
-          <Image
-            src={p.images[0]}
-            alt={p.name}
-            fill
-            className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 50vw, 25vw"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>
-        )}
-        {(p.discount ?? 0) > 0 && (
-          <span className="absolute bottom-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {p.discount}% OFF
-          </span>
-        )}
-      </div>
-      <div className="p-4 flex flex-col flex-1">
-        <p className="text-[10px] font-black text-brand-primary uppercase mb-1">{p.brand}</p>
-        <h3 className="text-sm font-semibold text-gray-800 leading-tight mb-2 line-clamp-2 flex-1 group-hover:text-brand-primary transition-colors">
-          {p.name}
-        </h3>
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-bold text-gray-900">₹{p.price}</span>
-          {p.mrp > p.price && (
-            <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>
-          )}
-        </div>
-        <div className="w-full flex items-center justify-center gap-2 bg-brand-primary text-white text-xs font-bold py-2.5 rounded-xl">
-          🛍 View Product
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 export async function generateStaticParams() {
   return Object.keys(OCCASIONS).map((occasion) => ({ occasion }));
@@ -283,42 +233,22 @@ export default async function OccasionPage({
 
         {/* Products Section */}
         <div className="max-w-[1200px] mx-auto px-4 py-12">
-          {products.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-5xl mb-4">{meta.emoji}</p>
-              <h2 className="text-xl font-bold text-gray-600 mb-2">Products Coming Soon!</h2>
-              <p className="text-gray-400 text-sm mb-6">
-                WhatsApp Vinod to get personalized product recommendations for{" "}
-                {meta.heroText.toLowerCase()}.
-              </p>
-              <a
-                href={`https://wa.me/918291455297?text=${encodeURIComponent(meta.whatsappMsg)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3.5 rounded-full text-sm transition-all"
-              >
-                💬 WhatsApp +918291455297
-              </a>
+          {products.length > 0 && (
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{meta.heroText} Products</h2>
+                <p className="text-sm text-gray-500">{products.length} products • 100% original • Best prices</p>
+              </div>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {meta.heroText} Products
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    {products.length} products • 100% original • Best prices
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {products.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-              </div>
-            </>
           )}
+
+          <ProductGrid
+            products={products}
+            source="occasion_page"
+            emptyTitle="Products Coming Soon!"
+            emptyMessage={`WhatsApp Vinod to get personalized product recommendations for ${meta.heroText.toLowerCase()}.`}
+            emptyWhatsAppMsg={meta.whatsappMsg}
+          />
 
           {/* WhatsApp CTA Banner */}
           <div className="mt-12 bg-brand-primary rounded-3xl p-8 text-center text-white">
