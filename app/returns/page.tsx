@@ -5,71 +5,11 @@ import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 
 export const metadata: Metadata = {
-  title: "Returns & Exchange Policy | Shree Ambika Beauty Shop",
+  title: "Returns & Exchange Policy | Shree Ambika Beauty Shop Mumbai",
   description:
-    "Shree Ambika Beauty Shop returns policy — 7-day returns on unused products in original packaging. Easy exchange for wrong items. Refund within 3–5 business days.",
+    "Return policy at Shree Ambika Beauty Shop — customer ships product back at their cost, we refund or exchange. Used/dirty products not accepted. Free delivery on all orders. WhatsApp: +918291455297",
   alternates: { canonical: "https://www.shreeambikabeauty.com/returns" },
-  openGraph: {
-    title: "Returns & Exchange Policy | Shree Ambika Beauty Shop",
-    description:
-      "7-day hassle-free returns and exchange policy at Shree Ambika Beauty Shop. WhatsApp Vinod at +918291455297 to initiate a return.",
-    url: "https://www.shreeambikabeauty.com/returns",
-    siteName: "Shree Ambika Beauty Shop",
-    locale: "en_IN",
-    type: "website",
-  },
 };
-
-const returnSteps = [
-  {
-    step: "01",
-    emoji: "📸",
-    title: "Take a Photo",
-    desc: "Take a clear photo of the product you want to return, showing its condition and original packaging.",
-  },
-  {
-    step: "02",
-    emoji: "💬",
-    title: "WhatsApp Vinod",
-    desc: "Message Vinod at +918291455297 within 7 days of delivery with your order number and the product photo.",
-  },
-  {
-    step: "03",
-    emoji: "✅",
-    title: "Get Approval",
-    desc: "Vinod will review your return request and confirm eligibility within 24 hours.",
-  },
-  {
-    step: "04",
-    emoji: "📦",
-    title: "Ship the Product",
-    desc: "Pack the product securely in its original packaging and ship it back to our Dahisar store address.",
-  },
-  {
-    step: "05",
-    emoji: "💰",
-    title: "Receive Refund",
-    desc: "Once we receive and inspect the product, your refund will be processed within 3–5 business days to your original payment method.",
-  },
-];
-
-const returnableConditions = [
-  "Product is unused and in original, unopened packaging",
-  "All original tags, stickers, and seals are intact",
-  "Product was received damaged, defective, or broken",
-  "Wrong product was delivered",
-  "Return is initiated within 7 days of delivery",
-  "Original receipt or order confirmation is available",
-];
-
-const nonReturnableItems = [
-  "Opened or used cosmetic products (lipstick, foundation, kajal, etc.)",
-  "Personal care items once packaging seal is broken (face wash, serum, etc.)",
-  "Products purchased on sale or special discount",
-  "Items damaged due to customer misuse or improper storage",
-  "Products returned after 7 days of delivery",
-  "Fragrances and perfumes once box is opened",
-];
 
 export default function ReturnsPage() {
   return (
@@ -78,164 +18,161 @@ export default function ReturnsPage() {
       <main className="min-h-screen bg-gray-50">
 
         {/* Hero */}
-        <div className="bg-brand-primary text-white py-14 px-4">
-          <div className="max-w-[1200px] mx-auto">
+        <div className="bg-brand-primary text-white py-12 px-4">
+          <div className="max-w-[1000px] mx-auto">
             <nav className="text-xs text-white/60 mb-4">
               <Link href="/" className="hover:text-white">Home</Link>
               <span className="mx-2">›</span>
               <span>Returns & Exchange</span>
             </nav>
-            <h1 className="text-4xl font-heading italic text-white mb-3">Returns & Exchange Policy</h1>
-            <p className="text-white/80 text-base max-w-lg">
-              We want you to love every product you buy from us. If something&apos;s not right, we make returns simple.
+            <h1 className="text-3xl font-bold font-serif mb-2">Returns & Exchange Policy</h1>
+            <p className="text-white/80 text-sm max-w-xl">
+              We sell 100% original products sourced directly from brands. Our return process is fair and simple — read below to understand how it works.
             </p>
           </div>
         </div>
 
-        <div className="max-w-[1000px] mx-auto px-4 py-14">
+        <div className="max-w-[1000px] mx-auto px-4 py-12 space-y-8">
 
-          {/* Policy Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-14">
+          {/* Important notice */}
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-6 flex gap-4">
+            <span className="text-3xl flex-shrink-0">⚠️</span>
+            <div>
+              <h2 className="font-bold text-amber-900 text-base mb-1">Important — Read Before Ordering</h2>
+              <p className="text-amber-800 text-sm leading-relaxed">
+                All our products are <strong>100% original</strong>, sourced directly from brands and authorized distributors.
+                If a product does not suit your skin or body — that is a personal reaction, not a product defect.
+                We cannot be held responsible for individual skin reactions as every person&apos;s skin type is different.
+                If there is a <strong>genuine product defect or wrong item delivered</strong>, we are always here to help.
+              </p>
+            </div>
+          </div>
+
+          {/* 3 summary cards */}
+          <div className="grid sm:grid-cols-3 gap-4">
             {[
-              {
-                emoji: "📅",
-                title: "7-Day Returns",
-                desc: "Initiate your return within 7 days of delivery for a hassle-free experience.",
-                color: "bg-blue-50 border-blue-200",
-              },
-              {
-                emoji: "🔄",
-                title: "Easy Exchange",
-                desc: "Received the wrong product? We'll exchange it for the correct one at no extra cost.",
-                color: "bg-purple-50 border-purple-200",
-              },
-              {
-                emoji: "💰",
-                title: "3–5 Day Refund",
-                desc: "Approved refunds are processed within 3–5 business days to your original payment method.",
-                color: "bg-green-50 border-green-200",
-              },
-            ].map((card) => (
-              <div key={card.title} className={`${card.color} border-2 rounded-3xl p-6 text-center`}>
-                <span className="text-4xl block mb-3">{card.emoji}</span>
-                <h3 className="font-bold text-gray-900 text-base mb-2">{card.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{card.desc}</p>
+              { emoji:"🚚", title:"Free Delivery on Orders", desc:"We offer free delivery on all orders. Same day in Mumbai (after payment), Pan India 4–7 days via courier with tracking ID.", color:"bg-green-50 border-green-200" },
+              { emoji:"↩️", title:"Returns Accepted", desc:"If product has a genuine defect or wrong item was sent — we accept returns. Customer is responsible for return shipping cost.", color:"bg-blue-50 border-blue-200" },
+              { emoji:"🔄", title:"Refund or Exchange", desc:"After we receive the product at our Dahisar store, we will refund your money OR give you another product of your choice.", color:"bg-purple-50 border-purple-200" },
+            ].map(c => (
+              <div key={c.title} className={`${c.color} border-2 rounded-2xl p-5`}>
+                <span className="text-3xl block mb-2">{c.emoji}</span>
+                <h3 className="font-bold text-gray-900 text-sm mb-1">{c.title}</h3>
+                <p className="text-gray-600 text-xs leading-relaxed">{c.desc}</p>
               </div>
             ))}
           </div>
 
-          {/* Return Process */}
-          <div className="mb-14">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">How to Return a Product</h2>
-            <div className="space-y-4">
-              {returnSteps.map((s) => (
-                <div key={s.step} className="bg-white rounded-2xl border border-gray-100 shadow-sm flex items-start gap-5 p-6">
-                  <div className="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white font-black text-base flex-shrink-0">
-                    {s.step}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl">{s.emoji}</span>
-                      <h3 className="font-bold text-gray-900">{s.title}</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm leading-relaxed">{s.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* What Can & Cannot be Returned */}
-          <div className="grid md:grid-cols-2 gap-6 mb-14">
-            {/* Can be returned */}
-            <div className="bg-green-50 border border-green-200 rounded-3xl p-6">
-              <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                <span className="text-2xl">✅</span> Eligible for Return
-              </h3>
-              <ul className="space-y-3">
-                {returnableConditions.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-green-500 font-bold flex-shrink-0 mt-0.5">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Cannot be returned */}
-            <div className="bg-red-50 border border-red-200 rounded-3xl p-6">
-              <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                <span className="text-2xl">❌</span> Not Eligible for Return
-              </h3>
-              <ul className="space-y-3">
-                {nonReturnableItems.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-red-400 font-bold flex-shrink-0 mt-0.5">✗</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Exchange Policy */}
-          <div className="bg-brand-light border border-brand-accent rounded-3xl p-7 mb-14">
-            <h3 className="font-bold text-gray-900 text-xl mb-4 flex items-center gap-2">
-              <span className="text-3xl">🔄</span> Exchange Policy
-            </h3>
-            <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
-              <p>
-                <strong>Wrong product delivered?</strong> We will arrange an exchange at no cost to you. Simply WhatsApp Vinod at +918291455297 with your order number and a photo of the wrong product received.
-              </p>
-              <p>
-                <strong>Want to exchange for a different variant or size?</strong> This is possible if the product is unused and in original packaging. Any price difference will be charged or refunded accordingly.
-              </p>
-              <p>
-                <strong>Exchange timeline:</strong> Once we receive the returned product, the exchange item will be dispatched within 2 working days.
-              </p>
-            </div>
-          </div>
-
-          {/* Refund Timeline */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7 mb-14">
-            <h3 className="font-bold text-gray-900 text-xl mb-5 flex items-center gap-2">
-              <span className="text-3xl">💰</span> Refund Timeline
-            </h3>
-            <div className="space-y-3">
+          {/* Return process */}
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-7">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">How to Return a Product</h2>
+            <div className="space-y-5">
               {[
-                { method: "UPI / GPay / PhonePe", time: "Within 24–48 hours" },
-                { method: "Credit / Debit Card", time: "3–5 business days" },
-                { method: "Net Banking", time: "3–5 business days" },
-                { method: "Cash on Delivery (COD)", time: "Bank transfer within 5–7 days" },
-              ].map((row) => (
-                <div key={row.method} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                  <span className="text-sm text-gray-700 font-medium">{row.method}</span>
-                  <span className="text-sm font-bold text-brand-primary bg-brand-light px-3 py-1 rounded-full">
-                    {row.time}
-                  </span>
+                { n:"01", emoji:"📸", title:"Take a Photo First", desc:"Take a clear photo of the product and its packaging showing the issue (damage, wrong item, etc.). This helps us process your request faster." },
+                { n:"02", emoji:"💬", title:"WhatsApp Vinod", desc:"Message Vinod at +918291455297 within 7 days of receiving the product. Share your order details and the photo. We will confirm return eligibility." },
+                { n:"03", emoji:"📦", title:"Ship it Back — At Your Cost", desc:"Once approved, pack the product in its original packaging and book a courier yourself (DTDC, Delhivery, India Post etc.) to our shop address: Anand Nagar Metro Station, Dahisar East, Mumbai 400068. Share the tracking ID with Vinod on WhatsApp." },
+                { n:"04", emoji:"🏪", title:"Or Visit Our Store Directly", desc:"You can also walk into our physical store at Dahisar East, Mumbai with the product. We will inspect it on the spot and resolve immediately — refund or exchange, whichever you prefer." },
+                { n:"05", emoji:"✅", title:"Refund or Exchange", desc:"Once we receive and inspect the returned product at our store, we will either refund your money to your original payment method OR give you another product of your choice." },
+              ].map(s => (
+                <div key={s.n} className="flex gap-4">
+                  <div className="w-10 h-10 bg-brand-primary text-white rounded-2xl flex items-center justify-center font-black text-sm flex-shrink-0">{s.n}</div>
+                  <div>
+                    <p className="font-bold text-gray-800 text-sm flex items-center gap-1.5">{s.emoji} {s.title}</p>
+                    <p className="text-gray-600 text-xs leading-relaxed mt-0.5">{s.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-4">
-              * Refund timelines depend on your bank and payment provider processing times.
-            </p>
           </div>
 
-          {/* Initiate Return CTA */}
+          {/* What we accept vs don't */}
+          <div className="grid md:grid-cols-2 gap-5">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><span className="text-xl">✅</span> We Accept Returns If</h3>
+              <ul className="space-y-2.5">
+                {[
+                  "Wrong product was delivered to you",
+                  "Product arrived damaged or broken in transit",
+                  "Product has a genuine manufacturing defect",
+                  "Sealed / unopened product in original packaging",
+                  "Return initiated within 7 days of delivery",
+                  "Product is in the same condition as delivered",
+                ].map(i => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-gray-700">
+                    <span className="text-green-500 font-bold mt-0.5 flex-shrink-0">✓</span>{i}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><span className="text-xl">❌</span> We Do NOT Accept Returns If</h3>
+              <ul className="space-y-2.5">
+                {[
+                  "Product has been used — even once",
+                  "Product quantity is almost finished",
+                  "Product is dirty, melted, or not clean",
+                  "Packaging is damaged, broken, or missing",
+                  "Product does not suit your skin — this is not a defect",
+                  "Return is requested after 7 days of delivery",
+                  "Personal care items with broken seal (hygiene reasons)",
+                ].map(i => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-gray-700">
+                    <span className="text-red-400 font-bold mt-0.5 flex-shrink-0">✗</span>{i}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Delivery policy */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-5">🚚 Our Delivery Promise</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { icon:"🏙️", title:"Mumbai — Same Day Delivery", desc:"Once payment is received, we dispatch your order instantly. Delivery same day within Mumbai city. Depends on courier partner but we try our best." },
+                { icon:"🇮🇳", title:"Pan India — 4 to 7 Working Days", desc:"We dispatch via trusted couriers (DTDC, Blue Dart, India Post). You get a tracking ID on WhatsApp to track your shipment live." },
+                { icon:"💸", title:"Free Delivery on All Orders", desc:"We charge zero delivery fees. No minimum order value. Free shipping to your door anywhere in India." },
+                { icon:"📲", title:"Tracking ID on WhatsApp", desc:"As soon as your order is dispatched, Vinod will send you the courier tracking ID on WhatsApp so you know exactly where your parcel is." },
+              ].map(d => (
+                <div key={d.title} className="flex gap-3">
+                  <span className="text-2xl flex-shrink-0">{d.icon}</span>
+                  <div>
+                    <p className="font-bold text-gray-800 text-sm">{d.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{d.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Note on cosmetics */}
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex gap-3">
+            <span className="text-2xl flex-shrink-0">💄</span>
+            <div>
+              <p className="font-bold text-blue-900 text-sm mb-1">Note on Cosmetics & Skincare</p>
+              <p className="text-blue-800 text-xs leading-relaxed">
+                Cosmetics and skincare products are personal use items. Once a product is opened, it cannot be resold for hygiene reasons.
+                We are not responsible if a product does not suit your skin type — every person&apos;s skin is different.
+                <strong> However</strong>, if there is an issue with the product itself (wrong item, damage, expired), we will always help.
+                We have been selling beauty products since 2001 and such issues are extremely rare.
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
           <div className="bg-brand-primary rounded-3xl p-8 text-center text-white">
             <p className="text-4xl mb-3">📦</p>
-            <h2 className="font-bold text-2xl mb-2">Need to Return Something?</h2>
+            <h2 className="font-bold text-2xl mb-2">Need Help with a Return?</h2>
             <p className="text-white/80 text-sm mb-6 max-w-md mx-auto">
-              WhatsApp Vinod with your order number and product photo to initiate a return or exchange. We&apos;ll take care of the rest.
+              WhatsApp Vinod with your order details and product photo. We will guide you through the process and resolve it quickly.
             </p>
-            <a
-              href="https://wa.me/918291455297?text=Hi Vinod! I want to return a product. My order number is:"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-full text-base transition-all"
-            >
-              💬 WhatsApp to Return — +91 82914 55297
+            <a href="https://wa.me/918291455297?text=Hi Vinod! I need help with a return. My order details are:"
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3.5 rounded-full transition-colors">
+              💬 WhatsApp Vinod — +91 82914 55297
             </a>
+            <p className="text-white/50 text-xs mt-4">Store Address: Anand Nagar Metro Station, Dahisar East, Mumbai 400068</p>
           </div>
 
         </div>
