@@ -8,6 +8,15 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      // /feed.xml → /api/feed (Google Merchant Center product feed)
+      {
+        source: '/feed.xml',
+        destination: '/api/feed',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
