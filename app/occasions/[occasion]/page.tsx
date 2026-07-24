@@ -7,6 +7,8 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 
+export const dynamic = "force-dynamic";
+
 type OccasionMeta = {
   title: string;
   desc: string;
@@ -83,13 +85,25 @@ const OCCASIONS: Record<string, OccasionMeta> = {
   },
 };
 
+// Map each occasion to relevant categories — fallback when no tagged products
+const OCCASION_CATEGORIES: Record<string, string[]> = {
+  wedding:    ["Cosmetics", "Makeup", "Skin Care", "Perfumes"],
+  party:      ["Makeup", "Cosmetics", "Perfumes"],
+  office:     ["Skin Care", "Cosmetics", "Makeup"],
+  daily:      ["Skin Care", "Hair Care", "Body Care", "Cosmetics"],
+  "date-night": ["Perfumes", "Cosmetics", "Makeup"],
+  festival:   ["Cosmetics", "Makeup", "Perfumes", "Body Care"],
+  travel:     ["Skin Care", "Body Care", "Hair Care"],
+  gifting:    ["Perfumes", "Skin Care", "Makeup", "Cosmetics"],
+};
+
 async function getOccasionProducts(occasion: string) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Try to get products tagged with this occasion
+  // Try tagged products first
   const { data: tagged } = await supabase
     .from("products")
     .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock")
@@ -99,15 +113,27 @@ async function getOccasionProducts(occasion: string) {
 
   if (tagged && tagged.length >= 4) return tagged;
 
-  // Fallback to featured products
-  const { data: featured } = await supabase
+  // Fallback: fetch by relevant categories for this occasion
+  const cats = OCCASION_CATEGORIES[occasion] || ["Makeup", "Skin Care", "Cosmetics"];
+  const { data: byCat } = await supabase
     .from("products")
     .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock")
-    .eq("featured", true)
+    .in("category", cats)
     .eq("in_stock", true)
+    .order("created_at", { ascending: false })
     .limit(20);
 
-  return featured || [];
+  if (byCat && byCat.length > 0) return byCat;
+
+  // Last fallback: any in-stock products
+  const { data: all } = await supabase
+    .from("products")
+    .select("id,name,slug,brand,category,price,mrp,discount,images,rating,reviews_count,in_stock")
+    .eq("in_stock", true)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  return all || [];
 }
 
 type Product = {
