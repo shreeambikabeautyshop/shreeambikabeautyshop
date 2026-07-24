@@ -72,7 +72,7 @@ export default function TrendingProducts() {
             ? Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-3xl bg-gray-50 animate-pulse h-[520px]" />
             ))
-            : visible.map((p) => <ProductCard key={p.id} p={p} />)
+            : visible.map((p) => <ProductCard key={p.id} product={p} source="trending_section" />)
           }
         </div>
 

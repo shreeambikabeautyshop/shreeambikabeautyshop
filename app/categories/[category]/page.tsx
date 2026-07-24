@@ -6,6 +6,8 @@ import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 import ProductGrid from "@/app/components/ProductGrid";
 
+export const dynamic = "force-dynamic";
+
 const CATEGORY_MAP: Record<string, string> = {
   "cosmetics":        "Cosmetics",
   "makeup":           "Makeup",
