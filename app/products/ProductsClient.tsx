@@ -97,8 +97,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   const [voiceSupport, setVoiceSupport] = useState(false);
   const [imgSearching, setImgSearching] = useState(false);
   const [imgResult, setImgResult]     = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<object | null>(null);
   const imgInputRef    = useRef<HTMLInputElement>(null);
   const inputRef       = useRef<HTMLInputElement>(null);
 
@@ -107,8 +106,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   }, [openWhatsApp]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
+    const w = window as Window & { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
     if (w.SpeechRecognition || w.webkitSpeechRecognition) setVoiceSupport(true);
   }, []);
 
@@ -122,23 +120,25 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   }, [searchParams]);
 
   const startVoice = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
+    const w = window as Window & { SpeechRecognition?: new() => object; webkitSpeechRecognition?: new() => object };
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SR) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rec: any = new SR();
+    const rec = new SR() as {
+      lang: string; continuous: boolean; interimResults: boolean;
+      onstart: () => void; onend: () => void; onerror: () => void;
+      onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
+      start: () => void; stop: () => void;
+    };
     rec.lang = "en-IN"; rec.continuous = false; rec.interimResults = true;
     rec.onstart = () => setListening(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => { const t = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join(""); setQuery(t); };
+    rec.onresult = (e) => { const t = Array.from(e.results).map(r => Array.from(r)[0].transcript).join(""); setQuery(t); };
     rec.onend = () => setListening(false);
     rec.onerror = () => setListening(false);
     recognitionRef.current = rec;
     rec.start();
   }, []);
 
-  const stopVoice = useCallback(() => { recognitionRef.current?.stop(); setListening(false); }, []);
+  const stopVoice = useCallback(() => { (recognitionRef.current as { stop: () => void } | null)?.stop(); setListening(false); }, []);
 
   const handleImageSearch = async (file: File) => {
     setImgSearching(true); setImgResult("Analyzing image...");
