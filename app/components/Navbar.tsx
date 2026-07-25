@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle } from "react-icons/fi";
+import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle, FiMapPin, FiMail, FiEdit, FiLogOut } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
-import { MdVerified } from "react-icons/md";
+import { MdRepeat } from "react-icons/md";
 import { useWishlist } from "@/app/context/WishlistContext";
 import { useUser } from "@/app/context/UserContext";
 
@@ -182,7 +182,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname                    = usePathname();
   const router                      = useRouter();
-  const { customer, isLoggedIn, triggerLogin } = useUser();
+  const { customer, isLoggedIn, triggerLogin, clearCustomer } = useUser();
   const searchRef                   = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -277,23 +277,77 @@ export default function Navbar() {
             </button>
 
             {/* Profile */}
-            <button
-              onClick={() => isLoggedIn ? router.push("/profile") : triggerLogin("wishlist")}
-              className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
-              aria-label="Account">
-              {isLoggedIn ? (
-                <>
-                  <div className="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center">
-                    <span className="text-white text-[9px] font-bold">
-                      {customer?.full_name?.charAt(0).toUpperCase() || "U"}
-                    </span>
+            <div className="relative group">
+              <button
+                onClick={() => !isLoggedIn && triggerLogin("wishlist")}
+                className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:text-brand-primary hover:bg-brand-light transition-all"
+                aria-label="Account">
+                {isLoggedIn ? (
+                  <>
+                    <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center">
+                      <span className="text-white text-xs font-black">
+                        {customer?.full_name?.charAt(0).toUpperCase() || "U"}
+                      </span>
+                    </div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+                  </>
+                ) : (
+                  <FiUser size={18} />
+                )}
+              </button>
+
+              {/* Profile dropdown — only when logged in */}
+              {isLoggedIn && customer && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-brand-primary px-4 py-3 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-black text-base">
+                        {customer.full_name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white font-bold text-sm truncate">{customer.full_name}</p>
+                      <p className="text-white/70 text-[10px] truncate">+91 {customer.phone}</p>
+                    </div>
                   </div>
-                  <MdVerified size={10} className="absolute -bottom-0.5 -right-0.5 text-green-500 bg-white rounded-full" />
-                </>
-              ) : (
-                <FiUser size={18} />
+                  {/* Details */}
+                  <div className="px-4 py-3 space-y-2 border-b border-gray-100">
+                    {customer.address && (
+                      <div className="flex items-start gap-2">
+                        <FiMapPin size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+                          {customer.address}{customer.city ? `, ${customer.city}` : ""}
+                        </span>
+                      </div>
+                    )}
+                    {customer.email && (
+                      <div className="flex items-center gap-2">
+                        <FiMail size={12} className="text-gray-400 flex-shrink-0" />
+                        <span className="text-xs text-gray-500 truncate">{customer.email}</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Actions */}
+                  <div className="px-4 py-3 space-y-1.5">
+                    <button
+                      onClick={() => triggerLogin("order")}
+                      className="w-full flex items-center gap-2 text-xs text-gray-600 hover:text-brand-primary hover:bg-brand-light px-3 py-2 rounded-xl transition-colors text-left">
+                      <FiEdit size={12} /> Edit Profile
+                    </button>
+                    <Link href="/wishlist"
+                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-brand-primary hover:bg-brand-light px-3 py-2 rounded-xl transition-colors">
+                      <FiHeart size={12} /> My Wishlist
+                    </Link>
+                    <button
+                      onClick={() => clearCustomer()}
+                      className="w-full flex items-center gap-2 text-xs text-red-500 hover:bg-red-50 px-3 py-2 rounded-xl transition-colors text-left">
+                      <FiLogOut size={12} /> Logout
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
 
             {/* Wishlist */}
             <WishlistIcon />

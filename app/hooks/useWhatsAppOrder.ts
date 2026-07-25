@@ -1,11 +1,4 @@
 "use client";
-/**
- * useWhatsAppOrder — Smart WhatsApp ordering hook
- *
- * 1. Checks if user is logged in
- * 2. If NOT logged in → shows login alert/modal first
- * 3. If logged in → tracks click with source+page+customer info → opens WhatsApp
- */
 import { useCallback } from "react";
 import { useUser } from "@/app/context/UserContext";
 import { usePathname } from "next/navigation";
@@ -15,8 +8,8 @@ interface OrderParams {
   productName?: string;
   productBrand?: string;
   productPrice?: number;
-  source?: string;        // e.g. "product_page", "search_page", "home_hero", "category_page"
-  customMessage?: string; // override the default message
+  source?: string;
+  customMessage?: string;
 }
 
 export function useWhatsAppOrder() {
@@ -24,55 +17,59 @@ export function useWhatsAppOrder() {
   const pathname = usePathname();
 
   const openWhatsApp = useCallback(async (params: OrderParams) => {
-    // ── Step 1: Login check ──────────────────────────────────────────────────
+    // Not logged in — show login modal first
     if (!isLoggedIn) {
-      // Show login modal with "order" action
       triggerLogin("order");
-      return; // Don't open WhatsApp until logged in
+      return;
     }
 
-    // ── Step 2: Build message with customer info ─────────────────────────────
     const source = params.source || "website";
     const page   = pathname || "/";
 
+    // ── Build clean message (NO emojis — they cause ? in WhatsApp URL) ───────
     let msg = params.customMessage;
     if (!msg) {
-      const lines = [
-        `Hi Vinod! 👋 I want to order from *Shree Ambika Beauty Shop*`,
+      const lines: string[] = [
+        `Hi Vinod! I want to order from *Shree Ambika Beauty Shop*`,
         ``,
-        params.productName  ? `🛍️ *Product:* ${params.productName}` : null,
-        params.productBrand ? `🏷️ *Brand:* ${params.productBrand}` : null,
-        params.productPrice ? `💰 *Price:* ₹${params.productPrice}` : null,
-        ``,
-        `👤 *My Name:* ${customer?.full_name || "Customer"}`,
-        customer?.phone ? `📞 *Phone:* ${customer.phone}` : null,
-        customer?.address ? `📍 *Address:* ${customer.address}${customer.city ? `, ${customer.city}` : ""}` : null,
-        ``,
-        `📲 *Ordered via:* ${source} | Page: ${page}`,
-        `🌐 shreeambikabeauty.com`,
-      ].filter(Boolean).join("\n");
-      msg = lines;
+      ];
+      if (params.productName)  lines.push(`*Product:* ${params.productName}`);
+      if (params.productBrand) lines.push(`*Brand:* ${params.productBrand}`);
+      if (params.productPrice) lines.push(`*Price:* Rs.${params.productPrice}`);
+      lines.push(``);
+      lines.push(`*My Name:* ${customer?.full_name || "Customer"}`);
+      if (customer?.phone)   lines.push(`*Phone:* ${customer.phone}`);
+      if (customer?.address) {
+        const addr = customer.city
+          ? `${customer.address}, ${customer.city}`
+          : customer.address;
+        lines.push(`*Delivery Address:* ${addr}`);
+      }
+      lines.push(``);
+      lines.push(`*Source:* ${source} | ${page}`);
+      lines.push(`shreeambikabeauty.com`);
+      msg = lines.join("\n");
     }
 
-    // ── Step 3: Track the click ──────────────────────────────────────────────
+    // ── Track the click ───────────────────────────────────────────────────────
     try {
-      await fetch("/api/track/whatsapp", {
+      fetch("/api/track/whatsapp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product_id:     params.productId || null,
-          product_name:   params.productName || null,
+          product_id:     params.productId    || null,
+          product_name:   params.productName  || null,
           product_brand:  params.productBrand || null,
           product_price:  params.productPrice || null,
           customer_name:  customer?.full_name || null,
-          customer_phone: customer?.phone || null,
+          customer_phone: customer?.phone     || null,
           source,
           page_url: `https://www.shreeambikabeauty.com${page}`,
         }),
-      });
+      }).catch(() => {});
     } catch { /* non-blocking */ }
 
-    // ── Step 4: Open WhatsApp ────────────────────────────────────────────────
+    // ── Open WhatsApp ─────────────────────────────────────────────────────────
     window.open(`https://wa.me/918291455297?text=${encodeURIComponent(msg)}`, "_blank");
   }, [isLoggedIn, customer, pathname, triggerLogin]);
 
