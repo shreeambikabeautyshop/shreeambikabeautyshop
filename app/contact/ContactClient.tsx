@@ -226,8 +226,14 @@ export default function ContactClient() {
               {/* Map */}
               <div className="md:col-span-3 rounded-3xl overflow-hidden border border-gray-200 shadow-md">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3767.0!2d72.8651!3d19.2427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sAnand+Nagar+Metro+Station+Dahisar+East!5e0!3m2!1sen!2sin!4v1"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15066.410426256421!2d72.86336324787312!3d19.25614340916139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b121454acea9%3A0xf9c45ee22136497e!2sShree%20Ambika%20Beauty%20Shop!5e0!3m2!1sen!2sin!4v1785062101260!5m2!1sen!2sin"
                   width="100%"
+                  height="360"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  title="Shree Ambika Beauty Shop Location — Anand Nagar Metro Station, Dahisar East Mumbai"
                   height="360"
                   style={{ border: 0 }}
                   allowFullScreen
