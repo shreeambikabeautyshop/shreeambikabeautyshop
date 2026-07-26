@@ -64,27 +64,24 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Parse shipping details ─────────────────────────────────────────────
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const shipment = (orderData as any)?.data?.shipments?.[0] || (orderData as any)?.shipments?.[0] || {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tracking = (trackData as any)?.tracking_data || {};
+    const shipment = (orderData as Record<string, unknown> & { data?: { shipments?: Record<string,unknown>[] }; shipments?: Record<string,unknown>[] })?.data?.shipments?.[0] || (orderData as Record<string, unknown> & { shipments?: Record<string,unknown>[] })?.shipments?.[0] || {};
+    const tracking = (trackData as Record<string, unknown> & { tracking_data?: Record<string,unknown> })?.tracking_data || {};
 
     const details = {
-      awb_code:        shipment.awb_code || tracking.awb_code || awb || null,
-      courier_name:    shipment.courier_name || tracking.courier_name || null,
-      status:          shipment.status || tracking.current_status || null,
-      edd:             shipment.etd || tracking.edd || shipment.edd || null, // Expected Delivery Date
-      pickup_date:     shipment.pickup_date || null,
-      delivered_date:  shipment.delivered_date || null,
-      tracking_url:    awb ? `https://shiprocket.co/tracking/${awb || shipment.awb_code}` : null,
-      origin:          tracking.origin || shipment.origin || null,
-      destination:     tracking.destination || shipment.destination || null,
-      activities:      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tracking.shipment_track_activities || []).slice(0, 5).map((a: any) => ({
-          date:    a.date,
-          status:  a.activity,
-          location: a.location,
-        })),
+      awb_code:        (shipment as Record<string,unknown>).awb_code || (tracking as Record<string,unknown>).awb_code || awb || null,
+      courier_name:    (shipment as Record<string,unknown>).courier_name || (tracking as Record<string,unknown>).courier_name || null,
+      status:          (shipment as Record<string,unknown>).status || (tracking as Record<string,unknown>).current_status || null,
+      edd:             (shipment as Record<string,unknown>).etd || (tracking as Record<string,unknown>).edd || (shipment as Record<string,unknown>).edd || null,
+      pickup_date:     (shipment as Record<string,unknown>).pickup_date || null,
+      delivered_date:  (shipment as Record<string,unknown>).delivered_date || null,
+      tracking_url:    awb ? `https://shiprocket.co/tracking/${awb || (shipment as Record<string,unknown>).awb_code}` : null,
+      origin:          (tracking as Record<string,unknown>).origin || (shipment as Record<string,unknown>).origin || null,
+      destination:     (tracking as Record<string,unknown>).destination || (shipment as Record<string,unknown>).destination || null,
+      activities:
+        ((tracking as Record<string, unknown[]>).shipment_track_activities || []).slice(0, 5).map((a: unknown) => {
+          const act = a as { date: string; activity: string; location: string };
+          return { date: act.date, status: act.activity, location: act.location };
+        }),
     };
 
     return NextResponse.json({ success: true, details });
