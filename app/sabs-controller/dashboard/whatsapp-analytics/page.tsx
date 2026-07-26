@@ -178,8 +178,7 @@ export default function WhatsAppAnalytics() {
             productName: c.product_name,
           });
         }
-      } else {
-        setShipping(prev => ({ ...prev, [c.id]: "error" }));
+      } else {        setShipping(prev => ({ ...prev, [c.id]: "error" }));
         alert(`Shiprocket error: ${data.error || "Unknown error"}`);
       }
     } catch (err) {
@@ -622,6 +621,10 @@ export default function WhatsAppAnalytics() {
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors">
                 Got it!
               </button>
+              <a href="/sabs-controller/dashboard/orders"
+                className="w-full flex items-center justify-center gap-2 border border-green-200 text-green-700 font-bold py-3 rounded-xl text-sm hover:bg-green-50 transition-colors">
+                View in Orders →
+              </a>
             </div>
           </div>
         </div>
