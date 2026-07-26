@@ -10,27 +10,42 @@ import { MdEmail, MdLocationOn, MdPhone, MdVerified } from "react-icons/md";
 import { FiSend, FiArrowRight } from "react-icons/fi";
 
 const quickLinks = [
-  { name: "Home",              href: "/" },
-  { name: "All Products",      href: "/products" },
-  { name: "Categories",        href: "/categories" },
-  { name: "Shop by Occasion",  href: "/occasions" },
-  { name: "Beauty Tips",       href: "/beauty-tips" },
-  { name: "Find My Product",   href: "/products" },
+  { name: "Home",                    href: "/" },
+  { name: "All Products",            href: "/products" },
+  { name: "Categories",              href: "/categories" },
+  { name: "Shop by Occasion",        href: "/occasions" },
+  { name: "Beauty Tips & Guides",    href: "/beauty-tips" },
+  { name: "Beauty Blog",             href: "/blog" },
+  { name: "Dahisar Beauty Shop",     href: "/dahisar-beauty-shop" },
+  { name: "Order Now",               href: "/order" },
 ];
 
 const helpLinks = [
-  { name: "About Us",          href: "/about" },
-  { name: "Contact Us",        href: "/contact" },
-  { name: "How to Order",      href: "/how-to-order" },
-  { name: "Delivery Info",     href: "/delivery" },
-  { name: "Returns & Exchange",href: "/returns" },
-  { name: "FAQ",               href: "/faq" },
+  { name: "About Us",                href: "/about" },
+  { name: "Contact Us",              href: "/contact" },
+  { name: "How to Order",            href: "/how-to-order" },
+  { name: "Delivery Info",           href: "/delivery" },
+  { name: "Track Your Order",        href: "/track-order" },
+  { name: "Returns & Exchange",      href: "/returns" },
+  { name: "FAQ",                     href: "/faq" },
+];
+
+const occasionLinks = [
+  { name: "💍 Wedding Beauty",       href: "/occasions/wedding" },
+  { name: "🎉 Party Makeup",         href: "/occasions/party" },
+  { name: "💼 Office Look",          href: "/occasions/office" },
+  { name: "☀️ Daily Essentials",     href: "/occasions/daily" },
+  { name: "🌹 Date Night",           href: "/occasions/date-night" },
+  { name: "🪔 Festival Beauty",      href: "/occasions/festival" },
+  { name: "✈️ Travel Kit",           href: "/occasions/travel" },
+  { name: "🎁 Gifting",              href: "/occasions/gifting" },
 ];
 
 const legalLinks = [
-  { name: "Privacy Policy",    href: "/privacy-policy" },
-  { name: "Shipping Policy",   href: "/shipping-policy" },
-  { name: "Terms of Service",  href: "/terms" },
+  { name: "Privacy Policy",          href: "/privacy-policy" },
+  { name: "Shipping Policy",         href: "/shipping-policy" },
+  { name: "Returns Policy",          href: "/returns" },
+  { name: "Terms of Service",        href: "/terms" },
 ];
 
 const socials = [
@@ -174,15 +189,26 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3 — Categories */}
+          {/* Col 3 — Categories + Occasions */}
           <div>
             <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Categories</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2 mb-6">
               {categories.map((cat) => (
                 <li key={cat.name}>
                   <Link href={cat.href}
                     className="text-sm text-gray-400 hover:text-white transition-colors">
                     {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <h3 className="font-bold text-white mb-3 text-sm uppercase tracking-wider">Shop by Occasion</h3>
+            <ul className="space-y-2">
+              {occasionLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href}
+                    className="text-sm text-gray-400 hover:text-white transition-colors">
+                    {link.name}
                   </Link>
                 </li>
               ))}

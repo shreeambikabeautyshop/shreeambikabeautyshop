@@ -41,6 +41,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/track-order`,                   lastModified: new Date(), changeFrequency: "monthly", priority: 0.68 },
     // Location/hyperlocal pages
     { url: `${BASE}/dahisar-beauty-shop`,           lastModified: new Date(), changeFrequency: "monthly", priority: 0.90 },
+    // Legal pages
+    { url: `${BASE}/privacy-policy`,                lastModified: new Date(), changeFrequency: "yearly",  priority: 0.30 },
+    { url: `${BASE}/shipping-policy`,               lastModified: new Date(), changeFrequency: "yearly",  priority: 0.30 },
+    { url: `${BASE}/terms`,                         lastModified: new Date(), changeFrequency: "yearly",  priority: 0.30 },
     // Beauty Tips
     { url: `${BASE}/beauty-tips`,                   lastModified: new Date(), changeFrequency: "weekly",  priority: 0.78 },
     { url: `${BASE}/beauty-tips/skin-care`,         lastModified: new Date(), changeFrequency: "weekly",  priority: 0.75 },
