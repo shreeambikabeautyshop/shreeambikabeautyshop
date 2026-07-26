@@ -107,7 +107,7 @@ export default function WhatsAppAnalytics() {
   // Shiprocket order IDs saved after creation
   const [srOrders, setSrOrders]   = useState<Record<string, { shipment_id: string; order_id: string; awb?: string; courier_name?: string; estimated_delivery?: string }>>({});
   // Ship success toast
-  const [shipSuccess, setShipSuccess] = useState<{ awb: string; courier: string; edd: string; productName: string } | null>(null);
+  const [shipSuccess, setShipSuccess] = useState<{ awb: string; courier: string; edd: string; productName: string; dbError: string | null } | null>(null);
   // Inline shipping rates per click id
   const [inlineRates, setInlineRates] = useState<Record<string, { loading: boolean; charge?: number; days?: number; edd?: string; error?: string }>>({});
   // Courier details popup
@@ -185,7 +185,7 @@ export default function WhatsAppAnalytics() {
         }),
       });
 
-      let data: { success?: boolean; error?: string; shipment_id?: string; shiprocket_order_id?: string; shiprocket_url?: string; awb?: string; courier_name?: string; estimated_delivery?: string; message?: string } = {};
+      let data: { success?: boolean; error?: string; shipment_id?: string; shiprocket_order_id?: string; shiprocket_url?: string; awb?: string; courier_name?: string; estimated_delivery?: string; message?: string; db_saved?: boolean; db_error?: string } = {};
       try { data = await res.json(); } catch { data = { error: `Server error ${res.status}` }; }
 
       if (data.success) {
@@ -201,14 +201,13 @@ export default function WhatsAppAnalytics() {
           },
         }));
         // Show success info — NO redirect
-        if (data.awb) {
-          setShipSuccess({
-            awb:         data.awb,
-            courier:     data.courier_name || "—",
-            edd:         data.estimated_delivery || "—",
-            productName: c.product_name,
-          });
-        }
+        setShipSuccess({
+          awb:         data.awb || "(pending)",
+          courier:     data.courier_name || "Assigning...",
+          edd:         data.estimated_delivery || "—",
+          productName: c.product_name,
+          dbError:     data.db_error || null,
+        });
       } else {        setShipping(prev => ({ ...prev, [c.id]: "error" }));
         alert(`Shiprocket error: ${data.error || "Unknown error"}`);
       }
@@ -699,6 +698,11 @@ export default function WhatsAppAnalytics() {
                 className="w-full flex items-center justify-center gap-2 border border-green-200 text-green-700 font-bold py-3 rounded-xl text-sm hover:bg-green-50 transition-colors">
                 View in Orders →
               </a>
+              {shipSuccess.dbError && (
+                <p className="text-[10px] text-red-500 text-center bg-red-50 rounded-xl p-2">
+                  ⚠️ DB save failed: {shipSuccess.dbError}
+                </p>
+              )}
             </div>
           </div>
         </div>

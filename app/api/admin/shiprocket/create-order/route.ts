@@ -12,6 +12,55 @@ function getAdmin() {
   );
 }
 
+// Auto-create sabs_orders table if it doesn't exist
+async function ensureTable() {
+  const supabase = getAdmin();
+  const { error } = await supabase.from("sabs_orders").select("id").limit(1);
+  if (!error) return; // table exists
+
+  // Table missing — create it via Supabase SQL API
+  const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const url     = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+
+  const sql = `
+    create table if not exists public.sabs_orders (
+      id                  uuid default gen_random_uuid() primary key,
+      sabs_order_id       text not null,
+      shiprocket_order_id text,
+      shipment_id         text,
+      awb                 text,
+      courier_name        text,
+      estimated_delivery  text,
+      customer_name       text not null,
+      customer_phone      text,
+      product_name        text,
+      product_price       numeric,
+      delivery_address    text,
+      delivery_pincode    text,
+      delivery_city       text,
+      delivery_state      text,
+      status              text default 'new',
+      source              text default 'whatsapp',
+      manifest_url        text,
+      label_url           text,
+      created_at          timestamptz default now(),
+      updated_at          timestamptz
+    );
+    grant all on public.sabs_orders to service_role;
+  `;
+
+  // Try Supabase pg-meta SQL endpoint
+  await fetch(`${url}/pg/query`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${svcKey}`,
+      "apikey": svcKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: sql }),
+  }).catch(() => {});
+}
+
 // ── Get Shiprocket auth token ─────────────────────────────────────────────────
 async function getShiprocketToken(): Promise<string> {
   const email    = process.env.SHIPROCKET_EMAIL;
@@ -168,10 +217,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let dbError: string | null = null;
     // ── Save to our sabs_orders table ─────────────────────────────────────
     try {
+      await ensureTable();
       const supabase = getAdmin();
-      await supabase.from("sabs_orders").insert([{
+      const { error: dbErr } = await supabase.from("sabs_orders").insert([{
         sabs_order_id:       sabsOrderId,
         shiprocket_order_id: String(createData.order_id || ""),
         shipment_id:         String(shipmentId || ""),
@@ -189,8 +240,13 @@ export async function POST(req: NextRequest) {
         status:              "new",
         source:              "whatsapp",
       }]);
-    } catch {
-      // DB save is non-fatal — Shiprocket order already created
+      if (dbErr) {
+        dbError = dbErr.message;
+        console.error("[create-order] DB insert error:", dbErr.message, dbErr.code);
+      }
+    } catch (dbSaveErr) {
+      dbError = dbSaveErr instanceof Error ? dbSaveErr.message : String(dbSaveErr);
+      console.error("[create-order] DB save exception:", dbError);
     }
 
     return NextResponse.json({
@@ -201,6 +257,8 @@ export async function POST(req: NextRequest) {
       awb,
       courier_name:        courierName,
       estimated_delivery:  estimatedDeliveryDate,
+      db_saved:            !dbError,
+      db_error:            dbError,
       message:             awb
         ? `Order created & courier assigned! AWB: ${awb} | EDD: ${estimatedDeliveryDate}`
         : "Order created in Shiprocket. Courier assignment pending.",
