@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         // All bots — allow public pages, block admin
         userAgent: "*",
-        allow: ["/", "/products/", "/categories/", "/blog/", "/wishlist", "/about", "/contact", "/faq", "/dahisar-beauty-shop", "/occasions/", "/beauty-tips/", "/order", "/track-order", "/delivery", "/returns", "/how-to-order", "/profile", "/llms.txt"],
+        allow: ["/", "/products/", "/categories/", "/blog/", "/wishlist", "/about", "/contact", "/faq", "/dahisar-beauty-shop", "/occasions/", "/beauty-tips/", "/order", "/track-order", "/delivery", "/returns", "/how-to-order", "/profile", "/llms.txt", "/feed.xml"],
         disallow: [
           "/sabs-controller/",
           "/api/",
