@@ -2,7 +2,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiRefreshCw, FiTrendingUp, FiUser, FiAlertCircle, FiGlobe,
-         FiChevronLeft, FiChevronRight, FiCalendar, FiClock, FiTruck, FiExternalLink } from "react-icons/fi";
+         FiChevronLeft, FiChevronRight, FiCalendar, FiClock, FiTruck,
+         FiExternalLink, FiMapPin, FiPackage } from "react-icons/fi";
 
 interface Click {
   id: string; product_name: string; product_brand: string; product_price: number;
@@ -198,6 +199,25 @@ export default function WhatsAppAnalytics() {
 
   const customerClicks = useMemo(() => clicks.filter(c => c.customer_name), [clicks]);
   const guestClicks    = useMemo(() => clicks.filter(c => !c.customer_name), [clicks]);
+
+  // ── Delivery Rate Calculator ──────────────────────────────────────────────
+  const [rateModal, setRateModal] = useState<{ c: Click } | null>(null);
+  const [ratePincode, setRatePincode] = useState("");
+  const [rateWeight, setRateWeight]   = useState("0.3");
+  const [rateCOD, setRateCOD]         = useState(false);
+  const [rateLoading, setRateLoading] = useState(false);
+  const [rateResult, setRateResult]   = useState<Record<string,unknown> | null>(null);
+
+  const fetchRate = async () => {
+    if (!ratePincode || ratePincode.length < 6) return;
+    setRateLoading(true); setRateResult(null);
+    try {
+      const r = await fetch(`/api/admin/shiprocket/delivery-rate?pickup=400068&delivery=${ratePincode}&weight=${rateWeight}&cod=${rateCOD?1:0}&value=${rateModal?.c.product_price||500}`);
+      const d = await r.json();
+      setRateResult(d);
+    } catch { setRateResult({ error: "Failed to fetch rates" }); }
+    setRateLoading(false);
+  };
 
   const sourceBreakdown = useMemo(() => {
     const acc: Record<string,number> = {};
@@ -496,34 +516,43 @@ export default function WhatsAppAnalytics() {
                           <span className="text-[9px] text-gray-400">{timeAgo(c.created_at)}</span>
                         </td>
                         <td className="px-4 py-3">
-                          {shipping[c.id] === "done" ? (
-                            <div className="flex flex-col gap-1">
-                              <a href="https://app.shiprocket.in/seller/orders" target="_blank" rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-lg hover:bg-green-200 transition-colors">
-                                <FiExternalLink size={9}/> View Order
-                              </a>
-                              <button onClick={() => openCourierDetails(c)}
-                                className="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-colors">
-                                <FiTruck size={9}/> Courier Details
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => createShiprocketOrder(c)}
-                              disabled={shipping[c.id] === "loading"}
-                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition-colors ${
-                                shipping[c.id] === "error"
-                                  ? "bg-red-100 text-red-600 hover:bg-red-200"
-                                  : shipping[c.id] === "loading"
-                                  ? "bg-orange-100 text-orange-500 animate-pulse cursor-not-allowed"
-                                  : "bg-orange-500 hover:bg-orange-600 text-white"
-                              }`}
-                            >
-                              <FiTruck size={10}/>
-                              {shipping[c.id] === "loading" ? "Creating..." :
-                               shipping[c.id] === "error" ? "Retry" : "Ship"}
+                          <div className="flex flex-col gap-1">
+                            {/* WhatsApp Reminder */}
+                            <a href={`https://wa.me/91${c.customer_phone}?text=${encodeURIComponent(`Hi ${c.customer_name}! 😊\n\nYou were interested in *${c.product_name || "a product"}* (₹${c.product_price || ""}) from Shree Ambika Beauty Shop.\n\nWould you like to place your order? I can arrange same-day delivery in Mumbai! 🚀\n\nReply YES and I'll confirm your order right away.\n\n- Vinod\nShree Ambika Beauty Shop\n+918291455297`)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-[9px] font-bold px-2 py-1 rounded-lg transition-colors">
+                              <FaWhatsapp size={9}/> Remind
+                            </a>
+                            {/* Delivery Rate */}
+                            <button onClick={() => { setRateModal({c}); setRatePincode(""); setRateResult(null); }}
+                              className="inline-flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-[9px] font-bold px-2 py-1 rounded-lg transition-colors">
+                              <FiMapPin size={9}/> Rate
                             </button>
-                          )}
+                            {/* Ship */}
+                            {shipping[c.id] === "done" ? (
+                              <div className="flex flex-col gap-0.5">
+                                <a href="https://app.shiprocket.in/seller/orders" target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[9px] font-bold px-2 py-1 rounded-lg">
+                                  <FiExternalLink size={8}/> Order ✓
+                                </a>
+                                <button onClick={() => openCourierDetails(c)}
+                                  className="inline-flex items-center gap-1 bg-brand-primary hover:bg-brand-dark text-white text-[9px] font-bold px-2 py-1 rounded-lg transition-colors">
+                                  <FiTruck size={8}/> Track
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => createShiprocketOrder(c)}
+                                disabled={shipping[c.id] === "loading"}
+                                className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg transition-colors ${
+                                  shipping[c.id] === "error" ? "bg-red-100 text-red-600" :
+                                  shipping[c.id] === "loading" ? "bg-orange-100 text-orange-400 animate-pulse cursor-not-allowed" :
+                                  "bg-orange-500 hover:bg-orange-600 text-white"}`}>
+                                <FiTruck size={8}/>
+                                {shipping[c.id] === "loading" ? "..." : shipping[c.id] === "error" ? "Retry" : "Ship"}
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -533,6 +562,91 @@ export default function WhatsAppAnalytics() {
               <Pagination page={pCustomers} total={customerClicks.length} perPage={PER_PAGE} onChange={setPCustomers}/>
             </>
            )}
+        </div>
+      )}
+
+      {/* DELIVERY RATE MODAL */}
+      {rateModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setRateModal(null)}>
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+            <div className="bg-blue-600 px-5 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-white flex items-center gap-2"><FiPackage size={14}/> Delivery Rate Calculator</h3>
+                <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{rateModal.c.product_name} — ₹{rateModal.c.product_price}</p>
+              </div>
+              <button onClick={() => setRateModal(null)} className="text-white/70 hover:text-white text-xl">✕</button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="bg-gray-50 rounded-xl px-3 py-2 flex items-center gap-2">
+                <FiMapPin size={12} className="text-green-600"/>
+                <span className="text-xs font-semibold text-gray-700">Pickup: Dahisar East, Mumbai — 400068</span>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 mb-1 block">Customer Delivery Pincode *</label>
+                <input type="text" maxLength={6} value={ratePincode}
+                  onChange={e => setRatePincode(e.target.value.replace(/\D/g,""))}
+                  placeholder="Enter 6-digit pincode"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 font-mono tracking-widest" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 mb-1 block">Weight (kg)</label>
+                  <input type="number" step="0.1" min="0.1" value={rateWeight}
+                    onChange={e => setRateWeight(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500" />
+                </div>
+                <div className="flex flex-col justify-end pb-0.5">
+                  <label className="text-xs font-bold text-gray-700 mb-2 block">Payment</label>
+                  <div className="flex gap-2">
+                    <button onClick={() => setRateCOD(false)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${!rateCOD?"bg-blue-600 text-white":"bg-gray-100 text-gray-600"}`}>
+                      Prepaid
+                    </button>
+                    <button onClick={() => setRateCOD(true)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${rateCOD?"bg-orange-500 text-white":"bg-gray-100 text-gray-600"}`}>
+                      COD
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button onClick={fetchRate} disabled={ratePincode.length < 6 || rateLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-40">
+                {rateLoading ? "Calculating..." : "Calculate Delivery Charge"}
+              </button>
+              {rateResult && (() => {
+                const r = rateResult as { success?: boolean; error?: string; cheapest?: {name:string;total:number;days:number}; fastest?: {name:string;total:number;days:number}; couriers?: object[]; message?: string };
+                if (r.error) return <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">⚠️ {r.error}</div>;
+                if (r.message || !r.couriers?.length) return <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-xs text-orange-700">No courier available for this pincode.</div>;
+                const cheapest = r.cheapest!; const fastest = r.fastest!;
+                const waMsg = encodeURIComponent(`Hi ${rateModal.c.customer_name}!\n\nYour *${rateModal.c.product_name}* order delivery details:\n\nDelivery Charge: Rs.${cheapest.total}${rateCOD?" (COD)":" (Prepaid)"}\nCourier: ${cheapest.name}\nExpected Delivery: ${cheapest.days} working days\n\nTo confirm, reply with your full delivery address.\n\n- Vinod | Shree Ambika Beauty Shop | +918291455297`);
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                        <p className="text-[10px] text-green-600 font-bold">Cheapest</p>
+                        <p className="text-xl font-black text-green-700">₹{cheapest.total}</p>
+                        <p className="text-[10px] text-green-600">{cheapest.name}</p>
+                        <p className="text-[10px] text-gray-500">{cheapest.days} days</p>
+                      </div>
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                        <p className="text-[10px] text-blue-600 font-bold">Fastest</p>
+                        <p className="text-xl font-black text-blue-700">₹{fastest.total}</p>
+                        <p className="text-[10px] text-blue-600">{fastest.name}</p>
+                        <p className="text-[10px] text-gray-500">{fastest.days} days</p>
+                      </div>
+                    </div>
+                    <a href={`https://wa.me/91${rateModal.c.customer_phone}?text=${waMsg}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors">
+                      <FaWhatsapp size={14}/> Send Delivery Info to Customer
+                    </a>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
         </div>
       )}
 

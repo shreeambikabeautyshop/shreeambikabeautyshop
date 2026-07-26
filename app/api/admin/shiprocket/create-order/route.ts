@@ -6,18 +6,24 @@ function isAuthenticated(req: NextRequest): boolean {
 
 // ── Get Shiprocket auth token ─────────────────────────────────────────────────
 async function getShiprocketToken(): Promise<string> {
+  const email = process.env.SHIPROCKET_EMAIL;
+  const password = process.env.SHIPROCKET_PASSWORD;
+
+  if (!email || !password) throw new Error("Shiprocket credentials not configured in environment variables");
+
   const res = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email:    process.env.SHIPROCKET_EMAIL,
-      password: process.env.SHIPROCKET_PASSWORD,
-    }),
+    body: JSON.stringify({ email, password }),
     signal: AbortSignal.timeout(10000),
   });
-  if (!res.ok) throw new Error(`Shiprocket auth failed: ${res.status}`);
+
   const data = await res.json();
-  if (!data.token) throw new Error("No token in Shiprocket response");
+
+  if (res.status === 403) throw new Error(`Shiprocket account blocked — too many failed attempts. Go to Shiprocket → Settings → API Users → Reset password for ${email}`);
+  if (!res.ok) throw new Error(`Shiprocket auth failed: ${res.status} — ${data.message || "Unknown error"}`);
+  if (!data.token) throw new Error(`Shiprocket returned no token. Response: ${JSON.stringify(data).slice(0,100)}`);
+
   return data.token;
 }
 
