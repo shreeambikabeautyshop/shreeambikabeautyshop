@@ -118,12 +118,69 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
+    const shipmentId = createData.shipment_id;
+    let awb: string | null = null;
+    let courierName: string | null = null;
+    let estimatedDeliveryDate: string | null = null;
+
+    // ── Auto-assign cheapest courier to get AWB ───────────────────────────
+    if (shipmentId) {
+      try {
+        // Step 1: get available couriers for this shipment
+        const rateRes = await fetch(
+          `https://apiv2.shiprocket.in/v1/external/courier/serviceability/?shipment_id=${shipmentId}`,
+          { headers: { "Authorization": `Bearer ${token}` }, signal: AbortSignal.timeout(10000) }
+        );
+        const rateData = await rateRes.json();
+
+        type CourierOption = {
+          courier_company_id: number;
+          courier_name: string;
+          freight_charge: number;
+          estimated_delivery_days: number;
+        };
+
+        const couriers: CourierOption[] = rateData?.data?.available_courier_companies || [];
+
+        if (couriers.length > 0) {
+          // Pick cheapest available courier
+          const sorted = couriers.sort((a, b) => (a.freight_charge || 0) - (b.freight_charge || 0));
+          const best = sorted[0];
+
+          // Step 2: assign courier → this generates AWB
+          const assignRes = await fetch("https://apiv2.shiprocket.in/v1/external/courier/assign/awb", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ shipment_id: String(shipmentId), courier_id: String(best.courier_company_id) }),
+            signal: AbortSignal.timeout(15000),
+          });
+          const assignData = await assignRes.json();
+
+          if (assignData?.awb_assign_status === 1 || assignData?.response?.data?.awb_code) {
+            awb          = assignData?.response?.data?.awb_code || assignData?.awb_code || null;
+            courierName  = best.courier_name;
+            // Calculate expected delivery date
+            const deliveryDays = best.estimated_delivery_days || 5;
+            const edd = new Date();
+            edd.setDate(edd.getDate() + deliveryDays);
+            estimatedDeliveryDate = edd.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" });
+          }
+        }
+      } catch {
+        // AWB auto-assign failed — order is still created, just no AWB yet
+      }
+    }
+
     return NextResponse.json({
-      success: true,
+      success:             true,
       shiprocket_order_id: createData.order_id,
-      shipment_id:         createData.shipment_id,
-      message:             "Order created in Shiprocket! Go to Shiprocket → Orders to assign courier.",
-      shiprocket_url:      `https://app.shiprocket.in/seller/orders`,
+      shipment_id:         shipmentId,
+      awb:                 awb,
+      courier_name:        courierName,
+      estimated_delivery:  estimatedDeliveryDate,
+      message:             awb
+        ? `Order created & courier assigned! AWB: ${awb} | EDD: ${estimatedDeliveryDate}`
+        : "Order created in Shiprocket. Courier assignment pending.",
     });
 
   } catch (err) {

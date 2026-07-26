@@ -105,7 +105,9 @@ export default function WhatsAppAnalytics() {
   // Shiprocket shipping state
   const [shipping, setShipping]   = useState<Record<string, "loading"|"done"|"error">>({});
   // Shiprocket order IDs saved after creation
-  const [srOrders, setSrOrders]   = useState<Record<string, { shipment_id: string; order_id: string; awb?: string }>>({});
+  const [srOrders, setSrOrders]   = useState<Record<string, { shipment_id: string; order_id: string; awb?: string; courier_name?: string; estimated_delivery?: string }>>({});
+  // Ship success toast
+  const [shipSuccess, setShipSuccess] = useState<{ awb: string; courier: string; edd: string; productName: string } | null>(null);
   // Courier details popup
   const [courierModal, setCourierModal] = useState<{
     clickId: string;
@@ -152,16 +154,30 @@ export default function WhatsAppAnalytics() {
         }),
       });
 
-      let data: { success?: boolean; error?: string; shipment_id?: string; shiprocket_order_id?: string; shiprocket_url?: string } = {};
+      let data: { success?: boolean; error?: string; shipment_id?: string; shiprocket_order_id?: string; shiprocket_url?: string; awb?: string; courier_name?: string; estimated_delivery?: string; message?: string } = {};
       try { data = await res.json(); } catch { data = { error: `Server error ${res.status}` }; }
 
       if (data.success) {
         setShipping(prev => ({ ...prev, [c.id]: "done" }));
         setSrOrders(prev => ({
           ...prev,
-          [c.id]: { shipment_id: data.shipment_id || "", order_id: data.shiprocket_order_id || "" },
+          [c.id]: {
+            shipment_id:        data.shipment_id || "",
+            order_id:           data.shiprocket_order_id || "",
+            awb:                data.awb || undefined,
+            courier_name:       data.courier_name || undefined,
+            estimated_delivery: data.estimated_delivery || undefined,
+          },
         }));
-        if (data.shiprocket_url) window.open(data.shiprocket_url, "_blank");
+        // Show success info — NO redirect
+        if (data.awb) {
+          setShipSuccess({
+            awb:         data.awb,
+            courier:     data.courier_name || "—",
+            edd:         data.estimated_delivery || "—",
+            productName: c.product_name,
+          });
+        }
       } else {
         setShipping(prev => ({ ...prev, [c.id]: "error" }));
         alert(`Shiprocket error: ${data.error || "Unknown error"}`);
@@ -565,6 +581,52 @@ export default function WhatsAppAnalytics() {
         </div>
       )}
 
+      {/* SHIP SUCCESS MODAL */}
+      {shipSuccess && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShipSuccess(null)}>
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+            <div className="bg-green-500 px-5 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-white flex items-center gap-2">✅ Shipped Successfully!</h3>
+                <p className="text-green-100 text-xs mt-0.5 line-clamp-1">{shipSuccess.productName}</p>
+              </div>
+              <button onClick={() => setShipSuccess(null)} className="text-white/70 hover:text-white text-xl">✕</button>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🚚</span>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Courier Partner</p>
+                    <p className="text-sm font-bold text-gray-800">{shipSuccess.courier}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">📦</span>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">AWB / Tracking No</p>
+                    <p className="text-sm font-black text-gray-800 font-mono tracking-widest">{shipSuccess.awb}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">📅</span>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-semibold">Expected Delivery</p>
+                    <p className="text-sm font-bold text-green-700">{shipSuccess.edd}</p>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setShipSuccess(null)}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors">
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* DELIVERY RATE MODAL */}
       {rateModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
@@ -620,7 +682,11 @@ export default function WhatsAppAnalytics() {
                 if (r.error) return <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">⚠️ {r.error}</div>;
                 if (r.message || !r.couriers?.length) return <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-xs text-orange-700">No courier available for this pincode.</div>;
                 const cheapest = r.cheapest!; const fastest = r.fastest!;
-                const waMsg = encodeURIComponent(`Hi ${rateModal.c.customer_name}!\n\nYour *${rateModal.c.product_name}* order delivery details:\n\nDelivery Charge: Rs.${cheapest.total}${rateCOD?" (COD)":" (Prepaid)"}\nCourier: ${cheapest.name}\nExpected Delivery: ${cheapest.days} working days\n\nTo confirm, reply with your full delivery address.\n\n- Vinod | Shree Ambika Beauty Shop | +918291455297`);
+                const today = new Date();
+                const cheapEDD = new Date(today); cheapEDD.setDate(today.getDate() + (cheapest.days || 5));
+                const fastEDD  = new Date(today); fastEDD.setDate(today.getDate() + (fastest.days || 3));
+                const fmtEDD = (d: Date) => d.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" });
+                const waMsg = encodeURIComponent(`Hi ${rateModal.c.customer_name}!\n\nYour *${rateModal.c.product_name}* order delivery details:\n\nDelivery Charge: Rs.${cheapest.total}${rateCOD?" (COD)":" (Prepaid)"}\nCourier: ${cheapest.name}\nExpected Delivery: ${fmtEDD(cheapEDD)}\n\nTo confirm, reply with your full delivery address.\n\n- Vinod | Shree Ambika Beauty Shop | +918291455297`);
                 return (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
@@ -629,12 +695,14 @@ export default function WhatsAppAnalytics() {
                         <p className="text-xl font-black text-green-700">₹{cheapest.total}</p>
                         <p className="text-[10px] text-green-600">{cheapest.name}</p>
                         <p className="text-[10px] text-gray-500">{cheapest.days} days</p>
+                        <p className="text-[10px] font-bold text-green-700 mt-0.5">By {fmtEDD(cheapEDD)}</p>
                       </div>
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
                         <p className="text-[10px] text-blue-600 font-bold">Fastest</p>
                         <p className="text-xl font-black text-blue-700">₹{fastest.total}</p>
                         <p className="text-[10px] text-blue-600">{fastest.name}</p>
                         <p className="text-[10px] text-gray-500">{fastest.days} days</p>
+                        <p className="text-[10px] font-bold text-blue-700 mt-0.5">By {fmtEDD(fastEDD)}</p>
                       </div>
                     </div>
                     <a href={`https://wa.me/91${rateModal.c.customer_phone}?text=${waMsg}`}
