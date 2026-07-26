@@ -161,6 +161,9 @@ export async function POST(req: NextRequest) {
     });
 
     const createData = await createRes.json();
+    console.log("[create-order] Shiprocket response keys:", Object.keys(createData).join(", "));
+    console.log("[create-order] order_id:", createData.order_id, "shipment_id:", createData.shipment_id, "payload:", JSON.stringify(createData).slice(0, 300));
+
     if (!createRes.ok) {
       return NextResponse.json(
         { error: createData.message || "Shiprocket order creation failed", details: createData },
@@ -168,7 +171,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const shipmentId = createData.shipment_id;
+    // Shiprocket adhoc API returns shipment_id at root OR inside payload array
+    const shipmentId: string = String(
+      createData.shipment_id ||
+      createData.payload?.[0]?.shipment_id ||
+      createData.order?.shipment_id ||
+      ""
+    );
+    const shiprocketOrderId: string = String(
+      createData.order_id ||
+      createData.payload?.[0]?.order_id ||
+      ""
+    );
     let awb: string | null                 = null;
     let courierName: string | null         = null;
     let estimatedDeliveryDate: string | null = null;
@@ -224,8 +238,8 @@ export async function POST(req: NextRequest) {
       const supabase = getAdmin();
       const { error: dbErr } = await supabase.from("sabs_orders").insert([{
         sabs_order_id:       sabsOrderId,
-        shiprocket_order_id: String(createData.order_id || ""),
-        shipment_id:         String(shipmentId || ""),
+        shiprocket_order_id: shiprocketOrderId,
+        shipment_id:         shipmentId,
         awb,
         courier_name:        courierName,
         estimated_delivery:  estimatedDeliveryDate,
@@ -252,7 +266,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success:             true,
       sabs_order_id:       sabsOrderId,
-      shiprocket_order_id: createData.order_id,
+      shiprocket_order_id: shiprocketOrderId,
       shipment_id:         shipmentId,
       awb,
       courier_name:        courierName,
