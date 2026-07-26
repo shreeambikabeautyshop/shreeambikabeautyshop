@@ -535,7 +535,6 @@ export default function WhatsAppAnalytics() {
            )}
         </div>
       )}
-    </div>
 
       {/* COURIER DETAILS MODAL */}
       {courierModal && (
@@ -546,6 +545,8 @@ export default function WhatsAppAnalytics() {
           onClose={() => { setCourierModal(null); setCourierDetails(null); }}
         />
       )}
+
+    </div>
   );
 }
 
