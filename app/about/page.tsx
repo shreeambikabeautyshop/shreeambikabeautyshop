@@ -346,12 +346,6 @@ export default function AboutPage() {
                 loading="lazy"
                 referrerPolicy="strict-origin-when-cross-origin"
                 title="Shree Ambika Beauty Shop Location — Dahisar East Mumbai"
-                height="380"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Shree Ambika Beauty Shop — Anand Nagar Metro Station, Dahisar East Mumbai"
               />
             </div>
             {/* Store Details */}

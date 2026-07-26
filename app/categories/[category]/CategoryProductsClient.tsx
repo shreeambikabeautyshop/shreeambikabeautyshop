@@ -99,7 +99,7 @@ export default function CategoryProductsClient({ products, categoryName, categor
             <div key={p.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
               <Link href={`/products/${p.slug || p.id}`} className="relative aspect-square bg-brand-light overflow-hidden block">
                 {p.images?.[0] ? (
-                  <Image src={p.images[0]} alt={p.name} fill
+                  <Image src={p.images[0]} alt={`Buy ${p.name} by ${p.brand} - ${p.category} at Shree Ambika Beauty Shop Dahisar Mumbai`} fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>
@@ -107,10 +107,8 @@ export default function CategoryProductsClient({ products, categoryName, categor
                 {p.trending && (
                   <span className="absolute top-2 left-2 bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Trending</span>
                 )}
-                {(p.discount ?? 0) > 0 && (
-                  <span className="absolute bottom-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {p.discount}% OFF
-                  </span>
+                {(p.trending) && (
+                  <span className="absolute top-2 left-2 bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Trending</span>
                 )}
               </Link>
               <div className="p-3 flex flex-col flex-1">

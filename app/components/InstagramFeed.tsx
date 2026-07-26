@@ -41,7 +41,7 @@ export default function InstagramFeed() {
             </h2>
           </div>
           <p className="text-sm text-gray-500">
-            <a href="https://instagram.com/shreeambikabeautyshop" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.instagram.com/shreeambikabeautyshop/" target="_blank" rel="noopener noreferrer"
               className="font-semibold text-pink-500 hover:underline">
               @shreeambikabeautyshop
             </a>
@@ -76,10 +76,11 @@ export default function InstagramFeed() {
         {/* CTA Row */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://instagram.com/shreeambikabeautyshop"
+          href="https://www.instagram.com/shreeambikabeautyshop/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-opacity shadow-md"
+            className="flex items-center gap-2 text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-opacity shadow-md"
+            style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)" }}
           >
             <FaInstagram size={18} />
             Follow Us on Instagram

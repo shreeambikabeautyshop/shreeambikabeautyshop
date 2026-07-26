@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   FaInstagram, FaFacebook, FaWhatsapp, FaYoutube, FaThreads,
+  FaLinkedin, FaPinterest, FaReddit,
 } from "react-icons/fa6";
 import { FaTwitter } from "react-icons/fa";
 import { MdEmail, MdLocationOn, MdPhone, MdVerified } from "react-icons/md";
@@ -49,12 +50,15 @@ const legalLinks = [
 ];
 
 const socials = [
-  { icon: <FaInstagram size={17} />, href: "https://instagram.com/shreeambikabeautyshop", label: "Instagram", color: "hover:bg-gradient-to-br hover:from-purple-500 hover:via-pink-500 hover:to-orange-400" },
-  { icon: <FaFacebook size={17} />,  href: "#",                                            label: "Facebook",  color: "hover:bg-blue-600" },
-  { icon: <FaWhatsapp size={17} />,  href: "https://wa.me/918291455297",                   label: "WhatsApp",  color: "hover:bg-green-500" },
-  { icon: <FaYoutube size={17} />,   href: "#",                                            label: "YouTube",   color: "hover:bg-red-600" },
-  { icon: <FaTwitter size={17} />,   href: "#",                                            label: "Twitter",   color: "hover:bg-black" },
-  { icon: <FaThreads size={17} />,   href: "#",                                            label: "Threads",   color: "hover:bg-gray-800" },
+  { icon: <FaInstagram size={17} />, href: "https://www.instagram.com/shreeambikabeautyshop/",           label: "Instagram", color: "hover:bg-gradient-to-br hover:from-purple-500 hover:via-pink-500 hover:to-orange-400" },
+  { icon: <FaFacebook size={17} />,  href: "https://www.facebook.com/profile.php?id=61591729649697",     label: "Facebook",  color: "hover:bg-blue-600" },
+  { icon: <FaWhatsapp size={17} />,  href: "https://wa.me/918291455297",                                  label: "WhatsApp",  color: "hover:bg-green-500" },
+  { icon: <FaYoutube size={17} />,   href: "https://www.youtube.com/@ShreeAmbikaBeautyStore",             label: "YouTube",   color: "hover:bg-red-600" },
+  { icon: <FaTwitter size={17} />,   href: "https://x.com/ShreeAmbikaBeau",                               label: "X/Twitter", color: "hover:bg-black" },
+  { icon: <FaThreads size={17} />,   href: "https://www.threads.com/@shreeambikabeautyshop",             label: "Threads",   color: "hover:bg-gray-800" },
+  { icon: <FaPinterest size={17} />, href: "https://in.pinterest.com/shreeambikabeautyshop/",            label: "Pinterest", color: "hover:bg-red-500" },
+  { icon: <FaLinkedin size={17} />,  href: "https://www.linkedin.com/in/shreeambika-beautyshop-7b0436422/", label: "LinkedIn", color: "hover:bg-blue-700" },
+  { icon: <FaReddit size={17} />,    href: "https://www.reddit.com/user/Suspicious_Ground843/",          label: "Reddit",    color: "hover:bg-orange-600" },
 ];
 
 const categories = [

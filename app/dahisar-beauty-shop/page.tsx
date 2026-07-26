@@ -170,9 +170,6 @@ export default function DahisarBeautyShopPage() {
                   allowFullScreen loading="lazy"
                   referrerPolicy="strict-origin-when-cross-origin"
                   title="Shree Ambika Beauty Shop location — Dahisar East Mumbai"
-                  allowFullScreen loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Shree Ambika Beauty Shop location — Dahisar East Mumbai"
                 />
               </div>
             </div>

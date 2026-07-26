@@ -180,7 +180,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
             {/* LEFT — Image fills full height, no padding, no gap */}
             <div className="relative bg-gray-50" style={{ minHeight: "500px" }}>
               {p.images?.[0] ? (
-                <Image src={p.images[0]} alt={p.name} fill
+                <Image src={p.images[0]} alt={`${p.name} by ${p.brand} - Buy Original ${p.category} at Rs.${p.price} | Shree Ambika Beauty Shop Dahisar Mumbai | 100% Genuine`} fill
                   className="object-cover" priority sizes="(max-width: 768px) 100vw, 50vw" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-8xl">💄</div>

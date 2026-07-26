@@ -253,7 +253,16 @@ export default function RootLayout({
     "foundingDate": "2001",
     "numberOfEmployees": { "@type": "QuantitativeValue", "value": 5 },
     "sameAs": [
-      "https://instagram.com/shreeambikabeautyshop",
+      "https://www.instagram.com/shreeambikabeautyshop/",
+      "https://www.facebook.com/profile.php?id=61591729649697",
+      "https://in.pinterest.com/shreeambikabeautyshop/",
+      "https://www.threads.com/@shreeambikabeautyshop",
+      "https://www.youtube.com/@ShreeAmbikaBeautyStore",
+      "https://www.linkedin.com/in/shreeambika-beautyshop-7b0436422/",
+      "https://x.com/ShreeAmbikaBeau",
+      "https://www.tumblr.com/shreeambikabeauty",
+      "https://bsky.app/profile/shreeambikabeauty.bsky.social",
+      "https://www.quora.com/profile/Shreeambikabeautyshop",
       "https://wa.me/918291455297",
     ],
     "aggregateRating": {

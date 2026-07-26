@@ -64,7 +64,7 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
           {p.images?.[0] ? (
             <Image
               src={p.images[0]}
-              alt={p.name}
+              alt={`Buy ${p.name} by ${p.brand} - ${p.category} - Rs.${p.price} at Shree Ambika Beauty Shop Dahisar Mumbai | 100% Original`}
               fill
               className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 640px) 50vw, 25vw"
@@ -74,7 +74,7 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
           )}
         </Link>
 
-        {/* Badges */}
+        {/* Badges — trending/featured only, no discount badge on image */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {p.trending && (
             <span className="bg-brand-primary text-white text-[9px] font-black px-2 py-0.5 rounded-full">🔥 TRENDING</span>
@@ -83,11 +83,6 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
             <span className="bg-yellow-400 text-white text-[9px] font-black px-2 py-0.5 rounded-full">⭐ FEATURED</span>
           )}
         </div>
-        {(p.discount ?? 0) > 0 && (
-          <span className="absolute top-2 right-10 bg-green-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
-            {p.discount}% OFF
-          </span>
-        )}
 
         {/* Wishlist button */}
         <button
