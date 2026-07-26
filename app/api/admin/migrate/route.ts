@@ -5,7 +5,6 @@ function isAuthenticated(req: NextRequest): boolean {
   return req.cookies.get("sabs_session")?.value === "authenticated";
 }
 
-// One-time migration endpoint — creates sabs_orders table if not exists
 export async function POST(req: NextRequest) {
   if (!isAuthenticated(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -14,21 +13,24 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Check if table exists by trying to select from it
+  // Check if table exists
   const { error: checkErr } = await supabase.from("sabs_orders").select("id").limit(1);
-
   if (!checkErr) {
-    return NextResponse.json({ success: true, message: "Table already exists" });
+    return NextResponse.json({ success: true, message: "Table already exists ✅" });
   }
 
-  // Table doesn't exist — create via raw SQL using pg function
-  // Supabase allows running raw SQL via the `sql` RPC if pg_net is enabled
-  // Fallback: use the Supabase SQL API endpoint
+  // Table doesn't exist — we need to create it
+  // Supabase service role can insert into any table but can't run DDL via REST
+  // Solution: create a minimal stored function via the rpc endpoint
+  
+  // Step 1: Try to create via the Supabase Management API using project's pg connection
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  const url    = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const projectRef = url.replace("https://", "").replace(".supabase.co", "");
 
-  const sql = `
-    create table if not exists sabs_orders (
+  // Try Supabase Management API (needs management token, but let's try service key)
+  const createSQL = `
+    create table if not exists public.sabs_orders (
       id                  uuid default gen_random_uuid() primary key,
       sabs_order_id       text not null,
       shiprocket_order_id text,
@@ -51,40 +53,34 @@ export async function POST(req: NextRequest) {
       created_at          timestamptz default now(),
       updated_at          timestamptz
     );
+    grant all on public.sabs_orders to service_role;
+    grant all on public.sabs_orders to authenticated;
+    grant all on public.sabs_orders to anon;
   `;
 
-  // Use Supabase SQL endpoint (available on all plans)
-  const res = await fetch(`${url}/rest/v1/`, {
+  const mgmtRes = await fetch(`https://api.supabase.com/v1/projects/${projectRef}/database/query`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${svcKey}`,
-      "apikey": svcKey,
       "Content-Type": "application/json",
-      "Content-Profile": "public",
     },
-    body: JSON.stringify({ query: sql }),
+    body: JSON.stringify({ query: createSQL }),
   });
 
-  if (!res.ok) {
-    // Try alternative: use pg extension via RPC
-    const { error: sqlErr } = await supabase.rpc("exec_sql", { sql });
-    if (sqlErr) {
-      return NextResponse.json({
-        error: "Cannot auto-create table. Please run SQL manually in Supabase dashboard.",
-        sql,
-        supabase_error: sqlErr.message,
-      }, { status: 500 });
+  if (mgmtRes.ok) {
+    const verify = await supabase.from("sabs_orders").select("id").limit(1);
+    if (!verify.error) {
+      return NextResponse.json({ success: true, message: "Table created via Management API ✅" });
     }
   }
 
-  // Verify table now exists
-  const { error: verifyErr } = await supabase.from("sabs_orders").select("id").limit(1);
-  if (verifyErr) {
-    return NextResponse.json({
-      error: "Table creation failed. Run SQL manually.",
-      sql,
-    }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true, message: "sabs_orders table created!" });
+  const mgmtBody = await mgmtRes.text().catch(() => "");
+  
+  return NextResponse.json({
+    success: false,
+    message: "Cannot auto-create table. Please run SQL manually in Supabase SQL Editor.",
+    mgmt_status: mgmtRes.status,
+    mgmt_error: mgmtBody.slice(0, 300),
+    sql: createSQL,
+  }, { status: 500 });
 }
