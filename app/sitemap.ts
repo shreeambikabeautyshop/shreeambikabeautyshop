@@ -39,6 +39,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/returns`,                       lastModified: new Date(), changeFrequency: "monthly", priority: 0.65 },
     { url: `${BASE}/order`,                         lastModified: new Date(), changeFrequency: "monthly", priority: 0.82 },
     { url: `${BASE}/track-order`,                   lastModified: new Date(), changeFrequency: "monthly", priority: 0.68 },
+    // Location/hyperlocal pages
+    { url: `${BASE}/dahisar-beauty-shop`,           lastModified: new Date(), changeFrequency: "monthly", priority: 0.90 },
     // Beauty Tips
     { url: `${BASE}/beauty-tips`,                   lastModified: new Date(), changeFrequency: "weekly",  priority: 0.78 },
     { url: `${BASE}/beauty-tips/skin-care`,         lastModified: new Date(), changeFrequency: "weekly",  priority: 0.75 },

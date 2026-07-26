@@ -141,20 +141,25 @@ export const metadata: Metadata = {
   other: {
     // GEO tags — for Google Maps and local SEO
     "geo.region": "IN-MH",
-    "geo.placename": "Mumbai, Maharashtra, India",
-    "geo.position": "19.0760;72.8777",
-    "ICBM": "19.0760, 72.8777",
+    "geo.placename": "Dahisar East, Mumbai, Maharashtra, India",
+    "geo.position": "19.2427;72.8651",
+    "ICBM": "19.2427, 72.8651",
     // AEO / LLMO — for AI answer engines
-    "ai:business_type": "Beauty Shop, Cosmetics Store",
-    "ai:location": "Dahisar, Mumbai, Maharashtra 400068, India",
+    "ai:business_type": "Beauty Shop, Cosmetics Store, Local Business",
+    "ai:location": "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East, Mumbai, Maharashtra 400068, India",
     "ai:contact": "WhatsApp +918291455297",
-    "ai:services": "Beauty products, cosmetics, makeup, skincare, haircare, perfumes, same day delivery Mumbai, pan India delivery",
+    "ai:services": "Beauty products, cosmetics, makeup, skincare, haircare, perfumes, same day delivery Mumbai, pan India delivery, 100% original products",
     "ai:founded": "2001",
-    "ai:owner": "Vinod",
+    "ai:owner": "Vinod Goswami",
+    "ai:brands": "Lakme, Maybelline, L'Oreal, SUGAR Cosmetics, Wella, Pilgrim, Mamaearth, Biotique, Himalaya, Neutrogena, Garnier, Cetaphil, Plum, Minimalist, Streax, Schwarzkopf",
+    "ai:nearest_landmark": "Anand Nagar Metro Station, Dahisar East, Mumbai Western Line",
     // Business metadata
     "business:contact_data:phone_number": "+918291455297",
     "business:contact_data:website": "https://www.shreeambikabeauty.com",
     "business:contact_data:country_name": "India",
+    "business:contact_data:locality": "Dahisar East, Mumbai",
+    "business:contact_data:postal_code": "400068",
+    "business:contact_data:region": "Maharashtra",
   },
 };
 
@@ -195,7 +200,7 @@ export default function RootLayout({
     ],
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Anand Nagar Metro Station, Dahisar East",
+      "streetAddress": "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East",
       "addressLocality": "Mumbai",
       "addressRegion": "Maharashtra",
       "postalCode": "400068",
@@ -203,8 +208,8 @@ export default function RootLayout({
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "19.0760",
-      "longitude": "72.8777",
+      "latitude": "19.2427",
+      "longitude": "72.8651",
     },
     "areaServed": [
       { "@type": "City", "name": "Mumbai" },
