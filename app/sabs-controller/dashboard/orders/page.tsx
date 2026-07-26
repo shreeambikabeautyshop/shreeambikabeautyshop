@@ -68,7 +68,8 @@ export default function OrdersPage() {
   const [orders, setOrders]     = useState<Order[]>([]);
   const [loading, setLoading]   = useState(true);
   const [tab, setTab]           = useState<OrderStatus | "all">("all");
-  const [rtsLoading, setRtsLoading] = useState<Record<string, boolean>>({});
+  const [rtsLoading, setRtsLoading]       = useState<Record<string, boolean>>({});
+  const [cancelLoading, setCancelLoading] = useState<Record<string, boolean>>({});
   const [toast, setToast]       = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -164,6 +165,34 @@ export default function OrdersPage() {
     } else {
       showToast(data.error || "Failed to update status", "error");
     }
+  };
+
+  // ── Cancel Courier Order ─────────────────────────────────────────────────
+  const cancelOrder = async (order: Order) => {
+    if (!confirm(`Cancel courier for ${order.product_name}?\nAWB: ${order.awb || "none"}\nThis will cancel the shipment in Shiprocket.`)) return;
+    setCancelLoading(prev => ({ ...prev, [order.id]: true }));
+    try {
+      const res = await fetch("/api/admin/shiprocket/cancel-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_db_id:         order.id,
+          shiprocket_order_id: order.shiprocket_order_id,
+          awb:                 order.awb,
+        }),
+      });
+      let data: { success?: boolean; message?: string; error?: string } = {};
+      try { data = await res.json(); } catch { data = { error: `Server error ${res.status}` }; }
+      if (data.success) {
+        showToast(data.message || "Order cancelled successfully");
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: "rto" } : o));
+      } else {
+        showToast(data.error || "Failed to cancel order", "error");
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Network error", "error");
+    }
+    setCancelLoading(prev => ({ ...prev, [order.id]: false }));
   };
 
   const counts = orders.reduce((acc, o) => {
@@ -363,7 +392,22 @@ export default function OrdersPage() {
                 {/* WhatsApp customer with AWB */}
                 {order.awb && order.customer_phone && (
                   <a href={`https://wa.me/91${order.customer_phone}?text=${encodeURIComponent(
-                    `Hi ${order.customer_name}! 😊\n\nYour order *${order.product_name}* has been shipped! 🚀\n\nCourier: *${order.courier_name || "—"}*\nAWB: *${order.awb}*\n${order.estimated_delivery ? `Expected Delivery: *${order.estimated_delivery}*\n` : ""}Track here: https://shiprocket.co/tracking/${order.awb}\n\nThank you for shopping at Shree Ambika Beauty Shop! 💄\n+918291455297`)}`}
+[
+  `Hi ${order.customer_name}! 😊`,
+  ``,
+  `Your order has been shipped! 🚀`,
+  ``,
+  `📦 *Product:* ${order.product_name}`,
+  `🚚 *Courier:* ${order.courier_name || "—"}`,
+  `🔖 *AWB No:* ${order.awb}`,
+  order.estimated_delivery ? `📅 *Expected Delivery:* ${order.estimated_delivery}` : "",
+  ``,
+  `👉 Track here: https://shiprocket.co/tracking/${order.awb}`,
+  ``,
+  `Thank you for shopping at Shree Ambika Beauty Shop! 💄`,
+  `📞 +918291455297`,
+].filter(l => l !== null).join("\n")
+                  )}`}
                     target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-colors">
                     <FaWhatsapp size={11}/> Send Tracking to Customer
@@ -375,6 +419,20 @@ export default function OrdersPage() {
                   <button onClick={() => updateStatus(order, "rto")}
                     className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-600 transition-colors ml-auto">
                     <FiAlertCircle size={10}/> Mark RTO
+                  </button>
+                )}
+
+                {/* Cancel Courier */}
+                {(order.status === "new" || order.status === "ready_to_ship") && order.shiprocket_order_id && (
+                  <button
+                    onClick={() => cancelOrder(order)}
+                    disabled={cancelLoading[order.id]}
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ml-auto ${
+                      cancelLoading[order.id]
+                        ? "bg-gray-100 text-gray-400 animate-pulse cursor-not-allowed"
+                        : "bg-red-100 hover:bg-red-200 text-red-600"}`}>
+                    <FiAlertCircle size={10}/>
+                    {cancelLoading[order.id] ? "Cancelling..." : "Cancel Courier"}
                   </button>
                 )}
               </div>
