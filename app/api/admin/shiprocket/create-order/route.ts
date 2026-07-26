@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
     const orderPayload = {
       order_id:                 sabsOrderId,
       order_date:               order_date || new Date().toISOString().split("T")[0],
-      pickup_location:          "Primary",
+      pickup_location:          "work",
       channel_id:               "",
       comment:                  "Order from shreeambikabeauty.com — WhatsApp",
       billing_customer_name:    customer_name.split(" ")[0] || customer_name,
@@ -190,8 +190,12 @@ export async function POST(req: NextRequest) {
     // ── Auto-assign cheapest courier to get AWB ───────────────────────────
     if (shipmentId) {
       try {
+        // serviceability by postcode (more reliable than by shipment_id)
+        const pickupPin  = "400068"; // Dahisar East — your pickup pincode
+        const deliveryPin = String(delivery_pincode) || "400001";
+
         const rateRes = await fetch(
-          `https://apiv2.shiprocket.in/v1/external/courier/serviceability/?shipment_id=${shipmentId}`,
+          `https://apiv2.shiprocket.in/v1/external/courier/serviceability/?pickup_postcode=${pickupPin}&delivery_postcode=${deliveryPin}&weight=${weight}&cod=0&declared_value=${product_price || 399}`,
           { headers: { "Authorization": `Bearer ${token}` }, signal: AbortSignal.timeout(10000) }
         );
         const rateData = await rateRes.json();
