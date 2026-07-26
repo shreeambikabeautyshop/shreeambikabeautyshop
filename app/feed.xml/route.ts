@@ -7,6 +7,16 @@ export const dynamic = "force-dynamic";
 
 const BASE = "https://www.shreeambikabeauty.com";
 
+// Escape all XML special characters
+function xmlEscape(str: string): string {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 export async function GET() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,17 +36,16 @@ export async function GET() {
 
     const googleCategory = getGoogleCategory(p.category);
 
-    const desc = (p.description || `${p.name} by ${p.brand}. 100% original ${p.category} product. Buy online from Shree Ambika Beauty Shop Mumbai.`)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .slice(0, 5000);
+    const desc = xmlEscape(
+      (p.description || `${p.name} by ${p.brand}. 100% original ${p.category} product. Buy online from Shree Ambika Beauty Shop Mumbai.`)
+        .slice(0, 5000)
+    );
 
-    const title = `${p.name} | ${p.brand} | Shree Ambika Beauty Shop Mumbai`
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .slice(0, 150);
+    const title = xmlEscape(
+      `${p.name} | ${p.brand} | Shree Ambika Beauty Shop Mumbai`.slice(0, 150)
+    );
+
+    const brand = xmlEscape(p.brand);
 
     return `
     <item>
@@ -48,10 +57,10 @@ export async function GET() {
       <g:availability>in stock</g:availability>
       <g:price>${price}</g:price>
       ${p.mrp > p.price ? `<g:sale_price>${price}</g:sale_price>` : ""}
-      <g:brand>${p.brand.replace(/&/g, "&amp;")}</g:brand>
+      <g:brand>${brand}</g:brand>
       <g:condition>new</g:condition>
-      <g:google_product_category>${googleCategory}</g:google_product_category>
-      <g:product_type>${p.category}</g:product_type>
+      <g:google_product_category>${xmlEscape(googleCategory)}</g:google_product_category>
+      <g:product_type>${xmlEscape(p.category)}</g:product_type>
       <g:identifier_exists>no</g:identifier_exists>
       <g:shipping>
         <g:country>IN</g:country>
@@ -64,9 +73,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>Shree Ambika Beauty Shop — Mumbai</title>
+    <title>Shree Ambika Beauty Shop - Mumbai</title>
     <link>${BASE}</link>
-    <description>100% Original Beauty Products — Cosmetics, Makeup, Skincare, Haircare. Mumbai Store, Pan India Delivery.</description>
+    <description>100% Original Beauty Products - Cosmetics, Makeup, Skincare, Haircare. Mumbai Store, Pan India Delivery.</description>
     ${items}
   </channel>
 </rss>`;
@@ -81,15 +90,15 @@ export async function GET() {
 
 function getGoogleCategory(category: string): string {
   const map: Record<string, string> = {
-    "Makeup":           "Health & Beauty > Personal Care > Cosmetics > Makeup",
-    "Cosmetics":        "Health & Beauty > Personal Care > Cosmetics",
-    "Skin Care":        "Health & Beauty > Personal Care > Cosmetics > Skin Care",
-    "Hair Care":        "Health & Beauty > Personal Care > Hair Care",
-    "Body Care":        "Health & Beauty > Personal Care > Body Care",
-    "Perfumes":         "Health & Beauty > Personal Care > Cosmetics > Perfume & Cologne",
-    "Electronics":      "Health & Beauty > Personal Care > Hair Care > Hair Dryers & Straighteners",
-    "Purses & Bags":    "Apparel & Accessories > Handbags, Wallets & Cases > Handbags",
-    "Wax & Accessories":"Health & Beauty > Personal Care > Hair Removal",
+    "Makeup":            "Health & Beauty > Personal Care > Cosmetics > Makeup",
+    "Cosmetics":         "Health & Beauty > Personal Care > Cosmetics",
+    "Skin Care":         "Health & Beauty > Personal Care > Cosmetics > Skin Care",
+    "Hair Care":         "Health & Beauty > Personal Care > Hair Care",
+    "Body Care":         "Health & Beauty > Personal Care > Body Care",
+    "Perfumes":          "Health & Beauty > Personal Care > Cosmetics > Perfume & Cologne",
+    "Electronics":       "Health & Beauty > Personal Care > Hair Care > Hair Dryers & Straighteners",
+    "Purses & Bags":     "Apparel & Accessories > Handbags, Wallets & Cases > Handbags",
+    "Wax & Accessories": "Health & Beauty > Personal Care > Hair Removal",
   };
   return map[category] || "Health & Beauty > Personal Care > Cosmetics";
 }
