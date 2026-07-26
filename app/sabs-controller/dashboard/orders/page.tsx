@@ -91,8 +91,32 @@ export default function OrdersPage() {
   // ── Mark Ready to Ship ───────────────────────────────────────────────────
   const markReadyToShip = async (order: Order) => {
     if (!order.shipment_id) {
-      showToast("No shipment ID — cannot schedule pickup", "error");
-      return;
+      // Try to fetch shipment_id from Shiprocket using the order_id
+      showToast("Fetching shipment details from Shiprocket...", "success");
+      setRtsLoading(prev => ({ ...prev, [order.id]: true }));
+      try {
+        const syncRes = await fetch(`/api/admin/shiprocket/track?order_id=${order.shiprocket_order_id}`);
+        const syncData = await syncRes.json();
+        const fetchedShipmentId = syncData?.details?.shipment_id || syncData?.shipment_id || null;
+        if (fetchedShipmentId) {
+          // Update in DB
+          await fetch("/api/admin/orders", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: order.id, shipment_id: String(fetchedShipmentId), awb: syncData?.details?.awb_code || order.awb }),
+          });
+          setOrders(prev => prev.map(o => o.id === order.id ? { ...o, shipment_id: String(fetchedShipmentId) } : o));
+          order = { ...order, shipment_id: String(fetchedShipmentId) };
+        } else {
+          showToast(`No shipment ID found. Go to Shiprocket → Orders to check order ${order.shiprocket_order_id}`, "error");
+          setRtsLoading(prev => ({ ...prev, [order.id]: false }));
+          return;
+        }
+      } catch {
+        showToast("Could not fetch shipment details. Check Shiprocket manually.", "error");
+        setRtsLoading(prev => ({ ...prev, [order.id]: false }));
+        return;
+      }
     }
     setRtsLoading(prev => ({ ...prev, [order.id]: true }));
     try {
@@ -105,7 +129,9 @@ export default function OrdersPage() {
           awb:          order.awb,
         }),
       });
-      const data = await res.json();
+      let data: { success?: boolean; message?: string; error?: string; manifest_url?: string; label_url?: string } = {};
+      try { data = await res.json(); } catch { data = { error: `Server error ${res.status}` }; }
+
       if (data.success) {
         showToast(data.message || "Pickup scheduled!");
         // Update local state
@@ -130,7 +156,8 @@ export default function OrdersPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: order.id, status: newStatus }),
     });
-    const data = await res.json();
+    let data: { success?: boolean; error?: string } = {};
+    try { data = await res.json(); } catch { data = { error: `Server error ${res.status}` }; }
     if (data.success) {
       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: newStatus } : o));
       showToast(`Status updated to ${STATUS_LABELS[newStatus]}`);
@@ -356,11 +383,7 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Supabase SQL note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-xs text-blue-700">
-        <strong>⚠️ First time setup:</strong> Run this SQL in your Supabase SQL editor to create the orders table:
-        <pre className="mt-2 bg-blue-100 rounded-xl p-3 text-[10px] overflow-x-auto whitespace-pre-wrap font-mono">{SQL_CREATE_TABLE}</pre>
-      </div>
+      {/* Supabase SQL note — hidden once table is working */}
     </div>
   );
 }

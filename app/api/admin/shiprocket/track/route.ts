@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
     const details = {
       awb_code:        (shipment as Record<string,unknown>).awb_code || (tracking as Record<string,unknown>).awb_code || awb || null,
       courier_name:    (shipment as Record<string,unknown>).courier_name || (tracking as Record<string,unknown>).courier_name || null,
+      shipment_id:     (shipment as Record<string,unknown>).id || (shipment as Record<string,unknown>).shipment_id || null,
       status:          (shipment as Record<string,unknown>).status || (tracking as Record<string,unknown>).current_status || null,
       edd:             (shipment as Record<string,unknown>).etd || (tracking as Record<string,unknown>).edd || (shipment as Record<string,unknown>).edd || null,
       pickup_date:     (shipment as Record<string,unknown>).pickup_date || null,
@@ -84,7 +85,7 @@ export async function GET(req: NextRequest) {
         }),
     };
 
-    return NextResponse.json({ success: true, details });
+    return NextResponse.json({ success: true, details, shipment_id: details.shipment_id });
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
