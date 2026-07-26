@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from("sabs_orders")
-    .select("*")
+    .select("id,sabs_order_id,shiprocket_order_id,shipment_id,awb,courier_name,estimated_delivery,customer_name,customer_phone,product_name,product_price,delivery_address,delivery_pincode,delivery_city,delivery_state,status,source,manifest_url,label_url,created_at,updated_at")
     .order("created_at", { ascending: false });
 
   if (status && status !== "all") {

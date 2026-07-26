@@ -108,6 +108,8 @@ export default function WhatsAppAnalytics() {
   const [srOrders, setSrOrders]   = useState<Record<string, { shipment_id: string; order_id: string; awb?: string; courier_name?: string; estimated_delivery?: string }>>({});
   // Ship success toast
   const [shipSuccess, setShipSuccess] = useState<{ awb: string; courier: string; edd: string; productName: string } | null>(null);
+  // Inline shipping rates per click id
+  const [inlineRates, setInlineRates] = useState<Record<string, { loading: boolean; charge?: number; days?: number; edd?: string; error?: string }>>({});
   // Courier details popup
   const [courierModal, setCourierModal] = useState<{
     clickId: string;
@@ -120,11 +122,40 @@ export default function WhatsAppAnalytics() {
 
   const load = async (d: number) => {
     setLoading(true);
-    const res = await fetch(`/api/admin/whatsapp-clicks?days=${d}`);
-    const json = await res.json();
-    setClicks(json.data || []);
-    setTop(json.topProducts || []);
-    setTotal(json.total || 0);
+    const [clicksRes, ordersRes] = await Promise.all([
+      fetch(`/api/admin/whatsapp-clicks?days=${d}`),
+      fetch(`/api/admin/orders?status=all`),
+    ]);
+    const clicksJson = await clicksRes.json();
+    const ordersJson = await ordersRes.json();
+
+    const clicks: Click[] = clicksJson.data || [];
+    setClicks(clicks);
+    setTop(clicksJson.topProducts || []);
+    setTotal(clicksJson.total || 0);
+
+    // Pre-populate "done" state from DB orders — match by sabs_order_id prefix
+    const existingOrders: { sabs_order_id: string; shipment_id: string; shiprocket_order_id: string; awb?: string; courier_name?: string; estimated_delivery?: string }[] = ordersJson.data || [];
+    const newShipping: Record<string, "done"> = {};
+    const newSrOrders: Record<string, { shipment_id: string; order_id: string; awb?: string; courier_name?: string; estimated_delivery?: string }> = {};
+
+    clicks.forEach(c => {
+      const expectedId = `SABS-${c.id.slice(0,8).toUpperCase()}`;
+      const match = existingOrders.find(o => o.sabs_order_id === expectedId);
+      if (match) {
+        newShipping[c.id] = "done";
+        newSrOrders[c.id] = {
+          shipment_id:        match.shipment_id,
+          order_id:           match.shiprocket_order_id,
+          awb:                match.awb || undefined,
+          courier_name:       match.courier_name || undefined,
+          estimated_delivery: match.estimated_delivery || undefined,
+        };
+      }
+    });
+
+    setShipping(newShipping);
+    setSrOrders(newSrOrders);
     setLoading(false);
     setPRecent(1); setPSources(1); setPCustomers(1);
   };
@@ -234,8 +265,31 @@ export default function WhatsAppAnalytics() {
     setRateLoading(false);
   };
 
-  const sourceBreakdown = useMemo(() => {
-    const acc: Record<string,number> = {};
+  // ── Inline shipping rate fetch ────────────────────────────────────────────
+  const fetchInlineRate = async (c: Click) => {
+    if (inlineRates[c.id]?.loading || inlineRates[c.id]?.charge) return;
+    setInlineRates(prev => ({ ...prev, [c.id]: { loading: true } }));
+    try {
+      const r = await fetch(`/api/admin/shiprocket/delivery-rate?pickup=400068&delivery=400001&weight=0.3&cod=0&value=${c.product_price||500}`);
+      const d = await r.json();
+      if (d.success && d.cheapest) {
+        const days = d.cheapest.days || 5;
+        const edd = new Date(); edd.setDate(edd.getDate() + days);
+        setInlineRates(prev => ({ ...prev, [c.id]: {
+          loading: false,
+          charge: d.cheapest.total,
+          days,
+          edd: edd.toLocaleDateString("en-IN", { day:"2-digit", month:"short" }),
+        }}));
+      } else {
+        setInlineRates(prev => ({ ...prev, [c.id]: { loading: false, error: "N/A" } }));
+      }
+    } catch {
+      setInlineRates(prev => ({ ...prev, [c.id]: { loading: false, error: "—" } }));
+    }
+  };
+
+  const sourceBreakdown = useMemo(() => {    const acc: Record<string,number> = {};
     clicks.forEach(c => { acc[c.source||"unknown"] = (acc[c.source||"unknown"]||0)+1; });
     return Object.entries(acc).sort((a,b)=>b[1]-a[1]);
   }, [clicks]);
@@ -349,6 +403,7 @@ export default function WhatsAppAnalytics() {
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Source</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Page</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Date & Time</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Shipping ₹</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Ship</th>
                     </tr>
                   </thead>
@@ -391,10 +446,29 @@ export default function WhatsAppAnalytics() {
                         </td>
                         <td className="px-4 py-2.5">
                           {c.customer_name ? (
+                            inlineRates[c.id]?.charge ? (
+                              <div>
+                                <p className="text-xs font-black text-blue-700">₹{inlineRates[c.id].charge}</p>
+                                <p className="text-[9px] text-gray-400">{inlineRates[c.id].days}d · by {inlineRates[c.id].edd}</p>
+                              </div>
+                            ) : inlineRates[c.id]?.loading ? (
+                              <span className="text-[9px] text-gray-400 animate-pulse">Loading…</span>
+                            ) : inlineRates[c.id]?.error ? (
+                              <span className="text-[9px] text-gray-400">{inlineRates[c.id].error}</span>
+                            ) : (
+                              <button onClick={() => fetchInlineRate(c)}
+                                className="text-[9px] font-bold text-blue-600 hover:underline flex items-center gap-0.5">
+                                <FiTruck size={8}/> Check
+                              </button>
+                            )
+                          ) : <span className="text-[9px] text-gray-300">—</span>}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          {c.customer_name ? (
                             shipping[c.id] === "done" ? (
-                              <a href="https://app.shiprocket.in/seller/orders" target="_blank" rel="noopener noreferrer"
+                              <a href="/sabs-controller/dashboard/orders"
                                 className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-lg hover:bg-green-200">
-                                <FiExternalLink size={9}/> Done
+                                <FiExternalLink size={9}/> Done ✓
                               </a>
                             ) : (
                               <button onClick={() => createShiprocketOrder(c)}
