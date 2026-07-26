@@ -53,8 +53,11 @@ export async function GET(req: NextRequest) {
     const data = await res.json();
     if (!res.ok) return NextResponse.json({ error: data.message || "Rate fetch failed" }, { status: 400 });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const couriers = (data.data?.available_courier_companies || []) as any[];
+    type CourierCompany = {
+      courier_name: string; freight_charge: number; cod_charges: number;
+      estimated_delivery_days: number; rating: number;
+    };
+    const couriers = (data.data?.available_courier_companies || []) as CourierCompany[];
 
     if (couriers.length === 0) {
       return NextResponse.json({

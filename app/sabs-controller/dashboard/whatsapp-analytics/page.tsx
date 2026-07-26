@@ -151,24 +151,24 @@ export default function WhatsAppAnalytics() {
           weight:           0.3,
         }),
       });
-      const data = await res.json();
+
+      let data: { success?: boolean; error?: string; shipment_id?: string; shiprocket_order_id?: string; shiprocket_url?: string } = {};
+      try { data = await res.json(); } catch { data = { error: `Server error ${res.status}` }; }
+
       if (data.success) {
         setShipping(prev => ({ ...prev, [c.id]: "done" }));
-        // Save Shiprocket IDs for later tracking
         setSrOrders(prev => ({
           ...prev,
-          [c.id]: {
-            shipment_id: data.shipment_id,
-            order_id:    data.shiprocket_order_id,
-          },
+          [c.id]: { shipment_id: data.shipment_id || "", order_id: data.shiprocket_order_id || "" },
         }));
-        window.open(data.shiprocket_url, "_blank");
+        if (data.shiprocket_url) window.open(data.shiprocket_url, "_blank");
       } else {
         setShipping(prev => ({ ...prev, [c.id]: "error" }));
-        alert(`Shiprocket error: ${data.error}`);
+        alert(`Shiprocket error: ${data.error || "Unknown error"}`);
       }
-    } catch {
+    } catch (err) {
       setShipping(prev => ({ ...prev, [c.id]: "error" }));
+      alert(`Network error: ${err instanceof Error ? err.message : "Unknown"}`);
     }
   };
 
