@@ -137,7 +137,7 @@ export default function OrdersPage() {
         // Update local state
         setOrders(prev => prev.map(o =>
           o.id === order.id
-            ? { ...o, status: "ready_to_ship", manifest_url: data.manifest_url, label_url: data.label_url }
+            ? { ...o, status: "ready_to_ship" as const, manifest_url: data.manifest_url ?? null, label_url: data.label_url ?? null }
             : o
         ));
       } else {
