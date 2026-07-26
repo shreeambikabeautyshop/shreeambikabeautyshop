@@ -42,14 +42,31 @@ async function getRelated(category: string, excludeId: string) {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const p = await getProduct(params.slug);
   if (!p) return { title: "Product Not Found" };
+
+  // Power title format: Buy + Product + Brand + Price signal + Location
+  const title = p.seo_title ||
+    `Buy ${p.name} | ${p.brand} | ₹${p.price} | Shree Ambika Beauty Shop Mumbai`;
+
+  // Rich description with buying signals
+  const desc = p.seo_description ||
+    `Buy ${p.name} by ${p.brand} at ₹${p.price} (${p.discount}% OFF MRP ₹${p.mrp}). 100% original. Same day delivery in Mumbai. Pan India delivery. WhatsApp Vinod: +918291455297. Shree Ambika Beauty Shop, Dahisar East Mumbai.`;
+
   return {
-    title: p.seo_title || `${p.name} | Shree Ambika Beauty Shop Mumbai`,
-    description: p.seo_description || `Buy ${p.name} at best price in Mumbai. Pan India delivery. WhatsApp Vinod: +918291455297`,
-    keywords: Array.isArray(p.tags) ? p.tags.join(", ") : "",
+    title,
+    description: desc,
+    keywords: [
+      `buy ${p.name.toLowerCase()}`,
+      `${p.brand.toLowerCase()} ${p.category.toLowerCase()} price`,
+      `${p.name.toLowerCase()} mumbai`,
+      `${p.brand.toLowerCase()} dahisar`,
+      `original ${p.brand.toLowerCase()} products`,
+      ...(Array.isArray(p.tags) ? p.tags : []),
+    ].join(", "),
     openGraph: {
-      title: p.seo_title || p.name,
-      description: p.seo_description || p.description,
-      images: p.images?.[0] ? [{ url: p.images[0], width: 800, height: 800, alt: p.name }] : [],
+      title,
+      description: desc,
+      images: p.images?.[0] ? [{ url: p.images[0], width: 800, height: 800, alt: `${p.name} - ${p.brand} | Shree Ambika Beauty Shop Mumbai` }] : [],
+      type: "website",
     },
     alternates: { canonical: `https://www.shreeambikabeauty.com/products/${p.slug || p.id}` },
   };
@@ -80,12 +97,48 @@ export default async function ProductPage({ params }: { params: { slug: string }
   // JSON-LD schemas
   const productSchema = {
     "@context": "https://schema.org", "@type": "Product",
-    name: p.name, description: p.description, image: p.images || [],
-    sku: p.slug || p.id, brand: { "@type": "Brand", name: p.brand },
-    offers: { "@type": "Offer", priceCurrency: "INR", price: p.price,
+    name: p.name,
+    description: p.description || `${p.name} by ${p.brand}. 100% original ${p.category} product. Buy online from Shree Ambika Beauty Shop Mumbai.`,
+    image: p.images || [],
+    sku: p.slug || p.id,
+    brand: { "@type": "Brand", name: p.brand },
+    url: productUrl,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "INR",
+      price: p.price,
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      url: productUrl,
       availability: p.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      seller: { "@type": "Organization", name: "Shree Ambika Beauty Shop", telephone: "+918291455297" } },
-    ...(p.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviews_count || 1 } } : {}),
+      itemCondition: "https://schema.org/NewCondition",
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "IN" },
+        deliveryTime: { "@type": "ShippingDeliveryTime", businessDays: { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] }, cutoffTime: "14:00:00+05:30", handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" }, transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 7, unitCode: "DAY" } },
+      },
+      seller: {
+        "@type": "LocalBusiness",
+        name: "Shree Ambika Beauty Shop",
+        telephone: "+918291455297",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East",
+          addressLocality: "Mumbai", addressRegion: "Maharashtra", postalCode: "400068", addressCountry: "IN",
+        },
+      },
+    },
+    ...(p.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviews_count || 1, bestRating: 5, worstRating: 1 } } : {}),
+  };
+
+  // Breadcrumb schema — helps Google understand site structure
+  const breadcrumbSchema = {
+    "@context": "https://schema.org", "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.shreeambikabeauty.com" },
+      { "@type": "ListItem", position: 2, name: "Products", item: "https://www.shreeambikabeauty.com/products" },
+      { "@type": "ListItem", position: 3, name: p.category, item: `https://www.shreeambikabeauty.com/categories/${p.category?.toLowerCase().replace(/\s+/g, "-")}` },
+      { "@type": "ListItem", position: 4, name: p.name, item: productUrl },
+    ],
   };
   const faqSchema = p.faq?.length ? {
     "@context": "https://schema.org", "@type": "FAQPage",
@@ -104,6 +157,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
     <>
       <Navbar />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
 
       <main className="bg-gray-50 min-h-screen">
