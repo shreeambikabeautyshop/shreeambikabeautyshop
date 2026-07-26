@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiRefreshCw, FiTrendingUp, FiUser, FiAlertCircle, FiGlobe,
-         FiChevronLeft, FiChevronRight, FiCalendar, FiClock } from "react-icons/fi";
+         FiChevronLeft, FiChevronRight, FiCalendar, FiClock, FiTruck, FiExternalLink } from "react-icons/fi";
 
 interface Click {
   id: string; product_name: string; product_brand: string; product_price: number;
@@ -102,6 +102,8 @@ export default function WhatsAppAnalytics() {
   const [pRecent, setPRecent]     = useState(1);
   const [pSources, setPSources]   = useState(1);
   const [pCustomers, setPCustomers] = useState(1);
+  // Shiprocket shipping state
+  const [shipping, setShipping]   = useState<Record<string, "loading"|"done"|"error">>({});
 
   const load = async (d: number) => {
     setLoading(true);
@@ -115,6 +117,41 @@ export default function WhatsAppAnalytics() {
   };
 
   useEffect(() => { load(days); }, [days]);
+
+  // ── Create Shiprocket order ───────────────────────────────────────────────
+  const createShiprocketOrder = async (c: Click) => {
+    setShipping(prev => ({ ...prev, [c.id]: "loading" }));
+    try {
+      const res = await fetch("/api/admin/shiprocket/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id:         `SABS-${c.id.slice(0,8).toUpperCase()}`,
+          order_date:       new Date(c.created_at).toISOString().split("T")[0],
+          customer_name:    c.customer_name,
+          customer_phone:   c.customer_phone,
+          delivery_address: "(From WhatsApp order — verify with customer)",
+          delivery_city:    "Mumbai",
+          delivery_state:   "Maharashtra",
+          delivery_pincode: "400001",
+          product_name:     c.product_name,
+          product_price:    c.product_price,
+          product_quantity: 1,
+          weight:           0.3,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShipping(prev => ({ ...prev, [c.id]: "done" }));
+        window.open(data.shiprocket_url, "_blank");
+      } else {
+        setShipping(prev => ({ ...prev, [c.id]: "error" }));
+        alert(`Shiprocket error: ${data.error}`);
+      }
+    } catch {
+      setShipping(prev => ({ ...prev, [c.id]: "error" }));
+    }
+  };
 
   const customerClicks = useMemo(() => clicks.filter(c => c.customer_name), [clicks]);
   const guestClicks    = useMemo(() => clicks.filter(c => !c.customer_name), [clicks]);
@@ -234,6 +271,7 @@ export default function WhatsAppAnalytics() {
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Source</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Page</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Date & Time</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Ship</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -272,6 +310,28 @@ export default function WhatsAppAnalytics() {
                             <span className="text-[10px] font-bold text-green-600">{fmtTime(c.created_at)}</span>
                           </div>
                           <span className="text-[9px] text-gray-400">{timeAgo(c.created_at)}</span>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          {c.customer_name ? (
+                            shipping[c.id] === "done" ? (
+                              <a href="https://app.shiprocket.in/seller/orders" target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-lg hover:bg-green-200">
+                                <FiExternalLink size={9}/> Done
+                              </a>
+                            ) : (
+                              <button onClick={() => createShiprocketOrder(c)}
+                                disabled={shipping[c.id]==="loading"}
+                                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${
+                                  shipping[c.id]==="loading" ? "bg-orange-100 text-orange-400 animate-pulse cursor-not-allowed"
+                                  : shipping[c.id]==="error" ? "bg-red-100 text-red-600"
+                                  : "bg-orange-500 hover:bg-orange-600 text-white"}`}>
+                                <FiTruck size={9}/>
+                                {shipping[c.id]==="loading"?"...":shipping[c.id]==="error"?"Retry":"Ship"}
+                              </button>
+                            )
+                          ) : (
+                            <span className="text-[9px] text-gray-300">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -358,6 +418,7 @@ export default function WhatsAppAnalytics() {
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Product</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Source</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-600">Date & Time</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Ship</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -391,6 +452,30 @@ export default function WhatsAppAnalytics() {
                             <span className="text-[10px] font-bold text-green-600">{fmtTime(c.created_at)}</span>
                           </div>
                           <span className="text-[9px] text-gray-400">{timeAgo(c.created_at)}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {shipping[c.id] === "done" ? (
+                            <a href="https://app.shiprocket.in/seller/orders" target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-bold px-2.5 py-1.5 rounded-xl hover:bg-green-200 transition-colors">
+                              <FiExternalLink size={10}/> View Order
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => createShiprocketOrder(c)}
+                              disabled={shipping[c.id] === "loading"}
+                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition-colors ${
+                                shipping[c.id] === "error"
+                                  ? "bg-red-100 text-red-600 hover:bg-red-200"
+                                  : shipping[c.id] === "loading"
+                                  ? "bg-orange-100 text-orange-500 animate-pulse cursor-not-allowed"
+                                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                              }`}
+                            >
+                              <FiTruck size={10}/>
+                              {shipping[c.id] === "loading" ? "Creating..." :
+                               shipping[c.id] === "error" ? "Retry" : "Ship"}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
