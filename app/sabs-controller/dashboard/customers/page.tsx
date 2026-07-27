@@ -1,12 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FiUsers, FiSearch, FiPhone, FiMapPin, FiMail, FiClock, FiCalendar, FiRefreshCw } from "react-icons/fi";
+import { FiUsers, FiSearch, FiPhone, FiMapPin, FiMail, FiClock, FiCalendar, FiRefreshCw, FiGift, FiCheck } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+import { createClient } from "@supabase/supabase-js";
 
 interface Customer {
   id: string; full_name: string; phone: string; email?: string;
   address: string; city?: string; state?: string; pincode?: string;
   created_at: string; updated_at: string;
+}
+
+interface PopupLead {
+  id: string; name: string; phone: string; source: string;
+  page: string; beauty_tip: string; contacted: boolean; created_at: string;
 }
 
 function formatDateTime(iso: string) {
@@ -28,16 +34,27 @@ function timeAgo(iso: string) {
 }
 
 export default function CustomersPage() {
+  const [tab,       setTab]       = useState<"customers" | "leads">("customers");
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState("");
-  const [selected, setSelected]   = useState<Customer | null>(null);
+  const [leads,     setLeads]     = useState<PopupLead[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [search,    setSearch]    = useState("");
+  const [selected,  setSelected]  = useState<Customer | null>(null);
 
   const load = () => {
     setLoading(true);
     fetch("/api/admin/customers")
       .then((r) => r.json())
-      .then(({ data }) => { setCustomers(data || []); setLoading(false); });
+      .then(({ data }) => {
+        setCustomers(data || []);
+        // Also load popup leads
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        supabase.from("popup_leads").select("*").order("created_at", { ascending: false })
+          .then(({ data: ld }) => { setLeads(ld || []); setLoading(false); });
+      });
   };
 
   useEffect(() => { load(); }, []);
@@ -54,6 +71,89 @@ export default function CustomersPage() {
 
   return (
     <div>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <FiUsers size={22} className="text-brand-primary" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Customers & Leads</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Registered customers + popup leads from website</p>
+          </div>
+        </div>
+        <button onClick={load} className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+          <FiRefreshCw size={14} className={loading ? "animate-spin" : ""} />
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        <button onClick={() => setTab("customers")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === "customers" ? "bg-brand-primary text-white shadow" : "bg-white text-gray-600 border border-gray-200 hover:border-brand-primary"}`}>
+          <FiUsers size={14} /> Registered ({customers.length})
+        </button>
+        <button onClick={() => setTab("leads")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === "leads" ? "bg-orange-500 text-white shadow" : "bg-white text-gray-600 border border-gray-200 hover:border-orange-400"}`}>
+          <FiGift size={14} /> Popup Leads
+          {leads.filter(l => !l.contacted).length > 0 && (
+            <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+              {leads.filter(l => !l.contacted).length} new
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* ── POPUP LEADS TAB ─────────────────────────────── */}
+      {tab === "leads" && (
+        <div>
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-5 flex items-start gap-3">
+            <FiGift size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-orange-800 text-sm">These people gave their contact on your website!</p>
+              <p className="text-orange-700 text-xs mt-0.5">WhatsApp them personally — they are warm leads, already interested in your products.</p>
+            </div>
+          </div>
+
+          {leads.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
+              <FiGift size={36} className="mx-auto mb-3 opacity-30" />
+              <p className="font-semibold">No popup leads yet</p>
+              <p className="text-xs mt-1">Leads will appear here when visitors submit the engagement popup</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {leads.map((lead, i) => (
+                <div key={lead.id} className={`bg-white rounded-2xl border p-4 flex items-start gap-4 ${!lead.contacted ? "border-orange-200 shadow-sm" : "border-gray-100 opacity-70"}`}>
+                  <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 text-white font-black text-base">
+                    {lead.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-gray-900 text-sm">{lead.name}</p>
+                      {!lead.contacted && <span className="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-0.5 rounded-full">New Lead</span>}
+                      {lead.contacted && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><FiCheck size={8} /> Contacted</span>}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-0.5">+91 {lead.phone}</p>
+                    {lead.beauty_tip && (
+                      <p className="text-xs text-gray-400 mt-1 line-clamp-1">💡 Tip shown: {lead.beauty_tip.slice(0, 60)}...</p>
+                    )}
+                    <p className="text-[10px] text-gray-400 mt-1">{timeAgo(lead.created_at)} · {lead.page}</p>
+                  </div>
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    <a href={`https://wa.me/91${lead.phone}?text=${encodeURIComponent(`Hi ${lead.name}! This is Vinod from Shree Ambika Beauty Shop Mumbai. You visited our website and I wanted to personally help you with your beauty needs! 😊 What products are you looking for?`)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+                      <FaWhatsapp size={12} /> WhatsApp
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── CUSTOMERS TAB ────────────────────────────────── */}
+      {tab === "customers" && (
+        <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <FiUsers size={22} className="text-brand-primary" />
@@ -288,7 +388,9 @@ export default function CustomersPage() {
           </div>
         );
       })()}
-    </div>
+      )} {/* end customers tab */}
+
+    </div> // end main div
   );
 }
 

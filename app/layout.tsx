@@ -8,6 +8,7 @@ import { SettingsProvider } from "@/app/context/SettingsContext";
 import CustomerLoginModal from "@/app/components/CustomerLoginModal";
 import VisitorTracker from "@/app/components/VisitorTracker";
 import GAScript from "@/app/components/GAScript";
+import EngagementPopup from "@/app/components/EngagementPopup";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -367,6 +368,7 @@ export default function RootLayout({
               <VisitorTracker />
               {children}
               <CustomerLoginModal />
+              <EngagementPopup />
             </WishlistProvider>
           </SettingsProvider>
         </UserProvider>
