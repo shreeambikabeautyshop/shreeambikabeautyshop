@@ -115,9 +115,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "your-google-verification-code",
-  },
+  // Google Search Console verified via DNS (domain property) — no meta tag needed
   alternates: {
     canonical: "https://www.shreeambikabeauty.com",
     languages: {
