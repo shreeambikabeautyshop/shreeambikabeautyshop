@@ -71,18 +71,10 @@ const NAV = [
   {
     label: "Shop by Occasion",
     href: "/occasions",
-    dropdown: [
-      { section: "Find Your Look", items: [
-        { label: "👰 Wedding",               href: "/occasions/wedding",    desc: "Bridal & lehenga looks" },
-        { label: "🎉 Party",                 href: "/occasions/party",      desc: "Bold & glam" },
-        { label: "💼 Office",                href: "/occasions/office",     desc: "Clean & professional" },
-        { label: "☀️ Daily Use",             href: "/occasions/daily",      desc: "Natural & minimal" },
-        { label: "🌙 Date Night",            href: "/occasions/date-night", desc: "Romantic & sultry" },
-        { label: "🪔 Festival",              href: "/occasions/festival",   desc: "Traditional & vibrant" },
-        { label: "✈️ Travel",               href: "/occasions/travel",     desc: "Light & fuss-free" },
-        { label: "🎁 Gifting",              href: "/occasions/gifting",    desc: "For her & him" },
-      ]},
-    ],
+  },
+  {
+    label: "Reviews",
+    href: "/reviews",
   },
   {
     label: "Beauty Tips",
@@ -118,7 +110,6 @@ const NAV = [
       { section: "Know Us Better", items: [
         { label: "🏪 Our Story",             href: "/about",                desc: "Since 2001, Mumbai" },
         { label: "🌟 Legacy Since 2001",     href: "/about#legacy",         desc: "24+ years of trust" },
-        { label: "💬 Customer Reviews",      href: "/about#reviews",        desc: "Real customer stories" },
         { label: "📝 Beauty Blog",           href: "/blog",                 desc: "Tips, guides & more" },
         { label: "📍 Visit Our Store",       href: "/contact",              desc: "Dahisar, Mumbai" },
         { label: "📞 Contact Us",            href: "/contact",              desc: "We're here to help" },

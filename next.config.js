@@ -1,19 +1,82 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ── Image optimization ────────────────────────────────────────────────────
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+    ],
+    // Cloudinary handles its own optimization — skip Next.js re-encoding
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days cache for images
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+  },
+
+  // ── Compiler optimizations ────────────────────────────────────────────────
+  compiler: {
+    // Remove console.log in production (reduces bundle size)
+    removeConsole: process.env.NODE_ENV === "production"
+      ? { exclude: ["error", "warn"] }
+      : false,
+  },
+
+  // ── Experimental performance features ────────────────────────────────────
+  experimental: {
+    // Optimize package imports (tree-shaking for icon libraries)
+    optimizePackageImports: [
+      "react-icons",
+      "react-icons/fi",
+      "react-icons/fa",
+      "react-icons/md",
+      "react-icons/hi",
     ],
   },
-  async rewrites() {
+
+  // ── Headers for caching & security ───────────────────────────────────────
+  async headers() {
     return [
-      // /feed.xml → /api/feed (Google Merchant Center product feed)
+      // Static assets — long cache
       {
-        source: '/feed.xml',
-        destination: '/api/feed',
+        source: "/_next/static/(.*)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      // Feed — cache 1 hour
+      {
+        source: "/feed.xml",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400" },
+        ],
+      },
+      // API routes — no cache
+      {
+        source: "/api/(.*)",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+        ],
+      },
+      // Public pages — short cache with revalidation
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+    ];
+  },
+
+  // ── Redirects ─────────────────────────────────────────────────────────────
+  async redirects() {
+    return [
+      // Normalize old review anchor to reviews page
+      {
+        source: "/about",
+        has: [{ type: "hash", value: "reviews" }],
+        destination: "/reviews",
+        permanent: false,
       },
     ];
   },
