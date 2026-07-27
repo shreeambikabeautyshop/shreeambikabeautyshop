@@ -36,7 +36,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
 export function useSettings(): SiteSettings {
   const ctx = useContext(SettingsContext);
-  // While loading, return null-safe defaults (don't assume true — wait)
-  if (!ctx) return { show_price: true, show_mrp: true, site_mode: "full" };
+  // While loading (null), hide prices by default — safer than briefly showing them
+  if (!ctx) return { show_price: false, show_mrp: false, site_mode: "full" };
   return ctx;
 }

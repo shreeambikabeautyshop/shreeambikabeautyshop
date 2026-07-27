@@ -10,6 +10,7 @@ import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaWhatsapp } from "react-icons/fa";
 import { FiCheck, FiTruck, FiChevronRight } from "react-icons/fi";
 import ProductActions from "./ProductActions";
+import RelatedPrice from "./RelatedPrice";
 
 async function getProduct(slug: string) {
   const supabase = createClient(
@@ -336,7 +337,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                         <Link href={`/products/${r.slug || r.id}`}>
                           <p className="text-[10px] font-semibold text-gray-700 line-clamp-2 leading-tight hover:text-brand-primary transition-colors">{r.name}</p>
                         </Link>
-                        <p className="text-sm font-bold text-gray-900">₹{r.price}</p>
+                        <RelatedPrice price={r.price} />
                         {/* Buttons */}
                         <div className="flex gap-1.5 mt-auto">
                           <Link href={`/products/${r.slug || r.id}`}

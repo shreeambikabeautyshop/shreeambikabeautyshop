@@ -35,6 +35,14 @@ website-images/CREDENTIALS.txt
 *.credentials.txt
 credentials.txt
 
+# Google Service Account key — NEVER commit
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.tsbuildinfo
+!.eslintrc.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

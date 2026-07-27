@@ -5,6 +5,7 @@ import { FaStar, FaWhatsapp } from "react-icons/fa";
 import { FiEye, FiHeart } from "react-icons/fi";
 import { useWhatsAppOrder } from "@/app/hooks/useWhatsAppOrder";
 import { useWishlist } from "@/app/context/WishlistContext";
+import { useSettings } from "@/app/context/SettingsContext";
 
 export interface ProductCardData {
   id: string;
@@ -32,6 +33,7 @@ interface Props {
 export default function ProductCard({ product: p, source = "product_card" }: Props) {
   const { openWhatsApp } = useWhatsAppOrder();
   const { add, remove, has } = useWishlist();
+  const { show_price, show_mrp } = useSettings();
   const inWishlist = has(p.id);
 
   const handleOrder = () => {
@@ -128,13 +130,15 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
 
         {/* Price */}
         <div className="mb-2.5">
-          {p.price && p.price > 0 ? (
+          {show_price && p.price && p.price > 0 ? (
             <div className="flex items-center gap-1.5">
               <span className="font-black text-gray-900 text-sm">₹{p.price}</span>
-              {p.mrp > p.price && (
+              {show_mrp && p.mrp > p.price && (
                 <span className="text-[10px] text-gray-400 line-through">₹{p.mrp}</span>
               )}
             </div>
+          ) : !show_price ? (
+            <span className="text-xs font-semibold text-gray-500 italic">Contact for Price</span>
           ) : (
             <span className="text-xs font-semibold text-gray-500 italic">Contact for Price</span>
           )}
