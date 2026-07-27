@@ -37,12 +37,27 @@ const GOOGLE_CATEGORY = {
   "Wax & Accessories": "5081",   // Health & Beauty > Personal Care > Hair Removal
 };
 
-// ── Mumbai shipping zones ─────────────────────────────────────────────────────
+// ── Mumbai shipping zones (ALL required sub-attributes included) ──────────────
+// Google requires: price, minHandlingTime, maxHandlingTime, minTransitTime, maxTransitTime
 const SHIPPING = [
-  // Free shipping all India — boosts ranking
-  { country: "IN", service: "Standard Delivery",   price: { value: "0", currency: "INR" }, minDays: 4, maxDays: 7 },
-  { country: "IN", service: "Mumbai Same Day",      price: { value: "0", currency: "INR" }, minDays: 0, maxDays: 1 },
-  { country: "IN", service: "Mumbai Express 1-2 Days", price: { value: "0", currency: "INR" }, minDays: 1, maxDays: 2 },
+  {
+    country: "IN", service: "Standard Pan India",
+    price: { value: "0", currency: "INR" },
+    minHandlingTime: 0, maxHandlingTime: 1,
+    minTransitTime:  3, maxTransitTime:  7,
+  },
+  {
+    country: "IN", service: "Mumbai Same Day",
+    price: { value: "0", currency: "INR" },
+    minHandlingTime: 0, maxHandlingTime: 0,
+    minTransitTime:  0, maxTransitTime:  1,
+  },
+  {
+    country: "IN", service: "Mumbai Express",
+    price: { value: "0", currency: "INR" },
+    minHandlingTime: 0, maxHandlingTime: 1,
+    minTransitTime:  1, maxTransitTime:  2,
+  },
 ];
 
 // ── Category to product labels (helps Google classify correctly) ──────────────
@@ -232,11 +247,13 @@ function buildOptimizedProduct(p) {
 
     // ── Shipping ─────────────────────────────────────────
     shipping: SHIPPING.map(s => ({
-      country: s.country,
-      service: s.service,
-      price:   s.price,
-      minHandlingTime: 0,
-      maxHandlingTime: 1,
+      country:         s.country,
+      service:         s.service,
+      price:           s.price,
+      minHandlingTime: s.minHandlingTime,
+      maxHandlingTime: s.maxHandlingTime,
+      minTransitTime:  s.minTransitTime,
+      maxTransitTime:  s.maxTransitTime,
     })),
 
     // ── Custom labels for campaign targeting ──────────────
