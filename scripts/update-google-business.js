@@ -21,22 +21,23 @@ const KEY_FILE = path.resolve(__dirname, "..", "shree-ambika-beauty-shop-fb1e06b
 
 // ── FULLY OPTIMIZED Business Data ────────────────────────────────────────────
 const OPTIMIZED_BUSINESS = {
-  // ── Business Name (exact, consistent everywhere) ──────────────────────────
+  // ── Business Name ─────────────────────────────────────────────────────────
   title: "Shree Ambika Beauty Shop",
 
-  // ── CORRECT ADDRESS (as provided) ─────────────────────────────────────────
+  // ── CORRECT ADDRESS ───────────────────────────────────────────────────────
   storefrontAddress: {
     addressLines: [
-      "Shop No. 8, Chhatrapati Shivaji Rd Number 2",
-      "Jaya Nagar, Near Shanji Hotel",
+      "Shop No. 8, Ashapura Shopping Centre",
+      "C S Complex, Road No. 2, Near Shanji Hotel",
+      "Anand Nagar",
     ],
     locality: "Dahisar East",
-    administrativeArea: "MH",   // Maharashtra ISO code
+    administrativeArea: "MH",
     postalCode: "400068",
     regionCode: "IN",
   },
 
-  // ── PHONE (WhatsApp number — primary customer contact) ────────────────────
+  // ── PHONE ─────────────────────────────────────────────────────────────────
   phoneNumbers: {
     primaryPhone: "+918291455297",
     additionalPhones: [],
@@ -45,33 +46,31 @@ const OPTIMIZED_BUSINESS = {
   // ── WEBSITE ───────────────────────────────────────────────────────────────
   websiteUri: "https://www.shreeambikabeauty.com",
 
-  // ── HOURS (9AM-9PM all 7 days) ────────────────────────────────────────────
+  // ── HOURS: 9AM-10PM, 7 days, 365 days ────────────────────────────────────
   regularHours: {
     periods: [
-      { openDay: "MONDAY",    openTime: { hours: 9, minutes: 0 }, closeDay: "MONDAY",    closeTime: { hours: 21, minutes: 0 } },
-      { openDay: "TUESDAY",   openTime: { hours: 9, minutes: 0 }, closeDay: "TUESDAY",   closeTime: { hours: 21, minutes: 0 } },
-      { openDay: "WEDNESDAY", openTime: { hours: 9, minutes: 0 }, closeDay: "WEDNESDAY", closeTime: { hours: 21, minutes: 0 } },
-      { openDay: "THURSDAY",  openTime: { hours: 9, minutes: 0 }, closeDay: "THURSDAY",  closeTime: { hours: 21, minutes: 0 } },
-      { openDay: "FRIDAY",    openTime: { hours: 9, minutes: 0 }, closeDay: "FRIDAY",    closeTime: { hours: 21, minutes: 0 } },
-      { openDay: "SATURDAY",  openTime: { hours: 9, minutes: 0 }, closeDay: "SATURDAY",  closeTime: { hours: 21, minutes: 0 } },
-      { openDay: "SUNDAY",    openTime: { hours: 9, minutes: 0 }, closeDay: "SUNDAY",    closeTime: { hours: 21, minutes: 0 } },
+      { openDay: "MONDAY",    openTime: { hours: 9, minutes: 0 }, closeDay: "MONDAY",    closeTime: { hours: 22, minutes: 0 } },
+      { openDay: "TUESDAY",   openTime: { hours: 9, minutes: 0 }, closeDay: "TUESDAY",   closeTime: { hours: 22, minutes: 0 } },
+      { openDay: "WEDNESDAY", openTime: { hours: 9, minutes: 0 }, closeDay: "WEDNESDAY", closeTime: { hours: 22, minutes: 0 } },
+      { openDay: "THURSDAY",  openTime: { hours: 9, minutes: 0 }, closeDay: "THURSDAY",  closeTime: { hours: 22, minutes: 0 } },
+      { openDay: "FRIDAY",    openTime: { hours: 9, minutes: 0 }, closeDay: "FRIDAY",    closeTime: { hours: 22, minutes: 0 } },
+      { openDay: "SATURDAY",  openTime: { hours: 9, minutes: 0 }, closeDay: "SATURDAY",  closeTime: { hours: 22, minutes: 0 } },
+      { openDay: "SUNDAY",    openTime: { hours: 9, minutes: 0 }, closeDay: "SUNDAY",    closeTime: { hours: 22, minutes: 0 } },
     ],
   },
 
-  // ── DESCRIPTION (SEO optimized — max 750 chars, keyword rich) ─────────────
-  // Strategy: Primary keywords first, USP in first 250 chars (shown in preview)
-  // Keywords targeted: beauty shop dahisar, cosmetics mumbai, original beauty products,
-  // lakme maybelline sugar mumbai, same day delivery beauty, best price cosmetics
+  // ── SEO-OPTIMIZED DESCRIPTION (748 chars) ────────────────────────────────
   profile: {
     description:
-      "Mumbai's most trusted beauty shop since 2001. 100% original cosmetics, makeup, skincare & haircare at BEST prices. Authorised stockist for Lakme, Maybelline, L'Oreal, SUGAR, Wella, Pilgrim, Mamaearth, Biotique, Neutrogena, Schwarzkopf & 500+ brands.\n\n" +
-      "✅ 100% Genuine Products — No fakes, no duplicates\n" +
-      "⚡ Same Day Delivery in Mumbai\n" +
-      "🚚 Pan India delivery in 4–7 days\n" +
-      "🌍 Worldwide shipping available\n" +
+      "Mumbai's most trusted beauty shop since 2001. 100% original cosmetics, makeup, skincare & haircare at best prices — guaranteed genuine, no duplicates.\n\n" +
+      "Authorised stockist: Lakme, Maybelline, L'Oreal, SUGAR, Wella, Schwarzkopf, Pilgrim, Mamaearth, Biotique, Neutrogena, Mars, Insight, Milbon, Kerastase & 500+ brands.\n\n" +
+      "✅ 100% Original Products\n" +
+      "⚡ Same Day Delivery — Mumbai\n" +
+      "🚚 Pan India 4–7 Days\n" +
+      "🌍 Worldwide Shipping\n" +
       "💬 WhatsApp Order: +91 82914 55297\n\n" +
-      "Specialising in: Lipstick, Foundation, Kajal, Serum, Shampoo, Hair Oil, Perfume, Sunscreen, Body Lotion, Hair Dryer, Straightener.\n\n" +
-      "Visit us near Anand Nagar Metro Station, Dahisar East. Open 9AM–9PM, 7 days a week.",
+      "Lipstick, foundation, kajal, serum, shampoo, conditioner, hair oil, hair mask, perfume, sunscreen, body lotion, hair dryer, straightener, wax strips & more.\n\n" +
+      "Open daily 9AM–10PM • Open 365 days (closed only Holi & Election Day) • Near Anand Nagar Metro Station, Dahisar East.",
   },
 
   // ── OPEN INFO ─────────────────────────────────────────────────────────────

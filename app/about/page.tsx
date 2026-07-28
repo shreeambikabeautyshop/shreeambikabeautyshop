@@ -197,11 +197,11 @@ export default function AboutPage() {
               <h3 className="font-heading italic text-xl text-gray-900">Shree Ambika Choice Center</h3>
               {[
                 { icon: "📅", title: "Established", detail: "2001 — 24+ Years in Business" },
-                { icon: "📍", title: "Location", detail: "Anand Nagar Metro Station, Dahisar East, Mumbai 400068" },
+                { icon: "📍", title: "Location", detail: "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068" },
                 { icon: "👨‍💼", title: "Owner", detail: "Vinod Goswami — Available on WhatsApp" },
                 { icon: "💄", title: "Brands Stocked", detail: "500+ premium Indian & international brands" },
                 { icon: "🚚", title: "Delivery", detail: "Same-day Mumbai · Pan India 4–7 days · Worldwide" },
-                { icon: "🕐", title: "Store Hours", detail: "Monday – Sunday: 9:00 AM – 9:00 PM" },
+                { icon: "🕐", title: "Store Hours", detail: "Monday – Sunday: 9:00 AM – 10:00 PM (365 days, closed only Holi & Election Day)" },
                 { icon: "🌐", title: "Website", detail: "shreeambikabeauty.com" },
               ].map((item) => (
                 <div key={item.title} className="flex items-start gap-4">
@@ -352,8 +352,8 @@ export default function AboutPage() {
             <div className="md:col-span-2 bg-brand-light rounded-3xl p-7 space-y-5">
               <h3 className="font-heading italic text-lg text-gray-900">Store Details</h3>
               {[
-                { icon: "📍", label: "Address", value: "Anand Nagar Metro Station, Dahisar East, Mumbai — 400068" },
-                { icon: "🕐", label: "Hours", value: "Monday – Sunday: 9:00 AM – 9:00 PM (365 days)" },
+                { icon: "📍", label: "Address", value: "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068" },
+                { icon: "🕐", label: "Hours", value: "Monday – Sunday: 9:00 AM – 10:00 PM (365 days, closed only Holi & Election Day)" },
                 { icon: "🚇", label: "Nearby", value: "Anand Nagar Metro Station (Western Line)" },
                 { icon: "📱", label: "WhatsApp", value: "+91 82914 55297" },
                 { icon: "📧", label: "Email", value: "shreeambikabeautyshop@gmail.com" },

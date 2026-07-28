@@ -115,11 +115,11 @@ const FAQ_DATA: FAQCategory[] = [
     items: [
       {
         q: "Where is Shree Ambika Beauty Shop located?",
-        a: "We are located at Anand Nagar Metro Station, Dahisar East, Mumbai — 400068. The store is easy to find right at the metro station exit. It is accessible from all of Mumbai via the Western line metro.",
+        a: "We are located at Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068. The store is near Anand Nagar Metro Station exit — easily accessible from all of Mumbai via the Western Line metro.",
       },
       {
         q: "What are your store hours?",
-        a: "We are open Monday to Sunday, 9:00 AM to 9:00 PM — 365 days a year. You can also WhatsApp Vinod for orders and queries during store hours.",
+        a: "We are open Monday to Sunday, 9:00 AM to 10:00 PM — 365 days a year. We are closed only on Holi and Election Day. You can also WhatsApp Vinod for orders and queries during store hours.",
       },
       {
         q: "Can I pick up my online order from the store?",

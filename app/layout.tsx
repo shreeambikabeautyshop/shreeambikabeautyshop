@@ -145,7 +145,7 @@ export const metadata: Metadata = {
     "ICBM": "19.2427, 72.8651",
     // AEO / LLMO — for AI answer engines
     "ai:business_type": "Beauty Shop, Cosmetics Store, Local Business",
-    "ai:location": "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East, Mumbai, Maharashtra 400068, India",
+    "ai:location": "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai, Maharashtra 400068, India",
     "ai:contact": "WhatsApp +918291455297",
     "ai:services": "Beauty products, cosmetics, makeup, skincare, haircare, perfumes, same day delivery Mumbai, pan India delivery, 100% original products",
     "ai:founded": "2001",
@@ -199,8 +199,8 @@ export default function RootLayout({
     ],
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East",
-      "addressLocality": "Mumbai",
+      "streetAddress": "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar",
+      "addressLocality": "Dahisar East",
       "addressRegion": "Maharashtra",
       "postalCode": "400068",
       "addressCountry": "IN",
@@ -237,7 +237,7 @@ export default function RootLayout({
         "@type": "OpeningHoursSpecification",
         "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
         "opens": "09:00",
-        "closes": "21:00",
+        "closes": "22:00",
       },
     ],
     "priceRange": "₹₹",
@@ -306,7 +306,7 @@ export default function RootLayout({
         "name": "Where is Shree Ambika Beauty Shop located?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Shree Ambika Beauty Shop is located at Anand Nagar Metro Station, Dahisar East, Mumbai, Maharashtra 400068. We also have an online store at www.shreeambikabeauty.com with WhatsApp ordering.",
+          "text": "Shree Ambika Beauty Shop is located at Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai, Maharashtra 400068. We are near Anand Nagar Metro Station. We also have an online store at www.shreeambikabeauty.com with WhatsApp ordering.",
         },
       },
       {

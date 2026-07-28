@@ -123,7 +123,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
         telephone: "+918291455297",
         address: {
           "@type": "PostalAddress",
-          streetAddress: "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East",
+          streetAddress: "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar",
           addressLocality: "Mumbai", addressRegion: "Maharashtra", postalCode: "400068", addressCountry: "IN",
         },
       },

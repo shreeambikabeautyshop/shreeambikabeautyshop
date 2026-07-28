@@ -41,7 +41,7 @@ const localBusinessSchema = {
   "telephone": "+918291455297",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel",
+    "streetAddress": "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar",
     "addressLocality": "Dahisar East",
     "addressRegion": "Mumbai, Maharashtra",
     "postalCode": "400068",
@@ -148,9 +148,9 @@ export default function DahisarBeautyShopPage() {
               <div className="space-y-4">
                 {[
                   { icon:"🏪", label:"Store Name", value:"Shree Ambika Beauty Shop (Shree Ambika Choice Center)" },
-                  { icon:"📍", label:"Address", value:"Shop No. 8, Chhatrapati Shivaji Rd Number 2, Jaya Nagar, Near Shanji Hotel, Dahisar East, Mumbai 400068" },
+                  { icon:"📍", label:"Address", value:"Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068" },
                   { icon:"🚇", label:"Nearest Metro", value:"Anand Nagar Metro Station, Dahisar East (Western Line)" },
-                  { icon:"🕐", label:"Store Hours", value:"Monday – Sunday: 9:00 AM – 9:00 PM (Open 365 days)" },
+                  { icon:"🕐", label:"Store Hours", value:"Monday – Sunday: 9:00 AM – 10:00 PM (Open 365 days, closed only Holi & Election Day)" },
                   { icon:"📱", label:"WhatsApp", value:"+91 82914 55297 (Vinod)" },
                   { icon:"🌐", label:"Website", value:"shreeambikabeauty.com" },
                 ].map(item => (
