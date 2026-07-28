@@ -347,7 +347,8 @@ export default function RootLayout({
     },
   };
 
-  const GA_ID = "G-B27MG5YKBR";
+  const GA_ID      = "G-B27MG5YKBR";
+  const CLARITY_ID = "xnqa3i3ohk";
 
   return (
     <html lang="en" className={`${poppins.variable} ${playfair.variable} ${cormorant.variable} ${dancing.variable} ${dmSerif.variable}`}>
@@ -360,6 +361,14 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         {/* Google Analytics 4 — only for public pages, not admin */}
         <GAScript gaId={GA_ID} />
+        {/* Microsoft Clarity — heatmaps & session recordings */}
+        <Script id="clarity-init" strategy="afterInteractive">{`
+          (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+          })(window,document,"clarity","script","${CLARITY_ID}");
+        `}</Script>
         <UserProvider>
           <SettingsProvider>
             <WishlistProvider>
