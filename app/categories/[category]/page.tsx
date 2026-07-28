@@ -38,40 +38,40 @@ const CATEGORY_GRADIENT: Record<string, string> = {
 
 const CATEGORY_SEO: Record<string, { title: string; desc: string }> = {
   "Cosmetics": {
-    title: "Cosmetics Online Mumbai | Lipstick Foundation Kajal | Shree Ambika",
-    desc: "Buy original cosmetics in Mumbai — lipstick, foundation, kajal, compact & more. 500+ brands. Best price. Pan India delivery. WhatsApp +918291455297",
+    title: "Cosmetics Store Mumbai | Buy Lipstick Foundation Kajal Online | Shree Ambika",
+    desc: "Buy 100% original cosmetics in Mumbai — lipstick, foundation, kajal, compact, blush & more. Lakme, Maybelline, SUGAR. Best price. Same day delivery. WhatsApp +918291455297",
   },
   "Makeup": {
-    title: "Makeup Products Mumbai | Brushes Eyeshadow Palette | Shree Ambika",
-    desc: "Complete makeup collection at Shree Ambika Beauty Shop Mumbai. Brushes, palettes, kits from top brands. WhatsApp Vinod: +918291455297",
+    title: "Makeup Products Mumbai | Brushes Eyeshadow Palette Foundation | Shree Ambika",
+    desc: "Complete makeup collection at Shree Ambika Beauty Shop Dahisar Mumbai. Brushes, palettes, primers, kits. 100% original brands. WhatsApp Vinod: +918291455297",
   },
   "Skin Care": {
-    title: "Skincare Products Mumbai | Serum Moisturizer Sunscreen | Shree Ambika",
-    desc: "Original skincare products in Mumbai — serums, moisturizers, sunscreen, face wash. 100% genuine. Pan India delivery. +918291455297",
+    title: "Skincare Products Mumbai | Serum Moisturizer Sunscreen Face Wash | Shree Ambika",
+    desc: "Original skincare in Mumbai — Vitamin C serum, moisturizer, sunscreen SPF, face wash. Minimalist, Pilgrim, Neutrogena. 100% genuine. WhatsApp: +918291455297",
   },
   "Hair Care": {
-    title: "Hair Care Products Mumbai | Shampoo Conditioner Hair Oil | Shree Ambika",
-    desc: "Best hair care products in Mumbai — shampoo, conditioner, serum, hair oil from top brands. Original & affordable. WhatsApp: +918291455297",
+    title: "Hair Care Products Mumbai | Shampoo Conditioner Hair Oil Serum | Shree Ambika",
+    desc: "Best hair care in Mumbai — shampoo, conditioner, hair serum, hair oil, hair mask. L'Oreal, Wella, Schwarzkopf, Pilgrim. Original. WhatsApp: +918291455297",
   },
   "Body Care": {
-    title: "Body Care Products Mumbai | Lotion Body Wash Scrub | Shree Ambika",
-    desc: "Buy original body care products in Mumbai — lotions, body wash, scrubs, deodorants. Best brands at best prices. Pan India delivery. +918291455297",
+    title: "Body Care Products Mumbai | Lotion Body Wash Scrub Deodorant | Shree Ambika",
+    desc: "Buy original body care in Mumbai — body lotion, body wash, scrub, deodorant, talcum powder. Best brands at best prices. WhatsApp: +918291455297",
   },
   "Perfumes": {
-    title: "Perfumes & Fragrances Mumbai | Original Perfume Shop | Shree Ambika",
-    desc: "100% original perfumes & fragrances in Mumbai — international brands, long lasting. Best price. Same day delivery. WhatsApp: +918291455297",
+    title: "Perfumes & Fragrances Mumbai | Original Perfume Shop Dahisar | Shree Ambika",
+    desc: "100% original perfumes & fragrances in Mumbai — long lasting, international brands, best price. Fogg, Denver, Engage, Park Avenue. Same day delivery. WhatsApp: +918291455297",
   },
   "Electronics": {
-    title: "Beauty Electronics Mumbai | Hair Dryer Straightener Trimmer | Shree Ambika",
-    desc: "Buy original beauty electronics in Mumbai — hair dryers, straighteners, curlers, trimmers. Top brands, best prices. WhatsApp: +918291455297",
+    title: "Beauty Electronics Mumbai | Hair Dryer Straightener Curler Trimmer | Shree Ambika",
+    desc: "Buy original beauty electronics in Mumbai — hair dryers, straighteners, curlers, beard trimmers. Philips, Havells, Vega. Best prices. WhatsApp: +918291455297",
   },
   "Purses & Bags": {
-    title: "Purses & Bags Mumbai | Handbags Wallets | Shree Ambika Beauty Shop",
-    desc: "Stylish purses, handbags and wallets at Shree Ambika Beauty Shop Mumbai. Great quality, best prices. Pan India delivery. +918291455297",
+    title: "Ladies Purses & Bags Mumbai | Handbags Wallets Clutch | Shree Ambika",
+    desc: "Stylish ladies purses, handbags, clutches and wallets at Shree Ambika Beauty Shop Mumbai. Best quality, best prices. Pan India delivery. +918291455297",
   },
   "Wax & Accessories": {
-    title: "Wax & Beauty Accessories Mumbai | Hair Removal | Shree Ambika",
-    desc: "Buy wax strips, hair removal products & beauty accessories in Mumbai. Original products, best prices. WhatsApp: +918291455297",
+    title: "Wax Strips & Hair Removal Products Mumbai | Beauty Accessories | Shree Ambika",
+    desc: "Buy wax strips, hair removal cream, threading, epilators & beauty accessories in Mumbai. Anne French, Veet, Rica. Original, best price. WhatsApp: +918291455297",
   },
 };
 
