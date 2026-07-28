@@ -1,9 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
