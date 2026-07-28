@@ -267,7 +267,6 @@ function buildOptimizedProduct(p) {
     promotionIds: [],
 
     // ── Additional attributes ────────────────────────────
-    ...(p.suitable_for ? { pattern: p.suitable_for } : {}),
     ...(p.tags?.length  ? { productHighlights: p.tags.slice(0, 10) } : {}),
   };
 
