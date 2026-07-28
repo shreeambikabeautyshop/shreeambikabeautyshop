@@ -9,6 +9,7 @@ import CustomerLoginModal from "@/app/components/CustomerLoginModal";
 import VisitorTracker from "@/app/components/VisitorTracker";
 import GAScript from "@/app/components/GAScript";
 import EngagementPopup from "@/app/components/EngagementPopup";
+import InAppBrowserBanner from "@/app/components/InAppBrowserBanner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -137,6 +138,12 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "https://res.cloudinary.com/zjlchjal/raw/upload/v1784565730/site_q3agjo.webmanifest",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
   other: {
     // GEO tags — for Google Maps and local SEO
     "geo.region": "IN-MH",
@@ -373,6 +380,7 @@ export default function RootLayout({
           <SettingsProvider>
             <WishlistProvider>
               <VisitorTracker />
+              <InAppBrowserBanner />
               {children}
               <CustomerLoginModal />
               <EngagementPopup />
