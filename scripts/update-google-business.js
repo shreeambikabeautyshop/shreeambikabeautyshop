@@ -73,6 +73,11 @@ const OPTIMIZED_BUSINESS = {
       "Open daily 9AM–10PM • Open 365 days (closed only Holi & Election Day) • Near Anand Nagar Metro Station, Dahisar East.",
   },
 
+  // ── SERVICES to add ──────────────────────────────────────
+  const SERVICES = [
+    { serviceTypeId: "gcid:beauty_supply_store" },
+  ];
+
   // ── OPEN INFO ─────────────────────────────────────────────────────────────
   openInfo: {
     status: "OPEN",
@@ -203,6 +208,25 @@ async function main() {
       }
     } catch (e) {
       console.log("⚠️  Categories skipped:", e.message);
+    }
+
+    // ── Step 5: Update service items ─────────────────────
+    try {
+      const svcRes = await fetch(
+        `https://mybusinessbusinessinformation.googleapis.com/v1/${loc.name}?updateMask=serviceItems`,
+        {
+          method: "PATCH", headers: h,
+          body: JSON.stringify({ serviceItems: SERVICE_ITEMS })
+        }
+      );
+      const svcData = await svcRes.json();
+      if (svcData.error) {
+        console.log("⚠️  Services update:", svcData.error.message.substring(0, 80));
+      } else {
+        console.log("✅ Services updated! (9 service items added)");
+      }
+    } catch (e) {
+      console.log("⚠️  Services skipped:", e.message);
     }
 
     // ── Results ──────────────────────────────────────────
