@@ -73,17 +73,25 @@ const OPTIMIZED_BUSINESS = {
       "Open daily 9AM–10PM • Open 365 days (closed only Holi & Election Day) • Near Anand Nagar Metro Station, Dahisar East.",
   },
 
-  // ── SERVICES to add ──────────────────────────────────────
-  const SERVICES = [
-    { serviceTypeId: "gcid:beauty_supply_store" },
-  ];
-
   // ── OPEN INFO ─────────────────────────────────────────────────────────────
   openInfo: {
     status: "OPEN",
     canReopen: true,
   },
 };
+
+// ── Service items to add to GBP ───────────────────────────────────────────
+const SERVICE_ITEMS = [
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "Cosmetics & Makeup", description: "100% original cosmetics, lipstick, foundation, kajal from top brands" } } },
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "Skincare Products", description: "Serums, moisturizers, sunscreen, face wash from Pilgrim, Minimalist & more" } } },
+  { freeFormServiceItem: { category: "gcid:hair_care", label: { displayName: "Hair Care Products", description: "Shampoo, conditioner, hair oil, serum from L'Oreal, Wella, Schwarzkopf" } } },
+  { freeFormServiceItem: { category: "gcid:perfume_store", label: { displayName: "Perfumes & Fragrances", description: "100% original international & Indian perfumes and deodorants" } } },
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "Body Care Products", description: "Body lotion, body wash, scrub, deodorant from top brands" } } },
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "Beauty Electronics", description: "Hair dryers, straighteners, curlers, trimmers" } } },
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "WhatsApp Ordering", description: "Order on WhatsApp +91 82914 55297 — same day delivery Mumbai" } } },
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "Same Day Delivery Mumbai", description: "Order before 2PM, receive same evening in Mumbai" } } },
+  { freeFormServiceItem: { category: "gcid:cosmetics_store", label: { displayName: "Pan India Delivery", description: "Beauty products delivered across India in 4-7 days" } } },
+];
 
 // ── Google Business Profile Category IDs (Primary + Additional) ───────────
 // These are the EXACT gcid codes for best ranking in cosmetics
