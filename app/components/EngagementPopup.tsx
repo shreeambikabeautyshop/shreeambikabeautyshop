@@ -33,34 +33,41 @@ export default function EngagementPopup() {
     setTip(BEAUTY_TIPS[Math.floor(Math.random() * BEAUTY_TIPS.length)]);
   }, []);
 
+  // ── Helper: check if current page is admin/internal ─
+  const isAdminPage = () =>
+    typeof window !== "undefined" &&
+    (window.location.pathname.startsWith("/sabs-controller") ||
+     window.location.pathname.startsWith("/api") ||
+     window.location.pathname.startsWith("/s/"));
+
   // ── Show popup after 10s (only if not seen before) ───
   useEffect(() => {
-    // Don't show if already submitted contact or dismissed today
+    if (isAdminPage()) return; // Never show on admin pages
+
     const submitted  = localStorage.getItem(SUBMIT_KEY);
     const lastSeen   = localStorage.getItem(STORAGE_KEY);
     const now        = Date.now();
 
-    if (submitted) return; // Never show again after submitting
-    if (lastSeen && now - parseInt(lastSeen) < 24 * 60 * 60 * 1000) return; // Once per day
-
-    // Don't show on admin pages
-    if (window.location.pathname.startsWith("/sabs-controller")) return;
+    if (submitted) return;
+    if (lastSeen && now - parseInt(lastSeen) < 24 * 60 * 60 * 1000) return;
 
     const timer = setTimeout(() => {
       setVisible(true);
       localStorage.setItem(STORAGE_KEY, String(Date.now()));
-    }, 10000); // 10 seconds
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, []);
 
   // ── Exit intent trigger ───────────────────────────────
   useEffect(() => {
+    if (isAdminPage()) return; // Never on admin
+
     const submitted = localStorage.getItem(SUBMIT_KEY);
     if (submitted || visible || dismissed) return;
 
     const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY < 10) { // Mouse going to top (closing tab)
+      if (e.clientY < 10) {
         const lastSeen = localStorage.getItem(STORAGE_KEY);
         if (!lastSeen || Date.now() - parseInt(lastSeen) > 5 * 60 * 1000) {
           setVisible(true);
