@@ -216,8 +216,9 @@ function buildOptimizedProduct(p) {
   ).slice(0, 5000);
 
   // ── Price logic ───────────────────────────────────────────
+  // Always use actual selling price to avoid "Mismatched product price" error
+  // Google crawls the product page and compares — use the same price shown on page
   const sellingPrice = p.price;
-  const mrpPrice     = p.mrp > p.price ? p.mrp : p.price;
 
   // ── Build product object ──────────────────────────────────
   const product = {
@@ -234,8 +235,8 @@ function buildOptimizedProduct(p) {
     targetCountry:   "IN",
     feedLabel:       "IN",
 
-    // ── Pricing ───────────────────────────────────────────
-    price: { value: String(mrpPrice), currency: "INR" },
+    // ── Pricing — use actual selling price (matches product page) ──
+    price: { value: String(sellingPrice), currency: "INR" },
 
     // ── Brand & categorization ────────────────────────────
     brand:                 p.brand,
@@ -270,14 +271,13 @@ function buildOptimizedProduct(p) {
     ...(p.tags?.length  ? { productHighlights: p.tags.slice(0, 10) } : {}),
   };
 
-  // ── Sale price if discounted ───────────────────────────
+  // ── MRP shown as strikethrough (original price) ──────────
   if (p.mrp > p.price) {
-    product.salePrice = { value: String(sellingPrice), currency: "INR" };
+    // Note: salePrice not used since we submit selling price as base price
+    // This avoids "Mismatched product price" Google Merchant Center error
     const now   = new Date();
     const later = new Date(now);
     later.setDate(later.getDate() + 90);
-    product.salePriceEffectiveDate =
-      `${now.toISOString().split("T")[0]}/${later.toISOString().split("T")[0]}`;
   }
 
   // ── Additional images ─────────────────────────────────
