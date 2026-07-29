@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiHome, FiStar, FiSettings, FiUsers, FiDollarSign, FiActivity, FiShield, FiTruck } from "react-icons/fi";
+import { FiGrid, FiPackage, FiPlusCircle, FiLogOut, FiHome, FiStar, FiSettings, FiUsers, FiDollarSign, FiActivity, FiShield, FiTruck, FiImage } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { label: "All Products",       href: "/sabs-controller/dashboard/products",                  icon: <FiPackage /> },
   { label: "Add Product",        href: "/sabs-controller/dashboard/products/add",              icon: <FiPlusCircle /> },
   { label: "Price Manager",      href: "/sabs-controller/dashboard/price-manager",             icon: <FiDollarSign /> },
+  { label: "Hero Slider",        href: "/sabs-controller/dashboard/hero-slider",               icon: <FiImage /> },
   { label: "Customer Reviews",   href: "/sabs-controller/dashboard/reviews",                   icon: <FiStar /> },
   { label: "WhatsApp Analytics", href: "/sabs-controller/dashboard/whatsapp-analytics",        icon: <FaWhatsapp /> },
   { label: "Orders",             href: "/sabs-controller/dashboard/orders",                    icon: <FiTruck /> },
