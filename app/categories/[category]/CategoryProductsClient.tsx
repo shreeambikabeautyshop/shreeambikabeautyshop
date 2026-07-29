@@ -100,6 +100,7 @@ export default function CategoryProductsClient({ products, categoryName, categor
               <Link href={`/products/${p.slug || p.id}`} className="relative aspect-square bg-brand-light overflow-hidden block">
                 {p.images?.[0] ? (
                   <Image src={p.images[0]} alt={`Buy ${p.name} by ${p.brand} - ${p.category} at Shree Ambika Beauty Shop Dahisar Mumbai`} fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>

@@ -5,11 +5,14 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
-    // Cloudinary handles its own optimization — skip Next.js re-encoding
-    formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days cache for images
-    deviceSizes: [640, 750, 828, 1080, 1200],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    // Only webp — avif doubles cache writes with minimal benefit
+    // Cloudinary already serves avif/webp natively via f_auto
+    formats: ["image/webp"],
+    // 30 days cache — avoids re-optimization on repeat visits
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    // Fewer breakpoints = fewer cache entries per image
+    deviceSizes: [640, 828, 1200],
+    imageSizes: [48, 96, 256],
   },
 
   // ── Compiler optimizations ────────────────────────────────────────────────

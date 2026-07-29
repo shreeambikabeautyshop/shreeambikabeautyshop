@@ -192,7 +192,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 <div className="absolute bottom-3 left-3 flex gap-1.5">
                   {p.images.slice(0, 5).map((img: string, i: number) => (
                     <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden border-2 border-white shadow-md">
-                      <Image src={img} alt={`view ${i+1}`} fill className="object-cover" />
+                      <Image src={img} alt={`view ${i+1}`} fill sizes="48px" className="object-cover" />
                     </div>
                   ))}
                 </div>
@@ -329,6 +329,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                         <div className="relative aspect-square bg-gray-50 overflow-hidden">
                           {r.images?.[0] && (
                             <Image src={r.images[0]} alt={r.name} fill
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                               className="object-cover group-hover:scale-105 transition-transform duration-300" />
                           )}
                         </div>

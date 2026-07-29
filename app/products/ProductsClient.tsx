@@ -38,7 +38,7 @@ function ProductCard({ p, view, onOrder }: { p: Product; view: "grid"|"list"; on
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-4 p-3">
         <Link href={`/products/${p.slug || p.id}`} className="flex-shrink-0">
           <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-brand-light">
-            {p.images?.[0] ? <Image src={p.images[0]} alt={`${p.name} by ${p.brand} - Buy at Shree Ambika Beauty Shop Mumbai`} fill className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl">💄</div>}
+            {p.images?.[0] ? <Image src={p.images[0]} alt={`${p.name} by ${p.brand} - Buy at Shree Ambika Beauty Shop Mumbai`} fill sizes="80px" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl">💄</div>}
           </div>
         </Link>
         <div className="flex-1 min-w-0">
@@ -59,7 +59,7 @@ function ProductCard({ p, view, onOrder }: { p: Product; view: "grid"|"list"; on
   return (
     <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
       <Link href={`/products/${p.slug || p.id}`} className="relative aspect-square bg-brand-light overflow-hidden block">
-        {p.images?.[0] ? <Image src={p.images[0]} alt={`Buy ${p.name} by ${p.brand} - ${p.category} at Shree Ambika Beauty Shop Mumbai Rs.${p.price}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>}
+        {p.images?.[0] ? <Image src={p.images[0]} alt={`Buy ${p.name} by ${p.brand} - ${p.category} at Shree Ambika Beauty Shop Mumbai Rs.${p.price}`} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>}
         {p.trending && <span className="absolute top-2 left-2 bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Trending</span>}
         {p.featured && <span className="absolute top-2 right-2 bg-yellow-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">⭐ Featured</span>}
       </Link>

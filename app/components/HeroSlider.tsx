@@ -71,7 +71,6 @@ export default function HeroSlider() {
               height={680}
               priority={idx === 0}
               className="w-full h-auto object-cover"
-              quality={90}
             />
           </div>
         ))}

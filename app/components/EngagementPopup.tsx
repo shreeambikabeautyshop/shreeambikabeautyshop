@@ -1,17 +1,18 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { FiX, FiUser, FiPhone, FiCheck, FiGift } from "react-icons/fi";
+import { FiX, FiUser, FiPhone, FiCheck, FiGift, FiEye } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
 
 // ── Beauty tips rotation ─────────────────────────────────────────────────────
 const BEAUTY_TIPS = [
-  { emoji: "✨", tip: "Apply Vitamin C serum every morning before sunscreen — it fades dark spots 3x faster.", product: "Vitamin C Serums" },
-  { emoji: "💄", tip: "Always set your lipstick with a thin tissue + light powder — it lasts 2x longer in Mumbai humidity.", product: "Setting Powder" },
-  { emoji: "💆", tip: "Oil your hair 1 hour before washing — coconut or almond oil reduces breakage by 40%.", product: "Hair Oils" },
-  { emoji: "🌟", tip: "Use a damp beauty sponge for foundation — gives a flawless, skin-like finish vs. brush.", product: "Beauty Sponges" },
-  { emoji: "🧴", tip: "Never skip moisturiser even on oily skin — dehydrated skin produces MORE oil.", product: "Oil-Free Moisturiser" },
-  { emoji: "👁️", tip: "Apply kajal on the waterline before mascara — eyes look bigger and more defined instantly.", product: "Waterproof Kajal" },
+  { emoji: "✨", tip: "Apply Vitamin C serum every morning before sunscreen — it fades dark spots 3x faster.", product: "Vitamin C Serums", productSlug: "vitamin-c-serums" },
+  { emoji: "💄", tip: "Always set your lipstick with a thin tissue + light powder — it lasts 2x longer in Mumbai humidity.", product: "Setting Powder", productSlug: "setting-powder" },
+  { emoji: "💆", tip: "Oil your hair 1 hour before washing — coconut or almond oil reduces breakage by 40%.", product: "Hair Oils", productSlug: "hair-oils" },
+  { emoji: "🌟", tip: "Use a damp beauty sponge for foundation — gives a flawless, skin-like finish vs. brush.", product: "Beauty Sponges", productSlug: "beauty-sponges" },
+  { emoji: "🧴", tip: "Never skip moisturiser even on oily skin — dehydrated skin produces MORE oil.", product: "Oil-Free Moisturiser", productSlug: "oil-free-moisturiser" },
+  { emoji: "👁️", tip: "Apply kajal on the waterline before mascara — eyes look bigger and more defined instantly.", product: "Waterproof Kajal", productSlug: "waterproof-kajal" },
 ];
 
 const STORAGE_KEY = "sabs_popup_seen";
@@ -211,12 +212,20 @@ export default function EngagementPopup() {
             {/* Body */}
             <div className="p-5">
               {/* Product recommendation */}
-              <div className="bg-brand-light border border-pink-100 rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
-                <span className="text-2xl">🛍</span>
-                <div>
-                  <p className="text-xs font-bold text-brand-primary">Recommended for you</p>
-                  <p className="text-xs text-gray-600">{tip.product} — 100% original, best price</p>
+              <div className="bg-brand-light border border-pink-100 rounded-2xl px-4 py-3 mb-4">
+                <div className="flex items-center gap-3 mb-2.5">
+                  <span className="text-2xl">🛍</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-brand-primary">Recommended for you</p>
+                    <p className="text-xs text-gray-600 line-clamp-1">{tip.product} — 100% original, best price</p>
+                  </div>
                 </div>
+                <Link
+                  href={`/products?search=${encodeURIComponent(tip.product)}`}
+                  onClick={handleDismiss}
+                  className="w-full flex items-center justify-center gap-1.5 bg-white border border-brand-primary/30 hover:border-brand-primary text-brand-primary text-xs font-bold py-2 rounded-xl transition-all">
+                  <FiEye size={12} /> View Products
+                </Link>
               </div>
 
               {/* CTA */}
