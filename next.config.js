@@ -68,6 +68,9 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // Allow opening in real browser from Facebook/Instagram in-app browser
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // Geo-targeting hint — tells CDN/proxies this content is for India
+          { key: "Content-Language", value: "en-IN" },
+          { key: "X-Target-Country", value: "IN" },
         ],
       },
     ];

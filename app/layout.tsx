@@ -119,6 +119,7 @@ export const metadata: Metadata = {
   // Google Search Console verified via DNS (domain property) — no meta tag needed
   alternates: {
     canonical: "https://www.shreeambikabeauty.com",
+    // India only — we don't serve international orders right now
     languages: {
       "en-IN": "https://www.shreeambikabeauty.com",
     },
