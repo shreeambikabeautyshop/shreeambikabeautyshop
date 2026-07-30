@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRef, useState } from "react";
 import { FaStar, FaWhatsapp } from "react-icons/fa";
 import { FiEye, FiHeart } from "react-icons/fi";
 import { useWhatsAppOrder } from "@/app/hooks/useWhatsAppOrder";
@@ -23,6 +24,7 @@ export interface ProductCardData {
   featured?: boolean;
   trending?: boolean;
   tags?: string[];
+  video_url?: string;
 }
 
 interface Props {
@@ -35,6 +37,9 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
   const { add, remove, has } = useWishlist();
   const { show_price, show_mrp } = useSettings();
   const inWishlist = has(p.id);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   const handleOrder = () => {
     openWhatsApp({
@@ -56,19 +61,53 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
     }
   };
 
+  const handleMouseEnter = () => {
+    if (p.video_url) {
+      setIsHovered(true);
+      videoRef.current?.play().catch(() => {/* autoplay blocked silently */});
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (p.video_url) {
+      setIsHovered(false);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+  };
+
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+    }
+    setIsMuted((prev) => !prev);
+  };
+
   const rating = p.rating || 4.2;
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
-      {/* Image */}
-      <div className="relative overflow-hidden bg-gray-50" style={{ aspectRatio: "3/4" }}>
-        <Link href={`/products/${p.slug || p.id}`}>
+      {/* Image / Video area */}
+      <div
+        className="relative overflow-hidden bg-gray-50"
+        style={{ aspectRatio: "3/4" }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Static image — hidden when video is playing */}
+        <Link href={`/products/${p.slug || p.id}`} tabIndex={isHovered && !!p.video_url ? -1 : 0}>
           {p.images?.[0] ? (
             <Image
               src={p.images[0]}
               alt={`Buy ${p.name} by ${p.brand} - ${p.category} - Rs.${p.price} at Shree Ambika Beauty Shop Dahisar Mumbai | 100% Original`}
               fill
-              className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+              className={`object-cover object-top transition-all duration-500 ${
+                isHovered && p.video_url ? "opacity-0 scale-105" : "opacity-100 group-hover:scale-105"
+              }`}
               sizes="(max-width: 640px) 50vw, 25vw"
             />
           ) : (
@@ -76,7 +115,41 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
           )}
         </Link>
 
-        {/* Badges — trending/featured only, no discount badge on image */}
+        {/* Video — always in DOM if video_url exists, plays on hover */}
+        {p.video_url && (
+          <video
+            ref={videoRef}
+            src={p.video_url}
+            muted={isMuted}
+            loop
+            playsInline
+            preload="metadata"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+              isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+            aria-label={`${p.name} product video`}
+          />
+        )}
+
+        {/* Video badge + mute toggle — show when video is playing */}
+        {p.video_url && isHovered && (
+          <button
+            onClick={handleToggleMute}
+            className="absolute bottom-8 left-2 z-10 flex items-center gap-1 bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+            aria-label={isMuted ? "Unmute video" : "Mute video"}
+          >
+            {isMuted ? "🔇 Tap for sound" : "🔊 Sound on"}
+          </button>
+        )}
+
+        {/* Video indicator on image (before hover) */}
+        {p.video_url && !isHovered && (
+          <span className="absolute bottom-8 left-2 bg-black/50 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1">
+            ▶ Video
+          </span>
+        )}
+
+        {/* Badges — trending/featured only */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {p.trending && (
             <span className="bg-brand-primary text-white text-[9px] font-black px-2 py-0.5 rounded-full">🔥 TRENDING</span>

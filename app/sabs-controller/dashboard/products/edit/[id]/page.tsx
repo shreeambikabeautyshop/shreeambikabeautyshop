@@ -2,8 +2,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus, FiZap, FiRefreshCw } from "react-icons/fi";
+import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus, FiZap, FiRefreshCw, FiVideo } from "react-icons/fi";
 import Link from "next/link";
+import { productImagePublicId, productVideoPublicId } from "@/app/lib/cloudinary-seo-name";
 
 const DEFAULT_CATEGORIES = [
   "Cosmetics", "Makeup", "Skin Care", "Hair Care",
@@ -78,6 +79,7 @@ export default function EditProduct() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoFileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: "", brand: "", category: "", price: "", mrp: "",
@@ -93,6 +95,9 @@ export default function EditProduct() {
   const [aiProgress, setAiProgress] = useState(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>("");
+  const [existingVideoUrl, setExistingVideoUrl] = useState<string>("");
 
   useEffect(() => {
     fetch("/api/admin/products")
@@ -113,6 +118,7 @@ export default function EditProduct() {
             tags: (product.tags || []).join(", "),
           });
           setExistingImages(product.images || []);
+          setExistingVideoUrl(product.video_url || "");
         }
         setLoading(false);
       });
@@ -218,16 +224,30 @@ export default function EditProduct() {
   const uploadNewImages = async (): Promise<string[]> => {
     const urls: string[] = [];
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
-    for (const img of newImages) {
+    for (let i = 0; i < newImages.length; i++) {
       const fd = new FormData();
-      fd.append("file", img.file);
+      fd.append("file", newImages[i].file);
       fd.append("upload_preset", "shreeambika_products");
-      fd.append("folder", "shreeambika-products");
+      // SEO + GEO + AEO optimised public_id
+      fd.append("public_id", productImagePublicId({ name: form.name, brand: form.brand, category: form.category }, existingImages.length + i));
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
       const data = await res.json();
       urls.push(data.secure_url);
     }
     return urls;
+  };
+
+  const uploadVideo = async (): Promise<string> => {
+    if (!videoFile) return existingVideoUrl;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "zjlchjal";
+    const fd = new FormData();
+    fd.append("file", videoFile);
+    fd.append("upload_preset", "shreeambika_products");
+    fd.append("public_id", productVideoPublicId({ name: form.name, brand: form.brand, category: form.category }));
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, { method: "POST", body: fd });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error?.message || "Video upload failed");
+    return data.secure_url as string;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -237,6 +257,7 @@ export default function EditProduct() {
     try {
       const uploadedUrls = newImages.length > 0 ? await uploadNewImages() : [];
       const allImages = [...existingImages, ...uploadedUrls];
+      const videoUrl = await uploadVideo();
 
       const payload = {
         name: form.name.trim(),
@@ -250,6 +271,7 @@ export default function EditProduct() {
         featured: form.featured,
         trending: form.trending,
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+        ...(videoUrl ? { video_url: videoUrl } : {}),
       };
 
       const res = await fetch(`/api/admin/products/${id}`, {
@@ -361,6 +383,88 @@ export default function EditProduct() {
           {aiProgress === 100 && !aiLoading && (
             <p className="text-center text-xs text-green-600 font-semibold mt-2">✅ AI updated all fields with today&apos;s data!</p>
           )}
+
+          {/* Video upload */}
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-1">
+              <FiVideo size={15} className="text-gray-500" />
+              <label className="text-sm font-medium text-gray-700">Product Video <span className="text-gray-400 font-normal">(Optional)</span></label>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">Short demo video — shown on product card on hover</p>
+            {/* Existing video */}
+            {existingVideoUrl && !videoPreviewUrl && (
+              <div className="relative mb-3">
+                <video
+                  src={existingVideoUrl}
+                  controls
+                  muted
+                  playsInline
+                  className="w-full rounded-xl max-h-48 bg-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setExistingVideoUrl("")}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow"
+                  aria-label="Remove existing video"
+                >
+                  <FiX size={12} />
+                </button>
+                <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">Current video</span>
+              </div>
+            )}
+            {/* New video preview */}
+            {videoPreviewUrl && (
+              <div className="relative mb-3">
+                <video
+                  src={videoPreviewUrl}
+                  controls
+                  muted
+                  playsInline
+                  className="w-full rounded-xl max-h-48 bg-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    URL.revokeObjectURL(videoPreviewUrl);
+                    setVideoFile(null);
+                    setVideoPreviewUrl("");
+                    if (videoFileRef.current) videoFileRef.current.value = "";
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow"
+                  aria-label="Remove new video"
+                >
+                  <FiX size={12} />
+                </button>
+                <span className="absolute bottom-2 left-2 bg-green-600/80 text-white text-[10px] px-2 py-0.5 rounded-full">New video</span>
+              </div>
+            )}
+            {!videoPreviewUrl && (
+              <button
+                type="button"
+                onClick={() => videoFileRef.current?.click()}
+                className="w-full border-2 border-dashed border-gray-300 hover:border-brand-primary rounded-xl py-4 flex flex-col items-center gap-1.5 text-gray-400 hover:text-brand-primary transition-colors"
+              >
+                <FiVideo size={22} />
+                <span className="text-xs font-medium">
+                  {existingVideoUrl ? "Replace video" : "Click to upload video"}
+                </span>
+                <span className="text-[10px] text-gray-400">MP4, WebM or MOV</span>
+              </button>
+            )}
+            <input
+              ref={videoFileRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                setVideoFile(file);
+                setVideoPreviewUrl(URL.createObjectURL(file));
+              }}
+            />
+          </div>
         </div>
 
         {/* Basic Info */}

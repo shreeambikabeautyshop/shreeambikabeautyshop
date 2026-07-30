@@ -2,8 +2,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus, FiZap, FiCheck } from "react-icons/fi";
+import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus, FiZap, FiCheck, FiVideo } from "react-icons/fi";
 import Link from "next/link";
+import { productImagePublicId, productVideoPublicId } from "@/app/lib/cloudinary-seo-name";
 
 const DEFAULT_CATEGORIES = ["Cosmetics","Makeup","Skin Care","Hair Care","Body Care","Perfumes","Electronics","Purses & Bags","Wax & Accessories"];
 const DEFAULT_BRANDS = ["Lakme","Maybelline","SUGAR","RENEE","Insight","6MARS","Swiss Beauty","Hilary Rhoda","Nykaa","Plum","Vega","Braun","Lotus","Biotique","WOW","Mamaearth"];
@@ -93,9 +94,12 @@ function playSuccessSound() {
 export default function AddProduct() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoFileRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [brands, setBrands] = useState(DEFAULT_BRANDS);
   const [images, setImages] = useState<{ file: File; preview: string; base64: string }[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiDone, setAiDone] = useState(false);
   const [aiFaq, setAiFaq] = useState<{ q: string; a: string }[]>([]);
@@ -158,11 +162,14 @@ export default function AddProduct() {
     });
 
   // Upload directly from browser to Cloudinary using unsigned preset
+  // Uses SEO/GEO/AEO optimised public_id based on current form values
   const uploadToCloudinaryDirect = async (file: File): Promise<string> => {
     const cloudName = "zjlchjal";
     const fd = new FormData();
     fd.append("file", file);
     fd.append("upload_preset", "shreeambika_products");
+    // Use current form name/brand/category for SEO naming (may be empty on first AI upload — that's OK, uid still unique)
+    fd.append("public_id", productImagePublicId({ name: form.name, brand: form.brand, category: form.category }, 0));
     const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
       method: "POST", body: fd,
     });
@@ -287,17 +294,27 @@ export default function AddProduct() {
       const fd = new FormData();
       fd.append("file", images[i].file);
       fd.append("upload_preset", "shreeambika_products");
-      // Use SEO-friendly name based on product name
-      const seoName = form.name
-        ? form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)
-        : "beauty-product";
-      fd.append("public_id", `shreeambika-products/${seoName}-${i}`);
+      // SEO + GEO + AEO optimised public_id
+      fd.append("public_id", productImagePublicId({ name: form.name, brand: form.brand, category: form.category }, i));
 
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: fd });
       if (!res.ok) throw new Error("Image upload failed");
       const d = await res.json(); urls.push(d.secure_url); ids.push(d.public_id);
     }
     return { urls, ids };
+  };
+
+  const uploadVideo = async (): Promise<string> => {
+    if (!videoFile) return "";
+    const cloudName = "zjlchjal";
+    const fd = new FormData();
+    fd.append("file", videoFile);
+    fd.append("upload_preset", "shreeambika_products");
+    fd.append("public_id", productVideoPublicId({ name: form.name, brand: form.brand, category: form.category }));
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, { method: "POST", body: fd });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error?.message || "Video upload failed");
+    return data.secure_url as string;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -308,6 +325,8 @@ export default function AddProduct() {
       setSaveProgress(5);
       const { urls, ids } = await uploadImages();
       setSaveProgress(55);
+      const videoUrl = videoFile ? await uploadVideo() : "";
+      setSaveProgress(65);
       const payload = {
         name: form.name.trim(), brand: form.brand, category: form.category,
         price: parseFloat(form.price), mrp: parseFloat(form.mrp),
@@ -317,6 +336,7 @@ export default function AddProduct() {
         seo_title: form.seo_title, seo_description: form.seo_description,
         key_benefits: form.key_benefits ? form.key_benefits.split("\n").filter(Boolean) : [],
         how_to_use: form.how_to_use, suitable_for: form.suitable_for, faq: aiFaq,
+        ...(videoUrl ? { video_url: videoUrl } : {}),
       };
       setSaveProgress(75);
       const res = await fetch("/api/admin/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -446,6 +466,62 @@ export default function AddProduct() {
               {aiDone ? "Re-analyze with AI" : "Generate with AI"}
             </button>
           )}
+
+          {/* Video upload */}
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-1">
+              <FiVideo size={15} className="text-gray-500" />
+              <label className="text-sm font-medium text-gray-700">Product Video <span className="text-gray-400 font-normal">(Optional)</span></label>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">Short demo video — shown on product card on hover</p>
+            {videoPreviewUrl ? (
+              <div className="relative">
+                <video
+                  src={videoPreviewUrl}
+                  controls
+                  muted
+                  playsInline
+                  className="w-full rounded-xl max-h-48 bg-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    URL.revokeObjectURL(videoPreviewUrl);
+                    setVideoFile(null);
+                    setVideoPreviewUrl("");
+                    if (videoFileRef.current) videoFileRef.current.value = "";
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow"
+                  aria-label="Remove video"
+                >
+                  <FiX size={12} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => videoFileRef.current?.click()}
+                className="w-full border-2 border-dashed border-gray-300 hover:border-brand-primary rounded-xl py-4 flex flex-col items-center gap-1.5 text-gray-400 hover:text-brand-primary transition-colors"
+              >
+                <FiVideo size={22} />
+                <span className="text-xs font-medium">Click to upload video</span>
+                <span className="text-[10px] text-gray-400">MP4, WebM or MOV</span>
+              </button>
+            )}
+            <input
+              ref={videoFileRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                setVideoFile(file);
+                setVideoPreviewUrl(URL.createObjectURL(file));
+              }}
+            />
+          </div>
         </div>
 
         {/* BASIC INFO */}
