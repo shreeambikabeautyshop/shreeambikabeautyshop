@@ -80,31 +80,30 @@ export default function ProductActions({ productName, price, mrp, slug }: Props)
       {/* Buy on WhatsApp */}
       <a href={`https://wa.me/918291455297?text=${msg}`}
         onClick={(e) => {
-          if (!isLoggedIn) {
-            e.preventDefault();
-            triggerLogin("order");
-            return;
+          // Only track if already logged in — don't block first-time buyers
+          if (isLoggedIn) {
+            const trackingData = JSON.stringify({
+              product_id: slug,
+              product_name: productName,
+              product_brand: null,
+              product_price: price,
+              customer_name: customer?.full_name || null,
+              customer_phone: customer?.phone || null,
+              source: "product_detail",
+              page_url: window.location.href,
+            });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon("/api/track/whatsapp", new Blob([trackingData], { type: "application/json" }));
+            } else {
+              fetch("/api/track/whatsapp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: trackingData,
+                keepalive: true,
+              }).catch(() => {});
+            }
           }
-          const trackingData = JSON.stringify({
-            product_id: slug,
-            product_name: productName,
-            product_brand: null,
-            product_price: price,
-            customer_name: customer?.full_name || null,
-            customer_phone: customer?.phone || null,
-            source: "product_detail",
-            page_url: window.location.href,
-          });
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon("/api/track/whatsapp", new Blob([trackingData], { type: "application/json" }));
-          } else {
-            fetch("/api/track/whatsapp", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: trackingData,
-              keepalive: true,
-            }).catch(() => {});
-          }
+          // Let the link open regardless — don't block new visitors
         }}
         target="_blank" rel="noopener noreferrer"
         className="w-full flex items-center justify-center gap-3 text-white font-bold py-4 rounded-2xl relative overflow-hidden"
@@ -120,6 +119,16 @@ export default function ProductActions({ productName, price, mrp, slug }: Props)
           <p className="text-xs opacity-80">Vinod: +91-8291455297</p>
         </div>
       </a>
+
+      {/* Save to wishlist nudge for logged-out users */}
+      {!isLoggedIn && (
+        <button
+          onClick={() => triggerLogin("wishlist")}
+          className="w-full text-xs text-gray-400 hover:text-brand-primary transition-colors py-1"
+        >
+          💾 Save to wishlist — login to save favourites
+        </button>
+      )}
     </div>
   );
 }
