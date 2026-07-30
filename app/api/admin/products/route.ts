@@ -27,17 +27,15 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ data });
 }
 
-// Helper — fire-and-forget IndexNow ping (doesn't block the response)
-async function pingIndexNow(urls: string[]) {
-  try {
-    await fetch(`https://www.shreeambikabeauty.com/api/indexnow`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls }),
-    });
-  } catch {
-    // Non-critical — don't throw, just swallow
-  }
+const BASE = "https://www.shreeambikabeauty.com";
+
+// Fire-and-forget: submit URLs to Google + Bing + Yandex + IndexNow hub
+function submitToAllEngines(urls: string[]) {
+  fetch(`${BASE}/api/admin/submit-to-search-engines`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ urls, type: "URL_UPDATED" }),
+  }).catch(() => { /* non-critical */ });
 }
 
 // POST create product
@@ -64,10 +62,15 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Notify search engines about the new product page
-  pingIndexNow([
-    `https://www.shreeambikabeauty.com/products/${slug}`,
-    `https://www.shreeambikabeauty.com/products`,
+  // Build category slug for the category page URL
+  const categorySlug = (body.category as string || "")
+    .toLowerCase().replace(/\s+/g, "-").replace(/&/g, "").replace(/--+/g, "-");
+
+  // Submit new product to Google Indexing API + Bing + Yandex + IndexNow hub
+  submitToAllEngines([
+    `${BASE}/products/${slug}`,
+    `${BASE}/products`,
+    ...(categorySlug ? [`${BASE}/categories/${categorySlug}`] : []),
   ]);
 
   return NextResponse.json({ data }, { status: 201 });
