@@ -21,11 +21,22 @@ const INDEXNOW_KEY  = "6a8a7ef7b99d788a77a16bca39eb08b1";
 const KEY_LOCATION  = `https://${HOST}/${INDEXNOW_KEY}.txt`;
 
 // ── Google Indexing API token ─────────────────────────────────────────────────
-// Credentials are stored as env vars (not a file) so they work on Vercel serverless.
+// Tries env var first (Vercel production), falls back to local JSON key file.
 async function getGoogleIndexingToken(): Promise<string> {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON env var is not set");
-  const credentials = JSON.parse(raw);
+  let credentials;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  } else {
+    // Local dev fallback — read the key file directly
+    const { default: fs }   = await import("fs");
+    const { default: path } = await import("path");
+    credentials = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "shree-ambika-beauty-shop-fb1e06b46c92.json"),
+        "utf8"
+      )
+    );
+  }
   const auth = new GoogleAuth({
     credentials,
     scopes: ["https://www.googleapis.com/auth/indexing"],

@@ -24,9 +24,19 @@ const GOOGLE_CATEGORY: Record<string, string> = {
 };
 
 async function getMerchantToken(): Promise<string> {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON env var is not set");
-  const credentials = JSON.parse(raw);
+  let credentials;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  } else {
+    const { default: fs }   = await import("fs");
+    const { default: path } = await import("path");
+    credentials = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "shree-ambika-beauty-shop-fb1e06b46c92.json"),
+        "utf8"
+      )
+    );
+  }
   const auth = new GoogleAuth({
     credentials,
     scopes: ["https://www.googleapis.com/auth/content"],
