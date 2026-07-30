@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+const CANONICAL_HOST = "www.shreeambikabeauty.com";
+
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
+
+  // ── Canonical host enforcement ───────────────────────────────────────────
+  // Redirect http:// → https:// and non-www → www before anything else.
+  // This runs in middleware (edge) so it is guaranteed regardless of proxy headers.
+  const host = req.headers.get("host") || "";
+  const proto = req.headers.get("x-forwarded-proto") || req.nextUrl.protocol.replace(":", "");
+
+  const isNonCanonicalHost = host && host !== CANONICAL_HOST && !host.startsWith("localhost") && !host.startsWith("127.");
+  const isHttp = proto === "http";
+
+  if (isNonCanonicalHost || isHttp) {
+    const canonicalUrl = `https://${CANONICAL_HOST}${pathname}${search}`;
+    return NextResponse.redirect(canonicalUrl, { status: 301 });
+  }
 
   // Never block these paths
   if (

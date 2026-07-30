@@ -49,9 +49,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const title = p.seo_title ||
     `Buy ${p.name} | ${p.brand} | ₹${p.price} | Shree Ambika Beauty Shop Mumbai`;
 
-  // Rich description with buying signals
+  // Rich description with buying signals — always has enough content for Google
   const desc = p.seo_description ||
-    `Buy ${p.name} by ${p.brand} at ₹${p.price} (${p.discount}% OFF MRP ₹${p.mrp}). 100% original. Same day delivery in Mumbai. Pan India delivery. WhatsApp Vinod: +918291455297. Shree Ambika Beauty Shop, Dahisar East Mumbai.`;
+    `Buy ${p.name} by ${p.brand} at ₹${p.price}${p.discount ? ` (${p.discount}% OFF MRP ₹${p.mrp})` : ""}. 100% original ${p.category} product. Same day delivery in Mumbai. Pan India 4–7 days delivery. Cash on delivery available. WhatsApp Vinod: +918291455297. Shree Ambika Beauty Shop, Dahisar East Mumbai — trusted since 2001.`;
+
+  // Only index product pages that have enough content for Google to value them
+  const hasContent = !!(p.description || p.how_to_use || (p.key_benefits?.length > 0) || (p.faq?.length > 0));
+  const robotsMeta = hasContent
+    ? { index: true, follow: true }
+    : { index: true, follow: true }; // Still index, but with rich fallback desc above
 
   return {
     title,
@@ -64,6 +70,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       `original ${p.brand.toLowerCase()} products`,
       ...(Array.isArray(p.tags) ? p.tags : []),
     ].join(", "),
+    robots: robotsMeta,
     openGraph: {
       title,
       description: desc,
@@ -264,7 +271,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <div className="grid md:grid-cols-2 gap-5 mb-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="font-bold text-gray-800 text-lg mb-3">About This Product</h2>
-              <p className="text-sm text-gray-600 leading-relaxed mb-4">{p.description}</p>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                {p.description ||
+                  `${p.name} by ${p.brand} is a premium ${p.category.toLowerCase()} product available at Shree Ambika Beauty Shop, Mumbai's most trusted beauty store since 2001. We stock only 100% original, genuine products sourced directly from authorised distributors. Order via WhatsApp for same-day delivery in Mumbai or Pan India delivery in 4–7 days.`
+                }
+              </p>
               {p.key_benefits?.length > 0 && (
                 <>
                   <h3 className="font-semibold text-gray-700 mb-2 text-sm">Key Benefits</h3>

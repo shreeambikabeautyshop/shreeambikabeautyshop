@@ -96,10 +96,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
   const categoryName = CATEGORY_MAP[params.category] || params.category.replace(/-/g, " ");
   const seo = CATEGORY_SEO[categoryName];
+  const products = await getCategoryProducts(categoryName);
+
   return {
     title: seo?.title || `${categoryName} Products Mumbai | Shree Ambika Beauty Shop`,
     description: seo?.desc || `Buy original ${categoryName} products in Mumbai at best price. Pan India delivery. WhatsApp: +918291455297`,
     alternates: { canonical: `https://www.shreeambikabeauty.com/categories/${params.category}` },
+    // noindex empty categories — prevents "thin content duplicate" penalty in Search Console
+    robots: products.length === 0 ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
       title: seo?.title || `${categoryName} — Shree Ambika Beauty Shop`,
       description: seo?.desc || `Buy original ${categoryName} in Mumbai`,

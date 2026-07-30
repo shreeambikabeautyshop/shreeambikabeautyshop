@@ -27,6 +27,19 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ data });
 }
 
+// Helper — fire-and-forget IndexNow ping (doesn't block the response)
+async function pingIndexNow(urls: string[]) {
+  try {
+    await fetch(`https://www.shreeambikabeauty.com/api/indexnow`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls }),
+    });
+  } catch {
+    // Non-critical — don't throw, just swallow
+  }
+}
+
 // POST create product
 export async function POST(req: NextRequest) {
   if (!isAuthenticated(req)) {
@@ -50,5 +63,12 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Notify search engines about the new product page
+  pingIndexNow([
+    `https://www.shreeambikabeauty.com/products/${slug}`,
+    `https://www.shreeambikabeauty.com/products`,
+  ]);
+
   return NextResponse.json({ data }, { status: 201 });
 }
