@@ -7,8 +7,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleAuth } from "google-auth-library";
-import fs from "fs";
-import path from "path";
 
 const MERCHANT_ID = "5820166508";
 const BASE_URL    = "https://www.shreeambikabeauty.com";
@@ -26,14 +24,11 @@ const GOOGLE_CATEGORY: Record<string, string> = {
 };
 
 async function getMerchantToken(): Promise<string> {
-  const keyFile = JSON.parse(
-    fs.readFileSync(
-      path.resolve(process.cwd(), "shree-ambika-beauty-shop-fb1e06b46c92.json"),
-      "utf8"
-    )
-  );
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (!raw) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON env var is not set");
+  const credentials = JSON.parse(raw);
   const auth = new GoogleAuth({
-    credentials: keyFile,
+    credentials,
     scopes: ["https://www.googleapis.com/auth/content"],
   });
   const client = await auth.getClient();
