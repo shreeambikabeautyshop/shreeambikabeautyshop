@@ -35,8 +35,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!isAuthenticated(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = getAdminClient();
   const body = await req.json();
+  // Never send 'discount' — it is a generated column in Supabase (auto-computed from price/mrp)
+  const { discount: _drop, ...safeBody } = body;
   const { data, error } = await supabase
-    .from("products").update(body).eq("id", params.id).select().single();
+    .from("products").update(safeBody).eq("id", params.id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (data?.slug) submitToAllEngines(data.slug, data.category);
   return NextResponse.json({ data });
@@ -49,10 +51,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
   const supabase = getAdminClient();
   const body = await req.json();
+  // Never send 'discount' — it is a generated column in Supabase
+  const { discount: _drop, ...safeBody } = body;
 
   const { data, error } = await supabase
     .from("products")
-    .update(body)
+    .update(safeBody)
     .eq("id", params.id)
     .select()
     .single();
