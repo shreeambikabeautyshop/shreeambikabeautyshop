@@ -53,6 +53,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/beauty-tips/hair-care`,         lastModified: now, changeFrequency: "weekly",  priority: 0.75 },
     { url: `${BASE}/beauty-tips/makeup`,            lastModified: now, changeFrequency: "weekly",  priority: 0.75 },
     { url: `${BASE}/beauty-tips/buying`,            lastModified: now, changeFrequency: "monthly", priority: 0.70 },
+    // Wholesale & Retail
+    { url: `${BASE}/wholesale`,                     lastModified: now, changeFrequency: "monthly", priority: 0.88 },
     // Occasions — parent + all slugs
     { url: `${BASE}/occasions`,                     lastModified: now, changeFrequency: "monthly", priority: 0.80 },
     { url: `${BASE}/occasions/wedding`,             lastModified: now, changeFrequency: "monthly", priority: 0.78 },

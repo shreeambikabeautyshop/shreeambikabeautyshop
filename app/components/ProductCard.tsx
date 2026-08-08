@@ -174,6 +174,13 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
         <span className="absolute bottom-2 right-2 bg-white/90 text-brand-primary text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
           {p.category}
         </span>
+
+        {/* Free delivery badge for orders qualifying */}
+        {p.price >= 999 && (
+          <span className="absolute bottom-2 left-2 bg-green-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">
+            🚚 FREE DELIVERY
+          </span>
+        )}
       </div>
 
       {/* Info */}
