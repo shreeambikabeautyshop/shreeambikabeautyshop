@@ -59,6 +59,7 @@ export default function PriceManager() {
   const [saved, setSaved]           = useState<Record<string, boolean>>({});
   const [filter, setFilter]         = useState("All");
   const [view, setView]             = useState<"simple" | "smart">("smart");
+  const [hoveredImg, setHoveredImg] = useState<{ src: string; name: string } | null>(null);
 
   // Global smart pricing controls
   const [globalDeliveryBuffer, setGlobalDeliveryBuffer] = useState(8);   // 8% of cost
@@ -161,6 +162,24 @@ export default function PriceManager() {
 
   return (
     <div>
+      {/* Floating Image Preview on Hover */}
+      {hoveredImg && (
+        <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn">
+            <Image
+              src={hoveredImg.src}
+              alt={hoveredImg.name}
+              width={220}
+              height={220}
+              className="object-contain w-[220px] h-[220px]"
+            />
+            <p className="text-xs text-gray-600 text-center px-3 py-2 font-medium line-clamp-2 max-w-[220px]">
+              {hoveredImg.name}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -332,7 +351,11 @@ export default function PriceManager() {
                       {/* Product */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-lg bg-brand-light overflow-hidden flex-shrink-0">
+                          <div
+                            className="w-9 h-9 rounded-lg bg-brand-light overflow-hidden flex-shrink-0 cursor-pointer"
+                            onMouseEnter={() => p.images?.[0] && setHoveredImg({ src: p.images[0], name: p.name })}
+                            onMouseLeave={() => setHoveredImg(null)}
+                          >
                             {p.images?.[0] ? <Image src={p.images[0]} alt={p.name} width={36} height={36} className="object-cover w-full h-full" /> : <div className="w-full h-full flex items-center justify-center text-base">💄</div>}
                           </div>
                           <div>
