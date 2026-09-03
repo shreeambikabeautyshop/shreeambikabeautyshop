@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Navbar from "@/app/components/Navbar";
 import HeroSlider from "@/app/components/HeroSlider";
 import AIRecommender from "@/app/components/AIRecommender";
@@ -18,6 +19,15 @@ import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 import { FiShield, FiStar, FiPackage, FiTruck } from "react-icons/fi";
 import { MdVerified } from "react-icons/md";
 import { FaWhatsapp } from "react-icons/fa";
+
+export const metadata: Metadata = {
+  title: "Shree Ambika Beauty Shop Mumbai | 500+ Brands | Same Day Delivery | Order on WhatsApp",
+  description:
+    "Mumbai's #1 beauty shop since 2001 — 500+ brands, 100% original products at best prices. Lakme, Maybelline, SUGAR, L'Oréal, Insight, Pilgrim & more. ⚡ Same-day delivery in Mumbai. 🚚 Pan India 4–7 days. 📦 COD available. WhatsApp: +91 82914 55297",
+  alternates: {
+    canonical: "https://www.shreeambikabeauty.com",
+  },
+};
 
 const trustFeatures = [
   { icon: <MdVerified size={18} />, label: "100% ORIGINAL PRODUCTS" },

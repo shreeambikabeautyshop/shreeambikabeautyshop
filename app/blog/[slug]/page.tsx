@@ -58,12 +58,20 @@ async function getSidebarData(category: string, excludeSlug: string) {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const blog = await getBlog(params.slug);
   if (!blog) return { title: "Blog Not Found" };
+
+  const title = blog.seo_title || `${blog.title} | Shree Ambika Beauty Shop Mumbai`;
+  const description = blog.seo_description || blog.excerpt;
+
   return {
-    title: blog.seo_title || `${blog.title} | Shree Ambika Beauty Shop`,
-    description: blog.seo_description || blog.excerpt,
+    title,
+    description,
     openGraph: {
-      title: blog.title, description: blog.excerpt,
-      images: blog.cover_image ? [{ url: blog.cover_image }] : [],
+      title: blog.title,
+      description: blog.excerpt,
+      images: blog.cover_image ? [{ url: blog.cover_image, width: 1200, height: 630, alt: blog.title }] : [],
+      type: "article",
+      publishedTime: blog.created_at,
+      authors: ["Shree Ambika Beauty Shop"],
     },
     alternates: { canonical: `https://www.shreeambikabeauty.com/blog/${blog.slug}` },
   };

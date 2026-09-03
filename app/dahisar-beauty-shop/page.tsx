@@ -5,9 +5,9 @@ import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 
 export const metadata: Metadata = {
-  title: "Beauty Shop in Dahisar East Mumbai | Cosmetics Store Near Anand Nagar Metro | Shree Ambika",
+  title: "Beauty Shop in Dahisar East Mumbai | Near Anand Nagar Metro | Shree Ambika — Est. 2001",
   description:
-    "Shree Ambika Beauty Shop — Dahisar East Mumbai's most trusted beauty & cosmetics store since 2001. Near Anand Nagar Metro Station. Buy 100% original Lakme, Maybelline, SUGAR, L'Oreal, Insight, Mars. Same day delivery. WhatsApp +918291455297",
+    "✅ 100% Original beauty products in Dahisar East, Mumbai. Near Anand Nagar Metro Station. Lakme, Maybelline, SUGAR, L'Oréal, Insight & 500+ brands. ⚡ Same-day delivery. 💬 WhatsApp Vinod: +91 82914 55297. Open 9AM–10PM, 7 days.",
   keywords: [
     "beauty shop dahisar east mumbai",
     "cosmetics shop dahisar",

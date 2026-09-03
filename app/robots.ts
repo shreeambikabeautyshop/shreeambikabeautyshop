@@ -15,6 +15,7 @@ export default function robots(): MetadataRoute.Robots {
           "/contact",
           "/faq",
           "/dahisar-beauty-shop",
+          "/cosmetic-shop-mumbai",
           "/occasions/",
           "/beauty-tips/",
           "/order",
@@ -25,6 +26,7 @@ export default function robots(): MetadataRoute.Robots {
           "/llms.txt",
           "/feed.xml",
           "/reviews",
+          "/wholesale",
         ],
         disallow: [
           "/sabs-controller/",

@@ -9,11 +9,12 @@ import { FaStar, FaWhatsapp, FaGoogle } from "react-icons/fa";
 import { FiMapPin, FiExternalLink } from "react-icons/fi";
 
 export const metadata: Metadata = {
-  title: "Customer Reviews & Testimonials | Shree Ambika Beauty Shop Mumbai",
-  description: "Real customer reviews and testimonials for Shree Ambika Beauty Shop Mumbai. 500+ happy customers, 4.8★ rating. 100% original beauty products since 2001. WhatsApp: +918291455297",
+  title: "Customer Reviews | 4.8★ Rated Beauty Shop Mumbai | Shree Ambika — Est. 2001",
+  description:
+    "Read real customer reviews for Shree Ambika Beauty Shop Mumbai. 4.8★ rated by 500+ happy customers. 100% original beauty products since 2001. See what Mumbai shoppers say about us. WhatsApp: +91 82914 55297",
   alternates: { canonical: "https://www.shreeambikabeauty.com/reviews" },
   openGraph: {
-    title: "Customer Reviews | Shree Ambika Beauty Shop Mumbai",
+    title: "Customer Reviews | 4.8★ Beauty Shop Mumbai | Shree Ambika",
     description: "500+ real customer reviews. 4.8★ rating. Mumbai's most trusted beauty shop since 2001.",
     url: "https://www.shreeambikabeauty.com/reviews",
   },

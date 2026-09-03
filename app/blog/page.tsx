@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 import Footer from "@/app/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Beauty Blog & Tips | Shree Ambika Beauty Shop Mumbai",
-  description: "Expert beauty tips, skincare guides, makeup tutorials & buying guides from Shree Ambika Beauty Shop Mumbai. Learn from 25+ years of beauty expertise.",
+  title: "Beauty Blog & Tips | Skincare, Makeup, Hair Care Guides | Shree Ambika Mumbai",
+  description:
+    "Expert beauty tips, skincare routines, makeup tutorials & buying guides from Shree Ambika Beauty Shop Mumbai — 25+ years of expertise. Learn which products actually work for Indian skin & hair.",
   alternates: { canonical: "https://www.shreeambikabeauty.com/blog" },
 };
 

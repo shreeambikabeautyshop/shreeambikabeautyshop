@@ -51,11 +51,11 @@ const dmSerif = DM_Serif_Display({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.shreeambikabeauty.com"),
   title: {
-    default: "Shree Ambika Beauty Shop Mumbai | 100% Original Beauty Products | Pan India Delivery",
+    default: "Shree Ambika Beauty Shop Mumbai | 500+ Brands | Same Day Delivery | Order on WhatsApp",
     template: "%s | Shree Ambika Beauty Shop Mumbai",
   },
   description:
-    "Mumbai's most trusted beauty shop since 2001. Buy 100% original cosmetics, makeup, skincare & haircare — Lakme, Maybelline, SUGAR, L'Oreal, Pilgrim & 500+ brands. Best prices. Same day delivery Mumbai. Pan India 4–7 days. WhatsApp Vinod: +918291455297",
+    "Mumbai's #1 beauty shop since 2001 — 500+ brands, 100% original products at best prices. Lakme, Maybelline, SUGAR, L'Oréal, Insight, Pilgrim & more. ⚡ Same-day delivery in Mumbai. 🚚 Pan India in 4–7 days. 📦 COD available. WhatsApp to order: +91 82914 55297",
   keywords: [
     "shree ambika beauty shop mumbai",
     "beauty products mumbai",
@@ -79,9 +79,9 @@ export const metadata: Metadata = {
   category: "Beauty & Personal Care",
   classification: "Beauty Shop, Cosmetics Store, Online Beauty Products",
   openGraph: {
-    title: "Shree Ambika Beauty Shop | 100% Original Beauty Products Mumbai",
+    title: "Shree Ambika Beauty Shop Mumbai | 500+ Brands | Same Day Delivery",
     description:
-      "Mumbai's trusted beauty shop since 2001. 500+ brands, best prices, same day delivery. WhatsApp order: +918291455297",
+      "Mumbai's #1 beauty shop since 2001. 500+ brands, 100% original, best prices. Same-day delivery. WhatsApp: +91 82914 55297",
     url: "https://www.shreeambikabeauty.com",
     siteName: "Shree Ambika Beauty Shop",
     images: [
@@ -298,7 +298,7 @@ export default function RootLayout({
         "name": "How do I order beauty products from Shree Ambika Beauty Shop?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "You can order easily via WhatsApp by messaging Vinod at +918291455297. Browse products on our website, select what you want, and send a WhatsApp message. We offer same-day delivery in Mumbai and Pan India 4–7 days delivery.",
+          "text": "You can order easily via WhatsApp by messaging Vinod at +918291455297. Browse products on our website, select what you want, and send a WhatsApp message. We offer same-day delivery in Mumbai and Pan India 4–7 days delivery. Cash on delivery (COD) is available.",
         },
       },
       {
@@ -306,7 +306,7 @@ export default function RootLayout({
         "name": "Does Shree Ambika Beauty Shop deliver outside Mumbai?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! We deliver Pan India in 4–7 days and also ship worldwide. Order via WhatsApp: +918291455297 or through our website.",
+          "text": "Yes! We deliver Pan India in 4–7 days and also ship worldwide. Order via WhatsApp: +918291455297 or through our website shreeambikabeauty.com.",
         },
       },
       {
@@ -314,7 +314,7 @@ export default function RootLayout({
         "name": "Where is Shree Ambika Beauty Shop located?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Shree Ambika Beauty Shop is located at Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai, Maharashtra 400068. We are near Anand Nagar Metro Station. We also have an online store at www.shreeambikabeauty.com with WhatsApp ordering.",
+          "text": "Shree Ambika Beauty Shop is located at Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai, Maharashtra 400068. We are near Anand Nagar Metro Station on the Western Line. We also have an online store at www.shreeambikabeauty.com with WhatsApp ordering.",
         },
       },
       {
@@ -322,7 +322,47 @@ export default function RootLayout({
         "name": "What brands are available at Shree Ambika Beauty Shop?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We stock 500+ top brands including Lakme, Maybelline, L'Oreal, SUGAR, Wella, Pilgrim, Jovees, Streax, Mamaearth, Biotique, Plum, Nykaa, Insight, 6MARS, Swiss Beauty and many more. All products are 100% authentic.",
+          "text": "We stock 500+ top brands including Lakme, Maybelline, L'Oreal, SUGAR, Wella, Pilgrim, Jovees, Streax, Mamaearth, Biotique, Plum, Nykaa, Insight Professional, Swiss Beauty, 6MARS and many more. All products are 100% authentic.",
+        },
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a cosmetic shop near me in Dahisar or Borivali Mumbai?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Shree Ambika Beauty Shop is the nearest cosmetics shop for customers in Dahisar East, Dahisar West, Borivali, Kandivali, and Mira Road. Located near Anand Nagar Metro Station, Dahisar East, Mumbai 400068. We also offer same-day home delivery across Mumbai — no need to travel. WhatsApp +918291455297.",
+        },
+      },
+      {
+        "@type": "Question",
+        "name": "Can I get a premium moisturizer delivered the same day in Mumbai?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Shree Ambika Beauty Shop offers same-day delivery of premium moisturizers and all beauty products in Mumbai. Order before 12 PM and receive your product the same evening. We stock brands like Pilgrim, Minimalist, Cetaphil, Neutrogena, Mamaearth, Dot & Key and more. WhatsApp Vinod at +918291455297 to place your order.",
+        },
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I buy Insight Professional products in Mumbai?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Shree Ambika Beauty Shop is an authorized stockist of Insight Professional products in Mumbai. We carry the full range — HD Foundation, Skin Tint, Concealers, Lipsticks, Eyeshadow Palettes and more. All 100% original. Order via WhatsApp +918291455297 or shop online at shreeambikabeauty.com.",
+        },
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I buy Swiss Beauty products in Mumbai?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Shree Ambika Beauty Shop stocks the complete Swiss Beauty range in Mumbai — Glow Up Makeup Fixer, Sheet Masks, Eyeliners, Foundations, Strobe Creams and more. All 100% original at best prices. Same-day delivery in Mumbai. WhatsApp +918291455297.",
+        },
+      },
+      {
+        "@type": "Question",
+        "name": "What payment methods does Shree Ambika Beauty Shop accept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We accept all payment modes: UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, and Cash on Delivery (COD). For WhatsApp orders, cash payment on delivery is also available within Mumbai.",
         },
       },
     ],

@@ -2,9 +2,9 @@ import { Metadata } from "next";
 import FAQClient from "./FAQClient";
 
 export const metadata: Metadata = {
-  title: "FAQ | Shree Ambika Beauty Shop Mumbai — Ordering, Delivery & Products",
+  title: "FAQ | Shree Ambika Beauty Shop Mumbai — Orders, Delivery, Returns & More",
   description:
-    "Frequently asked questions about Shree Ambika Beauty Shop Mumbai — ordering on WhatsApp, delivery times, 100% original products, payment methods, return policy, and store location in Dahisar East.",
+    "Got questions? ✅ How to order on WhatsApp · ⚡ Same-day delivery Mumbai · 🚚 Pan India shipping · 💳 COD & UPI · Returns policy — all answered. Call/WhatsApp Vinod: +91 82914 55297.",
   alternates: { canonical: "https://www.shreeambikabeauty.com/faq" },
   openGraph: {
     title: "FAQ | Shree Ambika Beauty Shop Mumbai — Ordering, Delivery & Products",
