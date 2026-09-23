@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -102,12 +102,13 @@ export default function BestsellerProducts() {
     <div className="bg-brand-light flex flex-col relative h-full">
       <div className="relative flex-1 min-h-[400px]">
         {featured.images?.[featuredImg] ? (
-          <Image
-            src={featured.images[featuredImg]}
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cldImg(featured.images[featuredImg], 640)}
             alt={featured.name}
-            fill
-            className="object-contain"
-            sizes="360px"
+            className="absolute inset-0 w-full h-full object-contain"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-7xl">💄</div>
@@ -132,7 +133,8 @@ export default function BestsellerProducts() {
               className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
                 i === featuredImg ? "border-brand-primary shadow-sm" : "border-gray-200 opacity-60 hover:opacity-100"
               }`}>
-              <Image src={img} alt="" fill className="object-cover" sizes="48px" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={cldImg(img, 96)} alt="" width={48} height={48} loading="lazy" decoding="async" className="object-cover w-full h-full" />
             </button>
           ))}
         </div>
@@ -340,7 +342,8 @@ export default function BestsellerProducts() {
                   <div className="relative flex-shrink-0">
                     <div className="relative w-[60px] h-[60px] rounded-xl overflow-hidden bg-gray-50 border border-gray-100">
                       {p.images?.[0] ? (
-                        <Image src={p.images[0]} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform" sizes="60px" />
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={cldImg(p.images[0], 96)} alt={p.name} width={60} height={60} loading="lazy" decoding="async" className="object-cover group-hover:scale-105 transition-transform w-full h-full" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xl">💄</div>
                       )}

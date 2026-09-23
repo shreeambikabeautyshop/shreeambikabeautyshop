@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import Image from "next/image";
 import Link from "next/link";
 

@@ -1,16 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Prevent trailing slash duplicates — /categories/ → /categories
+  trailingSlash: false,
+
   // ── Image optimization ────────────────────────────────────────────────────
+  // STRATEGY: Bypass Vercel image optimizer for Cloudinary images.
+  // Cloudinary already serves WebP/AVIF via f_auto,q_auto in the URL.
+  // Running Vercel optimizer ON TOP wastes cache writes (91K/100K on free plan).
+  // We use unoptimized:true and handle optimization at Cloudinary URL level instead.
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
-    // Only webp — avif doubles cache writes with minimal benefit
-    // Cloudinary already serves avif/webp natively via f_auto
+    // Disable Vercel's optimizer — Cloudinary handles optimization natively
+    // This saves 100K cache writes/month on the free plan
+    unoptimized: true,
+    // Keep these for any non-Cloudinary images that may exist
     formats: ["image/webp"],
-    // 30 days cache — avoids re-optimization on repeat visits
     minimumCacheTTL: 60 * 60 * 24 * 30,
-    // Fewer breakpoints = fewer cache entries per image
     deviceSizes: [640, 828, 1200],
     imageSizes: [48, 96, 256],
   },
@@ -86,11 +93,27 @@ const nextConfig = {
         destination: "https://www.shreeambikabeauty.com/:path*",
         permanent: true,
       },
-      // non-www → www
+      // non-www → www (HTTP)
       {
         source: "/(.*)",
         has: [{ type: "host", value: "shreeambikabeauty.com" }],
         destination: "https://www.shreeambikabeauty.com/:path*",
+        permanent: true,
+      },
+      // non-www HTTPS → www HTTPS (belt + suspenders)
+      {
+        source: "/(.*)",
+        has: [
+          { type: "host", value: "shreeambikabeauty.com" },
+          { type: "header", key: "x-forwarded-proto", value: "https" },
+        ],
+        destination: "https://www.shreeambikabeauty.com/:path*",
+        permanent: true,
+      },
+      // Trailing slash removal — prevents duplicate content /categories/ vs /categories
+      {
+        source: "/:path+/",
+        destination: "/:path+",
         permanent: true,
       },
     ];

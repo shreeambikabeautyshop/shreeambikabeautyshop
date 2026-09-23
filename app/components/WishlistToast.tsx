@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
@@ -40,7 +40,8 @@ export default function WishlistToast({ item, onClose }: ToastProps) {
           {/* Product thumbnail */}
           <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-brand-light flex-shrink-0">
             {item.image ? (
-              <Image src={item.image} alt={item.name} fill className="object-cover" />
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cldImg(item.image, 96)} alt={item.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">💄</div>
             )}

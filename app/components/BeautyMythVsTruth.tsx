@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import { FiCheck, FiX } from "react-icons/fi";
 
 const myths = [
@@ -82,12 +82,12 @@ export default function BeautyMythVsTruth() {
 
             {/* Women image — right side of left panel */}
             <div className="relative w-52 flex-shrink-0 self-stretch hidden md:block">
-              <Image
-                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784225462/beauty_myth_vs_truth_vrngh7.png"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cldImg("https://res.cloudinary.com/zjlchjal/image/upload/v1784225462/beauty_myth_vs_truth_vrngh7.png", 208)}
                 alt="Beauty Expert"
-                fill
-                className="object-contain object-bottom"
-                sizes="208px"
+                loading="lazy" decoding="async"
+                className="absolute inset-0 w-full h-full object-contain object-bottom"
               />
             </div>
           </div>
@@ -127,12 +127,12 @@ export default function BeautyMythVsTruth() {
 
             {/* Women image — right side of right panel */}
             <div className="relative w-52 flex-shrink-0 self-stretch hidden md:block">
-              <Image
-                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784225477/why-every-women-choose_vht46h.png"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cldImg("https://res.cloudinary.com/zjlchjal/image/upload/v1784225477/why-every-women-choose_vht46h.png", 208)}
                 alt="Why Choose Shree Ambika"
-                fill
-                className="object-contain object-bottom"
-                sizes="208px"
+                loading="lazy" decoding="async"
+                className="absolute inset-0 w-full h-full object-contain object-bottom"
               />
             </div>
           </div>

@@ -5,9 +5,9 @@ import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 
 export const metadata: Metadata = {
-  title: "Beauty Product Categories | Makeup, Skincare, Haircare & More | Shree Ambika Mumbai",
+  title: "Beauty Product Categories Dahisar Mumbai | Makeup Skincare Haircare | Shree Ambika",
   description:
-    "Shop by category — Makeup, Skincare, Hair Care, Cosmetics, Perfumes, Body Care & more. 500+ brands, 100% original. ⚡ Same-day delivery Mumbai. 📦 COD available. WhatsApp: +91 82914 55297",
+    "Shop by category — Makeup, Skincare, Hair Care, Cosmetics, Perfumes & more. 500+ original brands. ⚡ Same-day delivery Dahisar, Borivali, Kandivali. 📦 COD. 💬 WhatsApp: +91 82914 55297",
   alternates: { canonical: "https://www.shreeambikabeauty.com/categories" },
 };
 

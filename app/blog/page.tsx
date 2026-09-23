@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/app/components/Navbar";
 
-export const dynamic = "force-dynamic";
 import Footer from "@/app/components/Footer";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Beauty Blog & Tips | Skincare, Makeup, Hair Care Guides | Shree Ambika Mumbai",

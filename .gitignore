@@ -34,6 +34,15 @@ yarn-error.log*
 website-images/CREDENTIALS.txt
 *.credentials.txt
 credentials.txt
+website-info.txt
+
+# Business documents - NEVER commit
+*.pdf
+*.txt
+"Banner poster/"
+"products bills/"
+Banner poster/
+products bills/
 
 # Google Service Account key — NEVER commit
 *.json
@@ -46,3 +55,4 @@ credentials.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { FaStar, FaWhatsapp } from "react-icons/fa";
@@ -7,6 +6,7 @@ import { FiEye, FiHeart } from "react-icons/fi";
 import { useWhatsAppOrder } from "@/app/hooks/useWhatsAppOrder";
 import { useWishlist } from "@/app/context/WishlistContext";
 import { useSettings } from "@/app/context/SettingsContext";
+import { cldImg } from "@/app/lib/cloudinary-img";
 
 export interface ProductCardData {
   id: string;
@@ -101,14 +101,15 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
         {/* Static image — hidden when video is playing */}
         <Link href={`/products/${p.slug || p.id}`} tabIndex={isHovered && !!p.video_url ? -1 : 0}>
           {p.images?.[0] ? (
-            <Image
-              src={p.images[0]}
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cldImg(p.images[0], 480)}
               alt={`Buy ${p.name} by ${p.brand} - ${p.category} - Rs.${p.price} at Shree Ambika Beauty Shop Dahisar Mumbai | 100% Original`}
-              fill
-              className={`object-cover object-top transition-all duration-500 ${
+              loading="lazy"
+              decoding="async"
+              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-500 ${
                 isHovered && p.video_url ? "opacity-0 scale-105" : "opacity-100 group-hover:scale-105"
               }`}
-              sizes="(max-width: 640px) 50vw, 25vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import { FiX, FiStar, FiShoppingCart, FiMapPin } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { useSettings } from "@/app/context/SettingsContext";
@@ -93,11 +93,12 @@ export default function AIRecommender() {
             <div className="flex items-center gap-6 flex-1 pr-8">
               {/* Robot image — bigger */}
               <div className="relative w-36 h-36 flex-shrink-0 drop-shadow-xl">
-                <Image
-                  src="https://res.cloudinary.com/zjlchjal/image/upload/v1784216154/AI-model_q5uqog.png"
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cldImg("https://res.cloudinary.com/zjlchjal/image/upload/v1784216154/AI-model_q5uqog.png", 144)}
                   alt="AI Beauty Bot"
-                  fill
-                  className="object-contain"
+                  loading="lazy" decoding="async"
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               </div>
               {/* Text */}
@@ -183,7 +184,9 @@ export default function AIRecommender() {
                         {/* Image */}
                         <div className="relative h-44 bg-brand-light">
                           {p.images?.[0] ? (
-                            <Image src={p.images[0]} alt={p.name} fill className="object-cover" />
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={cldImg(p.images[0], 400)} alt={p.name} loading="lazy" decoding="async"
+                              className="absolute inset-0 w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-5xl">💄</div>
                           )}

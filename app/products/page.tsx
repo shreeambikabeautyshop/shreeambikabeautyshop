@@ -9,9 +9,9 @@ import ProductsClient from "./ProductsClient";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Buy Beauty Products Online Mumbai | 500+ Brands | COD Available | Shree Ambika",
+  title: "Buy Original Beauty Products Mumbai | 500+ Brands | COD | Shree Ambika Dahisar",
   description:
-    "Shop 500+ 100% original beauty products online — Lakme, Maybelline, SUGAR, Insight, Swiss Beauty, L'Oréal, Pilgrim & more. ✅ Best prices. ⚡ Same-day delivery Mumbai. 🚚 Pan India shipping. 📦 Cash on delivery. WhatsApp: +91 82914 55297",
+    "500+ original beauty products — Lakme, Maybelline, SUGAR, L'Oréal, Insight, Swiss Beauty & more. ✅ 100% genuine. ⚡ Same-day delivery Dahisar, Borivali, Kandivali, Mira Road. 📦 COD available. 💬 WhatsApp +91 82914 55297",
   alternates: { canonical: "https://www.shreeambikabeauty.com/products" },
 };
 

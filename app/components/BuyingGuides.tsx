@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 
 interface Blog {
   id: string; slug: string; title: string; excerpt: string;
@@ -62,9 +62,9 @@ export default function BuyingGuides() {
                 {/* Cover image — square for better visibility */}
                 <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: "1/1" }}>
                   {blog.cover_image ? (
-                    <Image src={blog.cover_image} alt={blog.title} fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 50vw, 200px" />
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cldImg(blog.cover_image, 300)} alt={blog.title} loading="lazy" decoding="async"
+                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl bg-brand-light">💄</div>
                   )}

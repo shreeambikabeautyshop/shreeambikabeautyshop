@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import { usePathname, useRouter } from "next/navigation";
 import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle, FiMapPin, FiMail, FiEdit, FiLogOut } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
@@ -217,13 +217,13 @@ export default function Navbar() {
         <div className="w-[25%] flex-shrink-0 flex items-center border-r border-gray-100">
           <Link href="/" className="block w-full h-full flex items-center pl-0">
             <div className="relative w-full h-full min-h-[64px]">
-              <Image
-                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cldImg("https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png", 280)}
                 alt="Shree Ambika Beauty Shop"
-                fill
-                className="object-contain object-left py-1"
-                sizes="280px"
-                priority
+                className="absolute inset-0 w-full h-full object-contain object-left py-1"
+                loading="eager"
+                decoding="async"
               />
             </div>
           </Link>

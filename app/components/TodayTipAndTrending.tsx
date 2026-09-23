@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { FiShield, FiStar, FiPackage, FiTruck, FiMessageCircle } from "react-icons/fi";

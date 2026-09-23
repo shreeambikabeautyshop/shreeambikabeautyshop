@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import {
   FaInstagram, FaFacebook, FaWhatsapp, FaYoutube, FaThreads,
   FaLinkedin, FaPinterest, FaReddit,
@@ -18,6 +18,9 @@ const quickLinks = [
   { name: "Beauty Tips & Guides",    href: "/beauty-tips" },
   { name: "Beauty Blog",             href: "/blog" },
   { name: "Dahisar Beauty Shop",     href: "/dahisar-beauty-shop" },
+  { name: "Borivali Beauty Shop",    href: "/borivali-beauty-shop" },
+  { name: "Kandivali Beauty Shop",   href: "/kandivali-beauty-shop" },
+  { name: "Mira Road Delivery",      href: "/mira-road-beauty-delivery" },
   { name: "Order Now",               href: "/order" },
 ];
 
@@ -139,12 +142,12 @@ export default function Footer() {
           <div className="lg:col-span-1">
             {/* Logo */}
             <div className="relative w-[160px] h-[60px] mb-4">
-              <Image
-                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cldImg("https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png", 160)}
                 alt="Shree Ambika Beauty Shop"
-                fill
-                className="object-contain object-left"
-                sizes="160px"
+                loading="lazy" decoding="async"
+                className="absolute inset-0 w-full h-full object-contain object-left"
               />
             </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
@@ -167,7 +170,7 @@ export default function Footer() {
             <div className="flex flex-col gap-1">
               {[
                 { icon: "✓", text: "100% Original Products" },
-                { icon: "✓", text: "Est. 2001 — 24 Years of Trust" },
+                { icon: "✓", text: "Est. 2001 — 25 Years of Trust" },
                 { icon: "✓", text: "Pan India & International Delivery" },
               ].map((b) => (
                 <p key={b.text} className="text-xs text-gray-500 flex items-center gap-1.5">
@@ -286,14 +289,14 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* WhatsApp Community CTA */}
+            {/* WhatsApp Order CTA */}
             <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4">
-              <p className="text-xs font-bold text-green-400 uppercase tracking-wide mb-1">Join Our Community</p>
-              <p className="text-xs text-gray-400 mb-3">Get daily deals, beauty tips & new arrivals on WhatsApp</p>
-              <a href="https://wa.me/918291455297?text=Hi! I want to join your WhatsApp beauty updates group."
+              <p className="text-xs font-bold text-green-400 uppercase tracking-wide mb-1">Order on WhatsApp</p>
+              <p className="text-xs text-gray-400 mb-3">Browse products & WhatsApp Vinod to order — same day delivery in Mumbai</p>
+              <a href="https://wa.me/918291455297?text=Hi%20Vinod!%20I%20want%20to%20order%20beauty%20products%20from%20Shree%20Ambika%20Beauty%20Shop."
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all">
-                <FaWhatsapp size={14} /> Join WhatsApp Group
+                <FaWhatsapp size={14} /> WhatsApp +91 82914 55297
               </a>
             </div>
 

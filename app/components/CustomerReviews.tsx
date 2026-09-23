@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import { FiChevronLeft, FiChevronRight, FiMapPin } from "react-icons/fi";
 import { FaWhatsapp, FaStar } from "react-icons/fa";
 
@@ -98,12 +98,13 @@ export default function CustomerReviews() {
                   onClick={() => setLightbox({ review, imgIdx: 0 })}
                 >
                   {review.images?.[0] ? (
-                    <Image
-                      src={review.images[0]}
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={cldImg(review.images[0], 480)}
                       alt={review.reviewer_name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 90vw, 30vw"
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl">⭐</div>
@@ -186,14 +187,16 @@ export default function CustomerReviews() {
             <button onClick={() => setLightbox(null)}
               className="absolute -top-8 right-0 text-white text-sm font-bold hover:text-gray-300">✕ Close</button>
             <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: "3/4" }}>
-              <Image src={lightbox.review.images[lightbox.imgIdx]} alt="Review" fill className="object-contain" sizes="400px" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={cldImg(lightbox.review.images[lightbox.imgIdx], 600)} alt="Review" className="absolute inset-0 w-full h-full object-contain" loading="lazy" decoding="async" />
             </div>
             {lightbox.review.images.length > 1 && (
               <div className="flex gap-2 mt-3 justify-center">
                 {lightbox.review.images.map((img, i) => (
                   <button key={i} onClick={() => setLightbox({ ...lightbox, imgIdx: i })}
                     className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${i === lightbox.imgIdx ? "border-white" : "border-transparent opacity-60"}`}>
-                    <Image src={img} alt="" fill className="object-cover" sizes="40px" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={cldImg(img, 80)} alt="" className="object-cover w-full h-full" loading="lazy" decoding="async" />
                   </button>
                 ))}
               </div>

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 // Fallback slides (used if DB is empty or fetch fails)
@@ -78,13 +78,15 @@ export default function HeroSlider() {
             }`}
             aria-hidden={idx !== current}
           >
-            <Image
-              src={slide.image}
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cldImg(slide.image, 1200)}
               alt={slide.alt}
               width={1920}
               height={680}
-              priority={idx === 0}
               className="w-full h-auto object-cover"
+              loading={idx === 0 ? "eager" : "lazy"}
+              decoding="async"
             />
           </div>
         ))}

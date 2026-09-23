@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { cldImg } from "@/app/lib/cloudinary-img";
 
 const occasions = [
   {
@@ -97,12 +97,13 @@ export default function ShopByOccasion() {
                   transition-all duration-300 border-2 border-transparent group-hover:border-brand-primary/40"
                 style={{ aspectRatio: "3/4" }}
               >
-                <Image
-                  src={occ.img}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cldImg(occ.img, 400)}
                   alt={occ.name}
-                  fill
-                  className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 12.5vw"
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                 />
                 {/* Gradient overlay at bottom */}
                 <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />

@@ -10,13 +10,21 @@ interface ProductSchemaProps {
   inStock?: boolean;
   seoTitle?: string;
   productUrl?: string;
+  // Dynamic ratings from actual reviews
+  ratingValue?: number;
+  reviewCount?: number;
 }
 
 export default function ProductSchema({
   name, description, image, price, mrp, brand, sku, inStock = true, seoTitle, productUrl,
+  ratingValue, reviewCount,
 }: ProductSchemaProps) {
-  const url = productUrl || "https://www.shreeambikabeautyshop.com";
-  const schema = {
+  const url = productUrl || "https://www.shreeambikabeauty.com";
+
+  // Only include aggregateRating if we have real data (reviewCount > 0)
+  const hasRealRating = ratingValue && reviewCount && reviewCount > 0;
+
+  const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": name,
@@ -78,12 +86,18 @@ export default function ProductSchema({
         "url": "https://www.shreeambikabeauty.com",
       },
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.5",
-      "reviewCount": "28",
-    },
   };
+
+  // Only add aggregateRating if real reviews exist — no fake data
+  if (hasRealRating) {
+    schema["aggregateRating"] = {
+      "@type": "AggregateRating",
+      "ratingValue": ratingValue,
+      "reviewCount": reviewCount,
+      "bestRating": 5,
+      "worstRating": 1,
+    };
+  }
 
   return (
     <script

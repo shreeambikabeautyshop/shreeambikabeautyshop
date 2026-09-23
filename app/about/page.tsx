@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 const stats = [
-  { value: "24+", label: "Years of Trust", icon: "🏆" },
+  { value: "25+", label: "Years of Trust", icon: "🏆" },
   { value: "500+", label: "Brands Stocked", icon: "💄" },
   { value: "10,000+", label: "Happy Customers", icon: "❤️" },
   { value: "100%", label: "Original Products", icon: "✅" },
@@ -51,7 +51,7 @@ const whyCards = [
   },
   {
     emoji: "🏆",
-    title: "24+ Years of Trust",
+    title: "25+ Years of Trust",
     desc: "Since 2001, thousands of Mumbai families have trusted us. Our reputation is built on honesty, transparency, and quality.",
   },
   {
@@ -196,7 +196,7 @@ export default function AboutPage() {
             <div className="bg-brand-light rounded-3xl p-8 space-y-6 sticky top-24">
               <h3 className="font-heading italic text-xl text-gray-900">Shree Ambika Choice Center</h3>
               {[
-                { icon: "📅", title: "Established", detail: "2001 — 24+ Years in Business" },
+                { icon: "📅", title: "Established", detail: "2001 — 25+ Years in Business" },
                 { icon: "📍", title: "Location", detail: "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068" },
                 { icon: "👨‍💼", title: "Owner", detail: "Vinod Goswami — Available on WhatsApp" },
                 { icon: "💄", title: "Brands Stocked", detail: "500+ premium Indian & international brands" },
@@ -270,7 +270,7 @@ export default function AboutPage() {
                 </blockquote>
                 <div className="flex flex-wrap gap-3 justify-center sm:justify-start mb-6">
                   <span className="bg-white text-brand-primary text-xs font-bold px-3 py-1.5 rounded-full border border-brand-accent/40">
-                    🏆 24+ Years Experience
+                    🏆 25+ Years Experience
                   </span>
                   <span className="bg-white text-brand-primary text-xs font-bold px-3 py-1.5 rounded-full border border-brand-accent/40">
                     🗣️ Hindi · English · Marathi
