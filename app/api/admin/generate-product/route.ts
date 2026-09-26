@@ -77,20 +77,19 @@ export async function POST(req: NextRequest) {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${keys[i]}` },
           body: JSON.stringify({
-            model: "qwen/qwen3.6-27b",
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
             messages: [{ role: "user", content: [
               { type: "image_url", image_url: { url: imageUrl } },
               { type: "text", text: PROMPT },
             ]}],
             temperature: 0.4,
             max_tokens: 2048,
-            reasoning_effort: "none",
           }),
         });
         const data = await res.json();
         if (res.status === 429) { lastErr = "Rate limited"; continue; }
         if (!res.ok) { lastErr = data?.error?.message || "Groq error"; continue; }
-        raw = (data.choices?.[0]?.message?.content || "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+        raw = (data.choices?.[0]?.message?.content || "").trim();
         break;
       }
       if (!raw!) throw new Error(lastErr || "All keys failed");

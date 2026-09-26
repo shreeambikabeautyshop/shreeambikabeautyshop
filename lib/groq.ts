@@ -34,7 +34,7 @@ export async function groqVision(
         Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: "qwen/qwen3.6-27b",
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
         messages: [{
           role: "user",
           content: [
@@ -44,7 +44,6 @@ export async function groqVision(
         }],
         temperature,
         max_tokens: maxTokens,
-        reasoning_effort: "none",
       }),
     });
 
@@ -62,8 +61,7 @@ export async function groqVision(
     _keyIdx = (_keyIdx + attempt + 1) % keys.length;
 
     const raw = data.choices?.[0]?.message?.content || "";
-    // Strip <think>...</think> blocks from qwen
-    return raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+    return raw.trim();
   }
 
   throw new Error("All Groq API keys are rate limited. Wait a few seconds and try again.");
