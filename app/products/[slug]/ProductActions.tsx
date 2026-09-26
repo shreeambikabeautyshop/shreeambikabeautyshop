@@ -17,7 +17,7 @@ export default function ProductActions({ productName, price, mrp, slug }: Props)
   const [qty, setQty]               = useState(1);
   const [showHowItWorks, setShow]   = useState(false);
   const { customer, isLoggedIn, triggerLogin } = useUser();
-  const { show_price, show_mrp }    = useSettings();
+  const { show_price }    = useSettings();
 
   // WhatsApp message — clear order intent with product URL
   const orderMsg = encodeURIComponent(

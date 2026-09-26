@@ -48,7 +48,7 @@ export default function BestsellerProducts() {
   // Flip image side every hour — odd hour = image right, even hour = image left
   const [imageRight, setImageRight]   = useState(false);
   const { toggle, has } = useWishlist();
-  const { show_price, show_mrp } = useSettings();
+  const { show_price } = useSettings();
 
   // Update flip every hour
   useEffect(() => {
@@ -353,7 +353,6 @@ export default function BestsellerProducts() {
                       {show_price ? (
                         <>
                           <span className="text-sm font-black text-brand-primary">₹{p.price.toLocaleString("en-IN")}</span>
-                          {show_mrp && p.mrp > p.price && <span className="text-[10px] text-gray-400 line-through">₹{p.mrp.toLocaleString("en-IN")}</span>}
                         </>
                       ) : (
                         <span className="text-[10px] text-brand-primary font-semibold bg-brand-light px-1.5 py-0.5 rounded-full">Contact for Price</span>

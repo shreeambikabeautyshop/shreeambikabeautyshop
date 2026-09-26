@@ -15,7 +15,7 @@ interface Product {
 const PER_PAGE = 15; // 5 rows × 3 columns
 
 export default function AIRecommender() {
-  const { show_price, show_mrp } = useSettings();
+  const { show_price } = useSettings();
   const [concern, setConcern] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
