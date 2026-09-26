@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import RazorpayCheckout from "@/app/components/RazorpayCheckout";
 import { useCart } from "@/app/context/CartContext";
 import { useUser } from "@/app/context/UserContext";
 import { useSettings } from "@/app/context/SettingsContext";
@@ -28,6 +29,9 @@ export default function CartPage() {
   const [rateLoading, setRateLoading] = useState(false);
   const [rateError,  setRateError]  = useState("");
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [paymentDone, setPaymentDone] = useState(false);
+  const [receiptNo,  setReceiptNo]  = useState("");
+  const [paymentId,  setPaymentId]  = useState("");
   const receiptRef = useRef<HTMLDivElement>(null);
 
   const deliveryCharge = mode === "pickup" ? 0 : (rate?.charge || 0);
@@ -120,8 +124,59 @@ export default function CartPage() {
     win.close();
   };
 
+  // ── Payment Success Screen ────────────────────────────────────────
+  if (paymentDone) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="text-center max-w-md bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div className="text-7xl mb-4">🎉</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
+            <p className="text-gray-500 text-sm mb-4">
+              Thank you for shopping with Shree Ambika Beauty Shop!
+            </p>
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-6 text-left">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">Receipt No:</span>
+                <span className="font-bold text-gray-800">{receiptNo}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">Payment ID:</span>
+                <span className="font-mono text-xs text-gray-500">{paymentId}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Amount Paid:</span>
+                <span className="font-bold text-green-700">₹{grandTotal.toLocaleString("en-IN")}</span>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mb-6">
+              Vinod will contact you on WhatsApp (+91 82914 55297) to confirm dispatch details.
+            </p>
+            <div className="flex flex-col gap-3">
+              <a
+                href={`https://wa.me/918291455297?text=${encodeURIComponent(
+                  `Hi Vinod! Payment done ✅\nReceipt: ${receiptNo}\nPayment ID: ${paymentId}\nAmount: ₹${grandTotal}\nPlease confirm my order dispatch.`
+                )}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+              >
+                <FaWhatsapp size={16} /> Confirm on WhatsApp
+              </a>
+              <Link href="/products"
+                className="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-600 font-bold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+                🛍 Continue Shopping
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   // ── Empty cart ─────────────────────────────────────────────────────
-  if (items.length === 0 && !orderPlaced) {
+  if (items.length === 0 && !orderPlaced && !paymentDone) {
     return (
       <>
         <Navbar />
@@ -337,18 +392,62 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* WhatsApp Order Button */}
+                  {/* Payment Options */}
                   {(mode === "pickup" || rate?.available) && (
-                    <a
-                      href={`https://wa.me/918291455297?text=${buildWhatsAppMsg()}`}
-                      target="_blank" rel="noopener noreferrer"
-                      onClick={() => setOrderPlaced(true)}
-                      className="mt-4 w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-2xl transition-all"
-                      style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}
-                    >
-                      <FaWhatsapp size={18} />
-                      Place Order on WhatsApp
-                    </a>
+                    <div className="mt-4 space-y-3">
+
+                      {/* Option 1 — Pay Online via Razorpay */}
+                      <div>
+                        <p className="text-xs font-bold text-gray-600 mb-2">💳 Pay Online (Instant Confirmation):</p>
+                        <RazorpayCheckout
+                          items={items.map(i => ({
+                            id: i.id, name: i.name, brand: i.brand,
+                            price: i.price, qty: i.qty,
+                          }))}
+                          customer={{
+                            full_name: customer?.full_name,
+                            phone:     customer?.phone,
+                            email:     customer?.email,
+                            address:   customer?.address,
+                            pincode:   pincode,
+                          }}
+                          subtotal={subtotal}
+                          deliveryCharge={deliveryCharge}
+                          deliveryMode={mode as "pickup" | "delivery"}
+                          deliveryPincode={pincode}
+                          onSuccess={(rno, pid) => {
+                            setReceiptNo(rno);
+                            setPaymentId(pid);
+                            setPaymentDone(true);
+                            clear();
+                          }}
+                          onFailure={(err) => console.error("Payment failed:", err)}
+                        />
+                      </div>
+
+                      {/* Divider */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 border-t border-gray-200" />
+                        <span className="text-xs text-gray-400 font-semibold">OR</span>
+                        <div className="flex-1 border-t border-gray-200" />
+                      </div>
+
+                      {/* Option 2 — WhatsApp Order (COD/Manual) */}
+                      <div>
+                        <p className="text-xs font-bold text-gray-600 mb-2">💬 Order via WhatsApp (COD/UPI on delivery):</p>
+                        <a
+                          href={`https://wa.me/918291455297?text=${buildWhatsAppMsg()}`}
+                          target="_blank" rel="noopener noreferrer"
+                          onClick={() => setOrderPlaced(true)}
+                          className="w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-2xl transition-all"
+                          style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}
+                        >
+                          <FaWhatsapp size={18} />
+                          Place Order on WhatsApp
+                        </a>
+                      </div>
+
+                    </div>
                   )}
 
                   {/* Print Receipt */}
