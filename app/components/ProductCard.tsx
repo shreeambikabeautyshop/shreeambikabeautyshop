@@ -79,8 +79,6 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
     setCartAdded(true);
     setTimeout(() => setCartAdded(false), 2000);
   };
-    }
-  };
 
   const handleMouseEnter = () => {
     if (p.video_url) {
