@@ -255,7 +255,7 @@ export default function AddProduct() {
     } finally {
       setAiLoading(false);
     }
-  }, [brands, categories]);
+  }, [brands, categories, autoSaveMode]);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

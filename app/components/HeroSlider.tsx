@@ -78,7 +78,7 @@ export default function HeroSlider() {
             }`}
             aria-hidden={idx !== current}
           >
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={cldImg(slide.image, 1200)}
               alt={slide.alt}
