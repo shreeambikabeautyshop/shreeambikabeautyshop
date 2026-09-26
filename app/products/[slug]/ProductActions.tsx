@@ -67,19 +67,6 @@ export default function ProductActions({ productName, price, mrp, slug }: Props)
             </span>
           </div>
         )}
-        {show_price && show_mrp && mrp > price && (
-          <div className="pb-1">
-            <p className="text-xs text-gray-400">MRP</p>
-            <p className="text-sm text-gray-400 line-through">₹{mrp.toLocaleString("en-IN")}</p>
-          </div>
-        )}
-        {show_price && mrp > price && (
-          <div className="ml-auto pb-1">
-            <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-              Save ₹{(mrp - price).toLocaleString("en-IN")}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* ── Quantity ─────────────────────────────────────── */}

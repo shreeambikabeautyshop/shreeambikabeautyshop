@@ -214,12 +214,7 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
           {show_price && p.price && p.price > 0 ? (
             <div className="flex items-center gap-1.5">
               <span className="font-black text-gray-900 text-sm">₹{p.price}</span>
-              {show_mrp && p.mrp > p.price && (
-                <span className="text-[10px] text-gray-400 line-through">₹{p.mrp}</span>
-              )}
             </div>
-          ) : !show_price ? (
-            <span className="text-xs font-semibold text-gray-500 italic">Contact for Price</span>
           ) : (
             <span className="text-xs font-semibold text-gray-500 italic">Contact for Price</span>
           )}

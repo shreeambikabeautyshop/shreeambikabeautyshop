@@ -206,10 +206,7 @@ export default function AIRecommender() {
                           )}
                           <div className="flex items-center gap-1.5 mb-3">
                             {show_price ? (
-                              <>
-                                <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
-                                {show_mrp && p.mrp > p.price && <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>}
-                              </>
+                              <span className="font-bold text-sm text-gray-900">₹{p.price}</span>
                             ) : (
                               <span className="text-xs text-brand-primary font-semibold bg-brand-light px-2 py-0.5 rounded-full">Contact for Price</span>
                             )}

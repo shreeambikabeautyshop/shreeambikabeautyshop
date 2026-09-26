@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiCopy, FiZap, FiImage } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiCopy, FiZap, FiImage, FiEye, FiX } from "react-icons/fi";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 
 interface Product {
@@ -45,6 +45,7 @@ export default function ProductsList() {
   const [captionCache, setCaptionCache] = useState<CaptionCache>({});
   const [copiedKey, setCopiedKey]       = useState<string | null>(null);
   const [view, setView] = useState<"table" | "images">("table");
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
 
   const fetchProducts = () => {
     setLoading(true);
@@ -208,22 +209,39 @@ export default function ProductsList() {
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
               {filtered.map((p) => (
-                <Link key={p.id} href={`/sabs-controller/dashboard/products/edit/${p.id}`}
-                  className="group relative aspect-square rounded-2xl overflow-hidden bg-brand-light border border-gray-100 hover:shadow-lg transition-all hover:scale-[1.02]">
+                <div key={p.id} className="group relative aspect-square rounded-2xl overflow-hidden bg-brand-light border border-gray-100 hover:shadow-lg transition-all hover:scale-[1.02]">
                   {p.images?.[0] ? (
                     <Image src={p.images[0]} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl">💄</div>
                   )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 w-full">
+                  {/* Hover overlay: eye icon opens lightbox, edit icon goes to edit page */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex flex-col items-center justify-center gap-2">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center gap-2">
+                      {p.images?.[0] && (
+                        <button
+                          type="button"
+                          onClick={() => setLightboxImage({ url: p.images[0], name: p.name })}
+                          className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                          title="View image"
+                        >
+                          <FiEye size={14} className="text-gray-800" />
+                        </button>
+                      )}
+                      <Link href={`/sabs-controller/dashboard/products/edit/${p.id}`}
+                        className="w-8 h-8 bg-brand-primary/90 rounded-full flex items-center justify-center hover:bg-brand-primary transition-colors"
+                        title="Edit product">
+                        <FiEdit2 size={12} className="text-white" />
+                      </Link>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-2">
                       <p className="text-white text-[9px] font-bold line-clamp-2 leading-tight">{p.name}</p>
                     </div>
                   </div>
                   {!p.in_stock && (
                     <span className="absolute top-1 right-1 bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">Out</span>
                   )}
-                </Link>
+                </div>
               ))}
             </div>
           )}
@@ -270,9 +288,17 @@ export default function ProductsList() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-brand-light overflow-hidden flex-shrink-0 flex items-center justify-center">
+                          <div
+                            className="w-12 h-12 rounded-xl bg-brand-light overflow-hidden flex-shrink-0 flex items-center justify-center relative group/thumb cursor-pointer"
+                            onClick={() => p.images?.[0] && setLightboxImage({ url: p.images[0], name: p.name })}
+                          >
                             {p.images?.[0] ? (
-                              <Image src={p.images[0]} alt={p.name} width={48} height={48} className="object-cover w-full h-full" />
+                              <>
+                                <Image src={p.images[0]} alt={p.name} width={48} height={48} className="object-cover w-full h-full" />
+                                <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/40 transition-colors flex items-center justify-center">
+                                  <FiEye size={16} className="text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity" />
+                                </div>
+                              </>
                             ) : (
                               <span className="text-xl">📦</span>
                             )}
@@ -291,8 +317,6 @@ export default function ProductsList() {
                       </td>
                       <td className="px-4 py-3">
                         <p className="font-bold text-gray-800">₹{p.price}</p>
-                        <p className="text-xs text-gray-400 line-through">₹{p.mrp}</p>
-                        <p className="text-xs text-green-600 font-semibold">{p.discount}% OFF</p>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.in_stock ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"}`}>
@@ -478,6 +502,36 @@ export default function ProductsList() {
           </div>
         );
       })()}
+      {/* ── Lightbox Modal ── */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div className="relative max-w-2xl w-full flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white text-2xl font-bold transition-colors"
+              aria-label="Close lightbox"
+            >
+              <FiX size={28} />
+            </button>
+            <div className="relative w-full" style={{ maxWidth: 600 }}>
+              <Image
+                src={lightboxImage.url}
+                alt={lightboxImage.name}
+                width={600}
+                height={600}
+                className="rounded-2xl object-contain w-full h-auto max-h-[70vh] shadow-2xl"
+                style={{ maxWidth: 600 }}
+              />
+            </div>
+            <p className="text-white font-semibold text-center mt-4 text-sm max-w-xs leading-snug">
+              {lightboxImage.name}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

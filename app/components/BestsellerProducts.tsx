@@ -183,17 +183,7 @@ export default function BestsellerProducts() {
             {/* Price */}
             <div className="flex items-baseline gap-3 py-2 border-y border-gray-100">
               {show_price ? (
-                <>
-                  <span className="text-3xl font-black text-brand-primary">₹{featured.price.toLocaleString("en-IN")}</span>
-                  {show_mrp && featured.mrp > featured.price && (
-                    <>
-                      <span className="text-sm text-gray-400 line-through">₹{featured.mrp.toLocaleString("en-IN")}</span>
-                      <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                        Save ₹{(featured.mrp - featured.price).toLocaleString("en-IN")}
-                      </span>
-                    </>
-                  )}
-                </>
+                <span className="text-3xl font-black text-brand-primary">₹{featured.price.toLocaleString("en-IN")}</span>
               ) : (
                 <span className="text-sm text-brand-primary font-semibold bg-brand-light px-3 py-1.5 rounded-full">
                   Contact for Price

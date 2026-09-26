@@ -109,9 +109,6 @@ export default function WishlistPage() {
                           </Link>
                           <div className="flex items-baseline gap-1.5 mb-2.5">
                             <span className="font-bold text-sm text-gray-900">₹{item.price}</span>
-                            {item.mrp > item.price && (
-                              <span className="text-xs text-gray-400 line-through">₹{item.mrp}</span>
-                            )}
                           </div>
                           {/* Action buttons */}
                           <div className="flex gap-1.5">
@@ -143,16 +140,6 @@ export default function WishlistPage() {
                       <span>Total Items</span>
                       <span className="font-semibold text-gray-800">{items.length}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600">
-                      <span>Total MRP</span>
-                      <span className="font-semibold text-gray-400 line-through">₹{totalMRP.toLocaleString("en-IN")}</span>
-                    </div>
-                    {totalSavings > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>You Save</span>
-                        <span className="font-bold">₹{totalSavings.toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
                     <div className="border-t border-gray-100 pt-3 flex justify-between">
                       <span className="font-bold text-gray-800">Total Price</span>
                       <span className="font-black text-xl text-gray-900">₹{totalPrice.toLocaleString("en-IN")}</span>
