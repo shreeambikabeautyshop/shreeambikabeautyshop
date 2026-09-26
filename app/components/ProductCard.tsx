@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { FaStar, FaWhatsapp } from "react-icons/fa";
-import { FiEye, FiHeart } from "react-icons/fi";
+import { FiEye, FiHeart, FiShoppingCart } from "react-icons/fi";
 import { useWhatsAppOrder } from "@/app/hooks/useWhatsAppOrder";
 import { useWishlist } from "@/app/context/WishlistContext";
+import { useCart } from "@/app/context/CartContext";
 import { useSettings } from "@/app/context/SettingsContext";
+import { useUser } from "@/app/context/UserContext";
 import { cldImg } from "@/app/lib/cloudinary-img";
 
 export interface ProductCardData {
@@ -34,12 +36,16 @@ interface Props {
 
 export default function ProductCard({ product: p, source = "product_card" }: Props) {
   const { openWhatsApp } = useWhatsAppOrder();
-  const { add, remove, has } = useWishlist();
-  const { show_price, show_mrp } = useSettings();
-  const inWishlist = has(p.id);
+  const { add: addWishlist, remove: removeWishlist, has: hasWishlist } = useWishlist();
+  const { add: addCart, has: hasCart } = useCart();
+  const { customer, isLoggedIn, triggerLogin } = useUser();
+  const { show_price } = useSettings();
+  const inWishlist = hasWishlist(p.id);
+  const inCart = hasCart(p.id);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [cartAdded, setCartAdded] = useState(false);
 
   const handleOrder = () => {
     openWhatsApp({
@@ -55,9 +61,24 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
     e.preventDefault();
     e.stopPropagation();
     if (inWishlist) {
-      remove(p.id);
+      removeWishlist(p.id);
     } else {
-      add({ id: p.id, name: p.name, price: p.price, mrp: p.mrp || p.price, images: p.images || [], slug: p.slug, brand: p.brand, rating: p.rating || 4.2, category: p.category });
+      if (!isLoggedIn) { triggerLogin("wishlist"); return; }
+      addWishlist({ id: p.id, name: p.name, price: p.price, mrp: p.price, images: p.images || [], slug: p.slug, brand: p.brand, rating: p.rating || 4.2, category: p.category });
+    }
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isLoggedIn) { triggerLogin("cart"); return; }
+    addCart({
+      id: p.id, name: p.name, slug: p.slug, brand: p.brand,
+      price: p.price, images: p.images || [], category: p.category,
+    });
+    setCartAdded(true);
+    setTimeout(() => setCartAdded(false), 2000);
+  };
     }
   };
 
@@ -221,16 +242,31 @@ export default function ProductCard({ product: p, source = "product_card" }: Pro
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-1.5 mt-auto">
-          <Link
-            href={`/products/${p.slug || p.id}`}
-            className="flex items-center justify-center gap-1 flex-1 border border-gray-200 hover:border-brand-primary text-gray-600 hover:text-brand-primary text-[10px] font-bold py-2 rounded-xl transition-all"
-          >
-            <FiEye size={11} /> View Details
-          </Link>
+        <div className="flex gap-1.5 mt-auto flex-col">
+          {/* Row 1: View + Add to Cart */}
+          <div className="flex gap-1.5">
+            <Link
+              href={`/products/${p.slug || p.id}`}
+              className="flex items-center justify-center gap-1 flex-1 border border-gray-200 hover:border-brand-primary text-gray-600 hover:text-brand-primary text-[10px] font-bold py-2 rounded-xl transition-all"
+            >
+              <FiEye size={11} /> View
+            </Link>
+            <button
+              onClick={handleAddToCart}
+              className={`flex items-center justify-center gap-1 flex-1 text-[10px] font-bold py-2 rounded-xl transition-all ${
+                inCart || cartAdded
+                  ? "bg-brand-primary text-white"
+                  : "border border-brand-primary text-brand-primary hover:bg-brand-light"
+              }`}
+            >
+              <FiShoppingCart size={11} />
+              {cartAdded ? "Added ✓" : inCart ? "In Cart" : "Add to Cart"}
+            </button>
+          </div>
+          {/* Row 2: WhatsApp */}
           <button
             onClick={handleOrder}
-            className="flex items-center justify-center gap-1 flex-1 bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold py-2 rounded-xl transition-colors"
+            className="flex items-center justify-center gap-1 w-full bg-green-500 hover:bg-green-600 text-white text-[10px] font-bold py-2 rounded-xl transition-colors"
           >
             <FaWhatsapp size={11} /> Buy on WhatsApp
           </button>

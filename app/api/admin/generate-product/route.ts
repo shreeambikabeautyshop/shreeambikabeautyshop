@@ -20,6 +20,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
   "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories",
   "price": realistic_indian_selling_price_number,
   "mrp": realistic_indian_mrp_number,
+  "weight_kg": estimated_product_weight_in_kg_as_decimal (e.g. 0.1 for 100g serum, 0.3 for 250ml shampoo, 0.5 for 400ml bottle, 1.2 for electronics like hair dryer — be realistic based on product size/type visible in image),
   "description": "3-4 short sentences. Sentence 1: What this product does in simple words. Sentence 2: Key ingredient or technology if visible. Sentence 3: Who it is for. Sentence 4: 'Available at Shree Ambika Beauty Shop, Mumbai — Same Day Delivery in Mumbai, Pan India 4-7 days, Worldwide shipping available. WhatsApp Vinod: +918291455297.' Keep it human, not robotic.",
   "tags": ["brand-name","product-type","main-benefit","skin-or-hair-type","mumbai","india","buy-online","original","best-price","shree-ambika-beauty-shop","vinod-mumbai","pan-india-delivery"],
   "seo_title": "Brand + Product + Key Benefit | Buy in Mumbai — max 60 chars",

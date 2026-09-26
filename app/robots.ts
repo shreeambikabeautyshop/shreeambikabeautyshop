@@ -38,6 +38,7 @@ export default function robots(): MetadataRoute.Robots {
           "/favourites/",
           "/s/",
           "/wishlist",
+          "/cart",
           "/profile",
         ],
       },

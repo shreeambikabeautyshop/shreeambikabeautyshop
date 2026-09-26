@@ -18,8 +18,8 @@ interface UserContextType {
   saveCustomer: (c: Customer) => void;
   clearCustomer: () => void;
   showLoginModal: boolean;
-  pendingAction: "wishlist" | "order" | null;
-  triggerLogin: (action: "wishlist" | "order") => void;
+  pendingAction: "wishlist" | "order" | "cart" | null;
+  triggerLogin: (action: "wishlist" | "order" | "cart") => void;
   cancelLogin: () => void;
 }
 
@@ -33,7 +33,7 @@ const UserContext = createContext<UserContextType>({
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"wishlist" | "order" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"wishlist" | "order" | "cart" | null>(null);
 
   useEffect(() => {
     try {
@@ -54,7 +54,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("sabs_customer");
   }, []);
 
-  const triggerLogin = useCallback((action: "wishlist" | "order") => {
+  const triggerLogin = useCallback((action: "wishlist" | "order" | "cart") => {
     setPendingAction(action);
     setShowLoginModal(true);
   }, []);

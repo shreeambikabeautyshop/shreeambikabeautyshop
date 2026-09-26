@@ -5,6 +5,7 @@ import "./globals.css";
 import { WishlistProvider } from "@/app/context/WishlistContext";
 import { UserProvider } from "@/app/context/UserContext";
 import { SettingsProvider } from "@/app/context/SettingsContext";
+import { CartProvider } from "@/app/context/CartContext";
 import CustomerLoginModal from "@/app/components/CustomerLoginModal";
 import VisitorTracker from "@/app/components/VisitorTracker";
 import GAScript from "@/app/components/GAScript";
@@ -467,13 +468,15 @@ export default function RootLayout({
         `}</Script>
         <UserProvider>
           <SettingsProvider>
-            <WishlistProvider>
-              <VisitorTracker />
-              <InAppBrowserBanner />
-              {children}
-              <CustomerLoginModal />
-              <EngagementPopup />
-            </WishlistProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <VisitorTracker />
+                <InAppBrowserBanner />
+                {children}
+                <CustomerLoginModal />
+                <EngagementPopup />
+              </WishlistProvider>
+            </CartProvider>
           </SettingsProvider>
         </UserProvider>
       </body>

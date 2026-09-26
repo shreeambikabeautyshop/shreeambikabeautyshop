@@ -3,11 +3,28 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { cldImg } from "@/app/lib/cloudinary-img";
 import { usePathname, useRouter } from "next/navigation";
-import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle, FiMapPin, FiMail, FiEdit, FiLogOut } from "react-icons/fi";
+import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle, FiMapPin, FiMail, FiEdit, FiLogOut, FiShoppingCart } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdRepeat } from "react-icons/md";
 import { useWishlist } from "@/app/context/WishlistContext";
+import { useCart } from "@/app/context/CartContext";
 import { useUser } from "@/app/context/UserContext";
+
+/* ─── Cart badge ─── */
+function CartIcon() {
+  const { totalItems } = useCart();
+  return (
+    <Link href="/cart" aria-label="Cart"
+      className="relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-brand-light text-gray-600 hover:text-brand-primary transition-all">
+      <FiShoppingCart size={19} className={totalItems > 0 ? "text-brand-primary" : ""} />
+      {totalItems > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 bg-green-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+          {totalItems > 9 ? "9+" : totalItems}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 /* ─── Wishlist badge ─── */
 function WishlistIcon() {
@@ -339,6 +356,9 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* Cart */}
+            <CartIcon />
 
             {/* Wishlist */}
             <WishlistIcon />
