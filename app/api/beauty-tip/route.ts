@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { groqText } from "@/lib/groq";
+import { geminiText } from "@/lib/gemini";
 
-// Cache tip for the day — resets on each new serverless cold start (good enough)
+// Cache tip for the day — resets on each new serverless cold start
 let cachedTip: {
-  headline: string;
-  detail: string;
-  productSlug: string;
-  productName: string;
-  productImage: string;
-  productPrice: number;
-  date: string;
+  headline: string; detail: string; productSlug: string;
+  productName: string; productImage: string; productPrice: number; date: string;
 } | null = null;
 
 async function generateTip(productName: string, category: string) {
@@ -30,17 +25,16 @@ Return ONLY raw JSON (no markdown):
   "detail": "2 short sentences explaining why and how. Practical, not salesy. Mention the product name naturally."
 }`;
 
-  const raw = await groqText(prompt, 200, 0.7);
+  const raw     = await geminiText(prompt, 200, 0.7);
   const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-  const match = cleaned.match(/\{[\s\S]*\}/);
+  const match   = cleaned.match(/\{[\s\S]*\}/);
   if (!match) throw new Error("Could not parse tip");
   return JSON.parse(match[0]);
 }
 
 export async function GET() {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const today = new Date().toISOString().slice(0, 10);
 
-  // Return cached if same day
   if (cachedTip && cachedTip.date === today) {
     return NextResponse.json(cachedTip);
   }
@@ -51,7 +45,6 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    // Pick a random in-stock product
     const { data: products } = await supabase
       .from("products")
       .select("id,name,slug,category,images,price")
@@ -62,20 +55,19 @@ export async function GET() {
       return NextResponse.json({ error: "No products" }, { status: 404 });
     }
 
-    // Use date-based seed to pick a consistent product for the day
     const dayIndex = new Date().getDate() % products.length;
-    const product = products[dayIndex];
+    const product  = products[dayIndex];
 
     const tip = await generateTip(product.name, product.category);
 
     const result = {
-      headline: tip.headline,
-      detail: tip.detail,
-      productSlug: product.slug || product.id,
-      productName: product.name,
+      headline:     tip.headline,
+      detail:       tip.detail,
+      productSlug:  product.slug || product.id,
+      productName:  product.name,
       productImage: product.images?.[0] || "",
       productPrice: product.price,
-      date: today,
+      date:         today,
     };
 
     cachedTip = result;

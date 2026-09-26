@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { groqVision } from "@/lib/groq";
+import { geminiVisionBase64 } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,14 +23,14 @@ Examples:
 - Image of face serum → {"query":"face serum vitamin c","category":"Skin Care","confidence":"medium"}
 - Image not a beauty product → {"query":"","category":"","confidence":"low"}`;
 
-    const raw = await groqVision(imageBase64, mimeType, prompt, 100, 0.2);
+    const raw   = await geminiVisionBase64(imageBase64, mimeType, prompt, 100, 0.2);
     const match = raw.match(/\{[\s\S]*?\}/);
     if (!match) return NextResponse.json({ query: "", confidence: "low" });
 
     const result = JSON.parse(match[0]);
     return NextResponse.json({
-      query: result.query || "",
-      category: result.category || "",
+      query:      result.query      || "",
+      category:   result.category   || "",
       confidence: result.confidence || "low",
     });
   } catch (err) {
