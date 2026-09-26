@@ -1,7 +1,7 @@
 /**
  * Gemini Vision helper with automatic key rotation across 30 API keys.
  * Rotates to next key on 429 (quota exceeded) errors.
- * Uses gemini-1.5-flash for fast, accurate image analysis.
+ * Uses gemini-2.5-flash for fast, accurate image analysis.
  */
 
 let _keyIdx = 0;
@@ -86,7 +86,7 @@ export async function geminiVisionBase64(
     const key = keys[(_keyIdx + attempt) % keys.length];
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
       {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,7 +150,7 @@ export async function geminiText(
     const key = keys[(_keyIdx + attempt) % keys.length];
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
       {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
