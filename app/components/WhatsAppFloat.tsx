@@ -1,19 +1,26 @@
 "use client";
 import { FaWhatsapp, FaPhone } from "react-icons/fa";
+import { useSettings } from "@/app/context/SettingsContext";
 
 export default function WhatsAppFloat() {
+  const { show_whatsapp, show_call_button } = useSettings();
+
+  if (!show_whatsapp) return null;
+
   return (
     <div className="fixed bottom-5 right-4 z-50 flex flex-col items-end gap-2">
-      {/* Phone call button — mobile only */}
-      <a
-        href="tel:+918291455297"
-        aria-label="Call Shree Ambika Beauty Shop"
-        className="sm:hidden flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-full shadow-xl transition-all hover:scale-105"
-        style={{ paddingLeft: "14px", paddingRight: "16px", paddingTop: "10px", paddingBottom: "10px" }}
-      >
-        <FaPhone size={16} />
-        <span className="text-xs font-bold">Call Now</span>
-      </a>
+      {/* Phone call button — mobile only, controlled by setting */}
+      {show_call_button && (
+        <a
+          href="tel:+918291455297"
+          aria-label="Call Shree Ambika Beauty Shop"
+          className="sm:hidden flex items-center gap-2 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-full shadow-xl transition-all hover:scale-105"
+          style={{ paddingLeft: "14px", paddingRight: "16px", paddingTop: "10px", paddingBottom: "10px" }}
+        >
+          <FaPhone size={16} />
+          <span className="text-xs font-bold">Call Now</span>
+        </a>
+      )}
 
       {/* WhatsApp button */}
       <a
