@@ -214,7 +214,10 @@ export default function AddProduct() {
       const d: AIData = json.data;
       setForm((p) => ({
         ...p,
-        name: d.name || p.name, brand: d.brand || p.brand, category: d.category || p.category,
+        name: d.name || p.name, brand: d.brand || p.brand,
+        // KEEP current category (default = Nail Art & Nail Care) — don't let AI override it
+        // User can change manually if needed
+        category: p.category,
         price: d.price ? String(d.price) : p.price,
         // mrp is not used — same as price
         description: d.description || p.description,
