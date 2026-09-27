@@ -116,8 +116,8 @@ export async function geminiVisionBase64(
 
     if (!res.ok) {
       const errMsg = data?.error?.message || `Gemini error ${res.status}`;
-      // If invalid key, skip to next
-      if (res.status === 400 || res.status === 403) {
+      // If invalid key or quota, skip to next
+      if (res.status === 400 || res.status === 403 || res.status === 429) {
         _keyIdx = (_keyIdx + attempt + 1) % keys.length;
         continue;
       }
@@ -127,7 +127,13 @@ export async function geminiVisionBase64(
     // Advance key index for next call (round-robin)
     _keyIdx = (_keyIdx + attempt + 1) % keys.length;
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    // Extract text — handle both regular and thinking models
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const text = parts
+      .filter((p: { text?: string; thoughtSignature?: string }) => p.text && !p.thoughtSignature)
+      .map((p: { text: string }) => p.text)
+      .join("") || parts.find((p: { text?: string }) => p.text)?.text || "";
+
     if (!text) throw new Error("Gemini returned empty response");
     return text;
   }
@@ -177,8 +183,18 @@ export async function geminiText(
       throw new Error(data?.error?.message || `Gemini error ${res.status}`);
     }
 
+    // Advance key index for next call (round-robin)
     _keyIdx = (_keyIdx + attempt + 1) % keys.length;
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    // Extract text — handle both regular and thinking models (with thoughtSignature)
+    const parts2 = data.candidates?.[0]?.content?.parts || [];
+    const text2 = parts2
+      .filter((p: { text?: string; thoughtSignature?: string }) => p.text && !p.thoughtSignature)
+      .map((p: { text: string }) => p.text)
+      .join("") || parts2.find((p: { text?: string }) => p.text)?.text || "";
+
+    if (!text2) throw new Error("Gemini returned empty response");
+    return text2;
   }
 
   throw new Error("All Gemini API keys exhausted.");
