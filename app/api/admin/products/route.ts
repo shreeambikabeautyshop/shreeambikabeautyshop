@@ -38,6 +38,15 @@ function submitToAllEngines(urls: string[]) {
   }).catch(() => { /* non-critical */ });
 }
 
+// Fire-and-forget: create short URL for the product
+function createShortUrl(productId: string, productSlug: string, productName: string) {
+  fetch(`${BASE}/api/shorten`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ product_id: productId, product_slug: productSlug, product_name: productName }),
+  }).catch(() => {});
+}
+
 // POST create product
 export async function POST(req: NextRequest) {
   if (!isAuthenticated(req)) {
@@ -62,16 +71,18 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Build category slug for the category page URL
+  // ── Auto-trigger background tasks after save ──────────────────────────────
+  // 1. Submit to all search engines (Google + Bing + Yandex)
   const categorySlug = (body.category as string || "")
     .toLowerCase().replace(/\s+/g, "-").replace(/&/g, "").replace(/--+/g, "-");
-
-  // Submit new product to Google Indexing API + Bing + Yandex + IndexNow hub
   submitToAllEngines([
     `${BASE}/products/${slug}`,
     `${BASE}/products`,
     ...(categorySlug ? [`${BASE}/categories/${categorySlug}`] : []),
   ]);
+
+  // 2. Auto-create short URL for WhatsApp sharing
+  createShortUrl(data.id, slug, body.name || "product");
 
   return NextResponse.json({ data }, { status: 201 });
 }

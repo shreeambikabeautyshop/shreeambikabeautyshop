@@ -64,6 +64,7 @@ interface AIData {
   description: string; tags: string[]; seo_title: string; seo_description: string;
   key_benefits: string[]; how_to_use: string; suitable_for: string;
   faq: { q: string; a: string }[];
+  weight_kg?: number;
   _imageUrl?: string;
   _seoImageName?: string;
 }
@@ -72,6 +73,7 @@ interface FormData {
   description: string; in_stock: boolean; featured: boolean; trending: boolean;
   tags: string; seo_title: string; seo_description: string;
   key_benefits: string; how_to_use: string; suitable_for: string;
+  weight_kg: string;
 }
 
 function playSuccessSound() {
@@ -118,6 +120,7 @@ export default function AddProduct() {
     description: "", in_stock: true, featured: false, trending: false,
     tags: "", seo_title: "", seo_description: "",
     key_benefits: "", how_to_use: "", suitable_for: "",
+    weight_kg: "0.3",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -218,6 +221,7 @@ export default function AddProduct() {
         seo_title: d.seo_title || p.seo_title, seo_description: d.seo_description || p.seo_description,
         key_benefits: Array.isArray(d.key_benefits) ? d.key_benefits.join("\n") : p.key_benefits,
         how_to_use: d.how_to_use || p.how_to_use, suitable_for: d.suitable_for || p.suitable_for,
+        weight_kg: d.weight_kg ? String(d.weight_kg) : p.weight_kg,
       }));
       if (d.brand && !brands.includes(d.brand)) setBrands((b) => [...b, d.brand]);
       if (d.category && !categories.includes(d.category)) setCategories((c) => [...c, d.category]);
@@ -336,6 +340,7 @@ export default function AddProduct() {
         seo_title: form.seo_title, seo_description: form.seo_description,
         key_benefits: form.key_benefits ? form.key_benefits.split("\n").filter(Boolean) : [],
         how_to_use: form.how_to_use, suitable_for: form.suitable_for, faq: aiFaq,
+        weight_kg: form.weight_kg ? parseFloat(form.weight_kg) : 0.3,
         ...(videoUrl ? { video_url: videoUrl } : {}),
       };
       setSaveProgress(75);
