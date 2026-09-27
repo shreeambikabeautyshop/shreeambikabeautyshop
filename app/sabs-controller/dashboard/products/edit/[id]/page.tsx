@@ -264,7 +264,7 @@ export default function EditProduct() {
         brand: form.brand,
         category: form.category,
         price: parseFloat(form.price),
-        mrp: parseFloat(form.mrp),
+        mrp:   parseFloat(form.price), // mrp = price, no discount shown
         description: form.description.trim(),
         images: allImages,
         in_stock: form.in_stock,
@@ -510,22 +510,12 @@ export default function EditProduct() {
         {/* Pricing */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h2 className="font-bold text-gray-700 mb-4">Pricing</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 max-w-xs">
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Selling Price (₹)</label>
               <input type="number" name="price" value={form.price} onChange={handleChange} min="1" step="0.01"
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">MRP (₹)</label>
-              <input type="number" name="mrp" value={form.mrp} onChange={handleChange} min="1" step="0.01"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">Discount</label>
-              <div className="border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50">
-                <span className={`font-bold text-lg ${discount > 0 ? "text-green-600" : "text-gray-400"}`}>{discount}% OFF</span>
-              </div>
+              <p className="text-xs text-gray-400 mt-1">Enter the selling price as shown on product / as per your rate</p>
             </div>
           </div>
         </div>

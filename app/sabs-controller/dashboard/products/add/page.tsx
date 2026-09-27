@@ -215,7 +215,8 @@ export default function AddProduct() {
       setForm((p) => ({
         ...p,
         name: d.name || p.name, brand: d.brand || p.brand, category: d.category || p.category,
-        price: d.price ? String(d.price) : p.price, mrp: d.mrp ? String(d.mrp) : p.mrp,
+        price: d.price ? String(d.price) : p.price,
+        // mrp is not used — same as price
         description: d.description || p.description,
         tags: Array.isArray(d.tags) ? d.tags.join(", ") : p.tags,
         seo_title: d.seo_title || p.seo_title, seo_description: d.seo_description || p.seo_description,
@@ -323,7 +324,7 @@ export default function AddProduct() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError("");
-    if (!form.name || !form.brand || !form.category || !form.price || !form.mrp) { setError("Please fill all required fields."); return; }
+    if (!form.name || !form.brand || !form.category || !form.price) { setError("Please fill all required fields."); return; }
     if (images.length === 0) { setError("Please add at least one product image."); return; }
     try {
       setSaveProgress(5);
@@ -333,7 +334,7 @@ export default function AddProduct() {
       setSaveProgress(65);
       const payload = {
         name: form.name.trim(), brand: form.brand, category: form.category,
-        price: parseFloat(form.price), mrp: parseFloat(form.mrp),
+        price: parseFloat(form.price), mrp: parseFloat(form.price), // mrp = price (no discount shown)
         description: form.description.trim(), images: urls, cloudinary_ids: ids,
         in_stock: form.in_stock, featured: form.featured, trending: form.trending,
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
@@ -629,22 +630,12 @@ export default function AddProduct() {
             <h2 className="font-bold text-gray-700">Pricing</h2>
             {aiDone && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">💡 AI Suggested — Verify & Edit</span>}
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 max-w-xs">
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Selling Price (₹) <span className="text-red-500">*</span></label>
               <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="0" min="1" step="0.01" required
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">MRP (₹) <span className="text-red-500">*</span></label>
-              <input type="number" name="mrp" value={form.mrp} onChange={handleChange} placeholder="0" min="1" step="0.01" required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">Discount</label>
-              <div className="border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50">
-                <span className={`font-bold text-lg ${discount > 0 ? "text-green-600" : "text-gray-400"}`}>{discount}% OFF</span>
-              </div>
+              <p className="text-xs text-gray-400 mt-1">Enter the selling price as shown on product / as per your rate</p>
             </div>
           </div>
         </div>
