@@ -116,7 +116,7 @@ export default function AddProduct() {
   const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [error, setError] = useState("");
   const [form, setForm] = useState<FormData>({
-    name: "", brand: "", category: "", price: "", mrp: "",
+    name: "", brand: "", category: "Nail Art & Nail Care", price: "", mrp: "",
     description: "", in_stock: true, featured: false, trending: false,
     tags: "", seo_title: "", seo_description: "",
     key_benefits: "", how_to_use: "", suitable_for: "",
