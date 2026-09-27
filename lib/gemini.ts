@@ -152,6 +152,8 @@ export async function geminiVisionBase64(
           // Overloaded — try next key
           _keyIdx = (_keyIdx + attempt + 1) % keys.length;
           errors.push(`${model}[key${(_keyIdx + attempt) % keys.length}]: overloaded`);
+          // Small delay between retries to avoid hammering
+          await new Promise(r => setTimeout(r, 200));
           continue;
         }
 

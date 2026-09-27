@@ -258,7 +258,23 @@ export default function AddProduct() {
       }
     } catch (err) {
       clearInterval(interval);
-      setError(err instanceof Error ? err.message : "AI generation failed");
+      const errMsg = err instanceof Error ? err.message : "AI generation failed";
+      const isOverloaded = errMsg.includes("overloaded") || errMsg.includes("All Gemini");
+
+      if (isOverloaded) {
+        // Auto-retry after 15 seconds
+        setError("⏳ AI is busy (high demand). Auto-retrying in 15 seconds... or click 'Generate with AI' to retry now.");
+        setProgress(0);
+        setProgressLabel("");
+        setAiLoading(false);
+        setTimeout(() => {
+          setError("");
+          triggerAI(imgList);
+        }, 15000);
+        return;
+      }
+
+      setError(errMsg);
       setProgress(0);
     } finally {
       setAiLoading(false);
