@@ -70,7 +70,7 @@ export default function ReturnsPage() {
               {[
                 { n:"01", emoji:"📸", title:"Take a Photo First", desc:"Take a clear photo of the product and its packaging showing the issue (damage, wrong item, etc.). This helps us process your request faster." },
                 { n:"02", emoji:"💬", title:"WhatsApp Vinod", desc:"Message Vinod at +918291455297 within 7 days of receiving the product. Share your order details and the photo. We will confirm return eligibility." },
-                { n:"03", emoji:"📦", title:"Ship it Back — At Your Cost", desc:"Once approved, pack the product in its original packaging and book a courier yourself (DTDC, Delhivery, India Post etc.) to our shop address: Anand Nagar Metro Station, Dahisar East, Mumbai 400068. Share the tracking ID with Vinod on WhatsApp." },
+                { n:"03", emoji:"📦", title:"Ship it Back — At Your Cost", desc:"Once approved, pack the product in its original packaging and book a courier yourself (DTDC, Delhivery, India Post etc.) to our shop address: Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068. Share the tracking ID with Vinod on WhatsApp." },
                 { n:"04", emoji:"🏪", title:"Or Visit Our Store Directly", desc:"You can also walk into our physical store at Dahisar East, Mumbai with the product. We will inspect it on the spot and resolve immediately — refund or exchange, whichever you prefer." },
                 { n:"05", emoji:"✅", title:"Refund or Exchange", desc:"Once we receive and inspect the returned product at our store, we will either refund your money to your original payment method OR give you another product of your choice." },
               ].map(s => (
@@ -172,7 +172,7 @@ export default function ReturnsPage() {
               className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3.5 rounded-full transition-colors">
               💬 WhatsApp Vinod — +91 82914 55297
             </a>
-            <p className="text-white/50 text-xs mt-4">Store Address: Anand Nagar Metro Station, Dahisar East, Mumbai 400068</p>
+            <p className="text-white/50 text-xs mt-4">Store Address: Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068</p>
           </div>
 
         </div>

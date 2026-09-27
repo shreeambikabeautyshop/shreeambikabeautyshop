@@ -240,7 +240,7 @@ export default function ContactClient() {
               <address className="md:col-span-2 bg-brand-light rounded-3xl p-7 not-italic space-y-5">
                 <h3 className="font-heading italic text-lg text-gray-900">Shree Ambika Beauty Shop</h3>
                 {[
-                  { icon: "📍", label: "Address", value: "Anand Nagar Metro Station, Dahisar East, Mumbai — 400068" },
+                  { icon: "📍", label: "Address", value: "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068" },
                   { icon: "🕐", label: "Store Hours", value: "Monday – Sunday: 9:00 AM – 9:00 PM (Open 365 days)" },
                   { icon: "🚇", label: "Nearby Transit", value: "Anand Nagar Metro Station (Western Line)" },
                   { icon: "📱", label: "WhatsApp", value: "+91 82914 55297" },

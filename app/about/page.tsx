@@ -331,7 +331,7 @@ export default function AboutPage() {
           <div className="text-center mb-8">
             <p className="text-xs font-black text-brand-primary uppercase tracking-widest mb-2">Find Us</p>
             <h2 className="text-2xl sm:text-3xl font-heading italic text-gray-900 mb-2">Visit Our Store</h2>
-            <p className="text-gray-500 text-sm">Anand Nagar Metro Station, Dahisar East, Mumbai 400068</p>
+            <p className="text-gray-500 text-sm">Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068</p>
           </div>
 
           <div className="grid md:grid-cols-5 gap-6 items-start">

@@ -216,7 +216,7 @@ export default function TrackOrderPage() {
             >
               💬 WhatsApp Vinod — +91 82914 55297
             </a>
-            <p className="text-white/40 text-xs mt-4">Anand Nagar Metro Station, Dahisar East, Mumbai 400068</p>
+            <p className="text-white/40 text-xs mt-4">Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068</p>
           </div>
 
         </div>

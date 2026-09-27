@@ -278,9 +278,11 @@ export default function Footer() {
                 <MdLocationOn size={15} className="text-brand-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs text-gray-500 mb-0.5">Store Address</p>
-                  <p className="text-sm text-white">Anand Nagar Metro Station,</p>
+                  <p className="text-sm text-white">Shop No. 8, Ashapura Shopping Centre,</p>
+                  <p className="text-sm text-white">C S Complex, Road No. 2,</p>
+                  <p className="text-sm text-white">Near Shanji Hotel, Anand Nagar,</p>
                   <p className="text-sm text-white">Dahisar East, Mumbai 400068</p>
-                  <a href="https://maps.google.com/?q=Anand+Nagar+Metro+Station+Dahisar+East+Mumbai"
+                  <a href="https://maps.google.com/?q=Shree+Ambika+Beauty+Shop+Shop+No+8+Ashapura+Shopping+Centre+Dahisar+East+Mumbai+400068"
                     target="_blank" rel="noopener noreferrer"
                     className="text-xs text-brand-accent hover:underline mt-1 inline-block">
                     📍 View on Google Maps →
