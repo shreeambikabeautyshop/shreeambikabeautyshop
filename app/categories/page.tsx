@@ -21,6 +21,7 @@ const CATEGORIES = [
   { slug: "electronics",     emoji: "💅", name: "Electronics",        desc: "Hair dryers, straighteners, curlers & more",         color: "bg-gray-50 border-gray-200" },
   { slug: "purses-bags",     emoji: "👜", name: "Purses & Bags",      desc: "Handbags, clutches, wallets & more",                 color: "bg-orange-50 border-orange-200" },
   { slug: "wax-accessories", emoji: "🪮", name: "Wax & Accessories",  desc: "Wax strips, hair removal, beauty tools & more",      color: "bg-teal-50 border-teal-200" },
+  { slug: "nail-art",        emoji: "💅", name: "Nail Art & Nail Care", desc: "Nail polish, gel nails, nail art tools & more",      color: "bg-pink-50 border-pink-300" },
 ];
 
 export default function CategoriesPage() {

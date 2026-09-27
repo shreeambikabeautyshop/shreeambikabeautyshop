@@ -6,7 +6,7 @@ import { FiUpload, FiX, FiSave, FiArrowLeft, FiPlus, FiZap, FiCheck, FiVideo } f
 import Link from "next/link";
 import { productImagePublicId, productVideoPublicId } from "@/app/lib/cloudinary-seo-name";
 
-const DEFAULT_CATEGORIES = ["Cosmetics","Makeup","Skin Care","Hair Care","Body Care","Perfumes","Electronics","Purses & Bags","Wax & Accessories"];
+const DEFAULT_CATEGORIES = ["Cosmetics","Makeup","Skin Care","Hair Care","Body Care","Perfumes","Electronics","Purses & Bags","Wax & Accessories","Nail Art & Nail Care"];
 const DEFAULT_BRANDS = ["Lakme","Maybelline","SUGAR","RENEE","Insight","6MARS","Swiss Beauty","Hilary Rhoda","Nykaa","Plum","Vega","Braun","Lotus","Biotique","WOW","Mamaearth"];
 
 const STAGES = [

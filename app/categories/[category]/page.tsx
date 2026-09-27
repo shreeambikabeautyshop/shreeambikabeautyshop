@@ -21,6 +21,7 @@ const CATEGORY_MAP: Record<string, string> = {
   "electronics":      "Electronics",
   "purses-bags":      "Purses & Bags",
   "wax-accessories":  "Wax & Accessories",
+  "nail-art":         "Nail Art & Nail Care",
 };
 
 // Hero gradient per category
@@ -34,6 +35,7 @@ const CATEGORY_GRADIENT: Record<string, string> = {
   "Electronics":      "from-[#334155] to-[#1e3a5f]",
   "Purses & Bags":    "from-[#92400e] to-[#78350f]",
   "Wax & Accessories":"from-[#475569] to-[#1e293b]",
+  "Nail Art & Nail Care": "from-[#ec4899] to-[#be185d]",
 };
 
 const CATEGORY_SEO: Record<string, { title: string; desc: string }> = {
@@ -72,6 +74,10 @@ const CATEGORY_SEO: Record<string, { title: string; desc: string }> = {
   "Wax & Accessories": {
     title: "Wax Strips & Hair Removal Products Mumbai | Beauty Accessories | Shree Ambika",
     desc: "Buy wax strips, hair removal cream, threading, epilators & beauty accessories in Mumbai. Anne French, Veet, Rica. Original, best price. WhatsApp: +918291455297",
+  },
+  "Nail Art & Nail Care": {
+    title: "Nail Art Products Mumbai | Nail Polish Nail Extensions Nail Tools | Shree Ambika",
+    desc: "Buy 100% original nail art & nail care products in Mumbai — nail polish, gel nails, nail extensions, nail art tools, cuticle oil. Best price. Same day delivery. WhatsApp: +918291455297",
   },
 };
 

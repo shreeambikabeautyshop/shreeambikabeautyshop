@@ -81,6 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/categories/electronics`,        lastModified: now, changeFrequency: "weekly",  priority: 0.75 },
     { url: `${BASE}/categories/purses-bags`,        lastModified: now, changeFrequency: "weekly",  priority: 0.75 },
     { url: `${BASE}/categories/wax-accessories`,    lastModified: now, changeFrequency: "weekly",  priority: 0.70 },
+    { url: `${BASE}/categories/nail-art`,           lastModified: now, changeFrequency: "weekly",  priority: 0.80 },
   ];
 
   // ── Product detail pages (dynamic from DB) ────────────────────────────────
