@@ -17,7 +17,7 @@ Return ONLY raw JSON (no markdown, no code blocks, no explanation):
 {
   "name": "Exact product name — Brand + Product + Variant/Size (e.g. Matrix Mega Smooth Shampoo 400ml)",
   "brand": "Brand name exactly as on product",
-  "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories, Nail Art & Nail Care — pick the MOST ACCURATE one based on the product image. If it is a pump bottle dispenser, wax pot, or depilatory product choose Wax & Accessories. If it is nail polish, nail art tools, nail extensions choose Nail Art & Nail Care.",
+  "category": "One of: Cosmetics, Makeup, Skin Care, Hair Care, Body Care, Perfumes, Electronics, Purses & Bags, Wax & Accessories, Nail Art & Nail Care — pick the MOST ACCURATE one. Rules: (1) Nail polish, nail art brushes, nail extensions, nail cleaner/acetone, nail gel, cuticle oil, nail files → Nail Art & Nail Care. (2) Wax strips, wax pot, depilatory cream, threading products → Wax & Accessories. (3) Pump dispenser bottles used for nail products (acetone, nail cleaner) → Nail Art & Nail Care. (4) Hair dryers, straighteners → Electronics. (5) Lipstick, foundation, kajal → Cosmetics or Makeup. (6) Shampoo, hair oil → Hair Care.",
   "price": realistic_indian_selling_price_as_number,
   "mrp": realistic_indian_mrp_as_number,
   "weight_kg": estimated_weight_in_kg_as_decimal (e.g. 0.1 for small serum, 0.3 for shampoo, 0.5 for 400ml, 1.2 for hair dryer),
