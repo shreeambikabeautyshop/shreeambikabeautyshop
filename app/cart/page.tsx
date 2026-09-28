@@ -466,6 +466,48 @@ export default function CartPage() {
           </div>
         </div>
 
+        {/* ── You May Also Like — More Products ── */}
+        <div className="max-w-[900px] mx-auto px-4 pb-12">
+          <div className="border-t border-gray-200 pt-8">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">You May Also Like</h2>
+                <p className="text-sm text-gray-400">Add more products to your cart</p>
+              </div>
+              <Link href="/products"
+                className="flex items-center gap-1.5 text-sm text-brand-primary font-semibold hover:underline border border-brand-primary px-4 py-2 rounded-full hover:bg-brand-light transition-colors">
+                <FiShoppingBag size={13} /> Shop More
+              </Link>
+            </div>
+            {/* Category quick links */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
+              {[
+                { emoji: "💅", name: "Nail Art", href: "/categories/nail-art" },
+                { emoji: "💄", name: "Makeup", href: "/categories/makeup" },
+                { emoji: "✨", name: "Skin Care", href: "/categories/skincare" },
+                { emoji: "💆", name: "Hair Care", href: "/categories/haircare" },
+                { emoji: "🌸", name: "Perfumes", href: "/categories/perfumes" },
+              ].map(cat => (
+                <Link key={cat.href} href={cat.href}
+                  className="flex flex-col items-center gap-2 bg-white rounded-2xl p-4 border border-gray-100 hover:border-brand-primary hover:shadow-sm transition-all text-center">
+                  <span className="text-2xl">{cat.emoji}</span>
+                  <span className="text-xs font-semibold text-gray-700">{cat.name}</span>
+                </Link>
+              ))}
+            </div>
+            {/* CTA */}
+            <div className="bg-brand-primary rounded-2xl p-5 text-center text-white">
+              <p className="font-bold text-base mb-1">Need help finding more products?</p>
+              <p className="text-white/80 text-xs mb-4">WhatsApp Vinod — expert recommendations for your needs</p>
+              <a href="https://wa.me/918291455297?text=Hi Vinod! I want to add more products to my order. Can you suggest?"
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-2.5 rounded-full text-sm transition-colors">
+                WhatsApp for Suggestions
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* ── Hidden Printable Receipt ── */}
         <div className="hidden">
           <div ref={receiptRef}>

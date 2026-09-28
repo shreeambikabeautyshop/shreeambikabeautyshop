@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FiShoppingCart, FiCheck } from "react-icons/fi";
+import { FiShoppingCart, FiCheck, FiX } from "react-icons/fi";
 import { cldImg } from "@/app/lib/cloudinary-img";
+import Link from "next/link";
 
 interface CartToastItem {
   id: string;
@@ -17,88 +18,88 @@ interface Props {
 }
 
 export default function CartAddedToast({ item, onClose }: Props) {
-  const [visible, setVisible] = useState(false);
-  const [flying, setFlying]   = useState(false);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (!item) return;
-    setVisible(true);
-    setFlying(false);
-
-    // After 2s, start flying animation
-    const flyTimer = setTimeout(() => setFlying(true), 2000);
-    // After animation done, close
-    const closeTimer = setTimeout(() => {
-      setVisible(false);
-      onClose();
-    }, 3000);
-
-    return () => { clearTimeout(flyTimer); clearTimeout(closeTimer); };
+    if (!item) { setShow(false); return; }
+    // Small delay then show
+    const t1 = setTimeout(() => setShow(true), 50);
+    // Auto close after 3.5s
+    const t2 = setTimeout(() => {
+      setShow(false);
+      setTimeout(onClose, 400);
+    }, 3500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [item, onClose]);
 
-  if (!item || !visible) return null;
+  if (!item) return null;
 
   return (
-    <>
-      {/* Backdrop blur — subtle */}
-      <style>{`
-        @keyframes slide-in {
-          from { transform: translateY(-20px) scale(0.9); opacity: 0; }
-          to   { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        @keyframes fly-to-cart {
-          0%   { transform: translate(0, 0) scale(1); opacity: 1; }
-          60%  { transform: translate(30vw, -40vh) scale(0.5); opacity: 0.8; }
-          100% { transform: translate(45vw, -90vh) scale(0.1); opacity: 0; }
-        }
-        .cart-toast-enter { animation: slide-in 0.3s ease-out forwards; }
-        .cart-toast-fly   { animation: fly-to-cart 0.9s ease-in forwards; }
-      `}</style>
+    <div
+      className={`fixed top-20 right-4 z-[9999] transition-all duration-400 ${
+        show
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+      }`}
+      style={{ transitionProperty: "opacity, transform" }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl border border-green-200 overflow-hidden w-72">
 
-      <div
-        className={`fixed bottom-24 right-4 z-[999] ${flying ? "cart-toast-fly" : "cart-toast-enter"}`}
-      >
-        <div className="bg-white rounded-2xl shadow-2xl border border-green-200 overflow-hidden w-64">
-          {/* Green header */}
-          <div className="bg-green-500 text-white px-4 py-2 flex items-center gap-2">
-            <FiCheck size={16} />
+        {/* Green header */}
+        <div className="bg-green-500 text-white px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
+              <FiCheck size={12} />
+            </div>
             <span className="text-sm font-bold">Added to Cart!</span>
           </div>
+          <button onClick={() => { setShow(false); setTimeout(onClose, 400); }}
+            className="text-white/70 hover:text-white transition-colors">
+            <FiX size={14} />
+          </button>
+        </div>
 
-          {/* Product mini card */}
-          <div className="flex items-center gap-3 p-3">
-            {/* Image */}
-            <div className="w-14 h-14 rounded-xl overflow-hidden bg-brand-light flex-shrink-0">
-              {item.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={cldImg(item.image, 56)}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-2xl">💄</div>
-              )}
-            </div>
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-brand-primary uppercase">{item.brand}</p>
-              <p className="text-xs font-semibold text-gray-800 line-clamp-2">{item.name}</p>
-              <p className="text-sm font-black text-gray-900 mt-0.5">₹{item.price}</p>
-            </div>
+        {/* Product mini card */}
+        <div className="flex items-center gap-3 p-3">
+          <div className="w-16 h-16 rounded-xl overflow-hidden bg-brand-light flex-shrink-0 border border-gray-100">
+            {item.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cldImg(item.image, 64)} alt={item.name}
+                className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl">💄</div>
+            )}
           </div>
-
-          {/* View Cart CTA */}
-          <div className="px-3 pb-3">
-            <a
-              href="/cart"
-              className="w-full flex items-center justify-center gap-2 bg-brand-primary text-white text-xs font-bold py-2 rounded-xl hover:bg-brand-dark transition-colors"
-            >
-              <FiShoppingCart size={12} /> View Cart
-            </a>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-brand-primary uppercase tracking-wide">{item.brand}</p>
+            <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug">{item.name}</p>
+            <p className="text-sm font-black text-gray-900 mt-1">₹{item.price}</p>
           </div>
         </div>
+
+        {/* Actions */}
+        <div className="px-3 pb-3 flex gap-2">
+          <Link href="/cart"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-brand-primary text-white text-xs font-bold py-2.5 rounded-xl hover:bg-brand-dark transition-colors">
+            <FiShoppingCart size={12} /> View Cart
+          </Link>
+          <button onClick={() => { setShow(false); setTimeout(onClose, 400); }}
+            className="flex-1 border border-gray-200 text-gray-600 text-xs font-semibold py-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+            Continue Shopping
+          </button>
+        </div>
+
+        {/* Progress bar — auto close indicator */}
+        <div className="h-1 bg-gray-100">
+          <div
+            className="h-full bg-green-400 rounded-full"
+            style={{
+              width: show ? "0%" : "100%",
+              transition: show ? "width 3.5s linear" : "none",
+            }}
+          />
+        </div>
       </div>
-    </>
+    </div>
   );
 }
