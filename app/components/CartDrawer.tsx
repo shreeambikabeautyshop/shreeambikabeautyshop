@@ -41,9 +41,10 @@ export default function CartDrawer({ open, onClose }: Props) {
 
       {/* Drawer panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white z-[1001] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white z-[1001] shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{ display: 'flex', flexDirection: 'column' }}
       >
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -63,7 +64,7 @@ export default function CartDrawer({ open, onClose }: Props) {
         </div>
 
         {/* ── Items List ── */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        <div style={{ flex: 1, overflowY: 'auto' }} className="px-4 py-3 space-y-3">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <div className="text-6xl mb-4">🛒</div>
@@ -129,7 +130,7 @@ export default function CartDrawer({ open, onClose }: Props) {
 
         {/* ── Footer — Subtotal + CTA ── */}
         {items.length > 0 && (
-          <div className="border-t border-gray-100 px-5 py-4 space-y-3 bg-white">
+          <div className="border-t border-gray-100 px-5 py-4 space-y-3 bg-white flex-shrink-0">
             {/* Subtotal */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">{totalItems} item{totalItems !== 1 ? "s" : ""}</span>
