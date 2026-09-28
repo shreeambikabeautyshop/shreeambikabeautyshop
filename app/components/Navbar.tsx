@@ -9,12 +9,13 @@ import { MdRepeat } from "react-icons/md";
 import { useWishlist } from "@/app/context/WishlistContext";
 import { useCart } from "@/app/context/CartContext";
 import { useUser } from "@/app/context/UserContext";
+import CartDrawer from "@/app/components/CartDrawer";
 
 /* ─── Cart badge ─── */
-function CartIcon() {
+function CartIcon({ onClick }: { onClick: () => void }) {
   const { totalItems } = useCart();
   return (
-    <Link href="/cart" aria-label="Cart"
+    <button onClick={onClick} aria-label="Cart"
       className="relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-brand-light text-gray-600 hover:text-brand-primary transition-all">
       <FiShoppingCart size={19} className={totalItems > 0 ? "text-brand-primary" : ""} />
       {totalItems > 0 && (
@@ -22,7 +23,7 @@ function CartIcon() {
           {totalItems > 9 ? "9+" : totalItems}
         </span>
       )}
-    </Link>
+    </button>
   );
 }
 
@@ -183,7 +184,8 @@ function DropdownMenu({ sections, onClose }: {
 }
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen]     = useState(false);
+  const [menuOpen, setMenuOpen]         = useState(false);
+  const [cartDrawerOpen, setCartDrawer] = useState(false);
   const [activeNav, setActiveNav]   = useState<string | null>(null);
   const [scrolled, setScrolled]     = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -358,7 +360,7 @@ export default function Navbar() {
             </div>
 
             {/* Cart */}
-            <CartIcon />
+            <CartIcon onClick={() => setCartDrawer(true)} />
 
             {/* Wishlist */}
             <WishlistIcon />
@@ -472,6 +474,10 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* ── Cart Drawer ── */}
+      <CartDrawer open={cartDrawerOpen} onClose={() => setCartDrawer(false)} />
+
     </header>
   );
 }
