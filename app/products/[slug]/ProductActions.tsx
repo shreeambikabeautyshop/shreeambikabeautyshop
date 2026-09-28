@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import { FaWhatsapp, FaVideo } from "react-icons/fa";
-import { FiMinus, FiPlus, FiShield, FiCamera, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { FiMinus, FiPlus, FiShield, FiCamera, FiChevronDown, FiChevronUp, FiShoppingCart, FiCheck } from "react-icons/fi";
 import { MdVerified, MdPayment } from "react-icons/md";
 import { useUser } from "@/app/context/UserContext";
+import { useCart } from "@/app/context/CartContext";
 import { useSettings } from "@/app/context/SettingsContext";
 
 interface Props {
@@ -11,17 +12,25 @@ interface Props {
   price: number;
   mrp: number;
   slug: string;
+  productId?: string;
+  images?: string[];
+  brand?: string;
+  category?: string;
 }
 
-export default function ProductActions({ productName, price, mrp, slug }: Props) {
+export default function ProductActions({ productName, price, mrp, slug, productId, images, brand, category }: Props) {
   const [qty, setQty]               = useState(1);
   const [showHowItWorks, setShow]   = useState(false);
+  const [cartAdded, setCartAdded]   = useState(false);
   const { customer, isLoggedIn, triggerLogin } = useUser();
+  const { add: addToCart, has: hasInCart }     = useCart();
   const { show_price }    = useSettings();
 
-  // WhatsApp message — clear order intent with product URL
+  const inCart = productId ? hasInCart(productId) : false;
+
+  // WhatsApp message — NO emojis in URL (they cause ? marks in WhatsApp)
   const orderMsg = encodeURIComponent(
-    `Hi Vinod! 🛍️ I want to order:\n\n` +
+    `Hi Vinod! I want to order:\n\n` +
     `*Product:* ${productName}\n` +
     `*Qty:* ${qty}\n` +
     `*Link:* https://www.shreeambikabeauty.com/products/${slug}\n\n` +
@@ -30,7 +39,7 @@ export default function ProductActions({ productName, price, mrp, slug }: Props)
 
   // Video call request message
   const videoCallMsg = encodeURIComponent(
-    `Hi Vinod! 📹 I want to see *${productName}* on a video call before ordering.\n\nAre you available for a quick call?`
+    `Hi Vinod! I want to see *${productName}* on a video call before ordering.\n\nAre you available for a quick call?`
   );
 
   const trackClick = () => {
@@ -186,12 +195,29 @@ export default function ProductActions({ productName, price, mrp, slug }: Props)
           <span>Video Call<br /><span className="font-normal opacity-70">See store live</span></span>
         </a>
 
-        {/* Wishlist */}
+        {/* Add to Cart */}
         <button
-          onClick={() => triggerLogin("wishlist")}
-          className="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-600 bg-gray-50 hover:bg-gray-100 font-semibold py-3 rounded-xl transition-colors text-xs">
-          <span className="text-base">🤍</span>
-          <span>Save to<br /><span className="font-normal opacity-70">Wishlist</span></span>
+          onClick={() => {
+            if (!isLoggedIn) { triggerLogin("cart"); return; }
+            if (productId) {
+              addToCart({
+                id: productId, name: productName, slug,
+                brand: brand || "", price, images: images || [], category: category || "",
+              });
+              setCartAdded(true);
+              setTimeout(() => setCartAdded(false), 2000);
+            }
+          }}
+          className={`flex items-center justify-center gap-2 border-2 font-semibold py-3 rounded-xl transition-colors text-xs ${
+            inCart || cartAdded
+              ? "border-brand-primary bg-brand-light text-brand-primary"
+              : "border-gray-200 text-gray-600 bg-gray-50 hover:bg-gray-100"
+          }`}
+        >
+          {inCart || cartAdded
+            ? <><FiCheck size={14} /><span>Added to Cart<br /><span className="font-normal opacity-70">View Cart</span></span></>
+            : <><FiShoppingCart size={14} /><span>Add to Cart<br /><span className="font-normal opacity-70">Checkout later</span></span></>
+          }
         </button>
       </div>
 

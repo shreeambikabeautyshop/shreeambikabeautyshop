@@ -260,7 +260,16 @@ export default async function ProductPage({ params }: { params: { slug: string }
               </div>
 
               {/* Quantity + Buy (client component handles price display + settings) */}
-              <ProductActions productName={p.name} price={p.price} mrp={p.mrp} slug={p.slug || p.id} />
+              <ProductActions
+                productName={p.name}
+                price={p.price}
+                mrp={p.mrp}
+                slug={p.slug || p.id}
+                productId={p.id}
+                images={p.images}
+                brand={p.brand}
+                category={p.category}
+              />
 
               <p className="text-[11px] text-gray-400 text-center">
                 Est. 2001 · Mumbai&apos;s trusted beauty store · 25+ years of service
