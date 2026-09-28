@@ -77,24 +77,72 @@ export async function POST(req: NextRequest) {
       const firstItem = (items || [])[0];
 
       await supabase.from("sabs_orders").insert({
-        sabs_order_id:      receiptNo,
-        customer_name:      customer?.full_name  || "Customer",
-        customer_phone:     customer?.phone      || null,
-        product_name:       productNames         || firstItem?.name || "Order",
-        product_price:      grand_total          || 0,
-        delivery_address:   customer?.address    || null,
-        delivery_pincode:   customer?.pincode    || null,
-        delivery_city:      customer?.city       || null,
-        delivery_state:     customer?.state      || null,
-        status:             "new",
-        source:             delivery_mode === "pickup" ? "store_pickup" : "online_payment",
-        // Extra info in shiprocket_order_id field for reference
-        shiprocket_order_id: `razorpay:${razorpay_payment_id}`,
-        shipment_id:         razorpay_order_id,
-        created_at:          new Date().toISOString(),
+        sabs_order_id:        receiptNo,
+        receipt_no:           receiptNo,
+        razorpay_payment_id:  razorpay_payment_id,
+        customer_id:          customer?.phone || null,
+        customer_name:        customer?.full_name  || "Customer",
+        customer_phone:       customer?.phone      || null,
+        product_name:         productNames         || firstItem?.name || "Order",
+        product_price:        grand_total          || 0,
+        subtotal:             subtotal             || 0,
+        delivery_charge:      delivery_charge      || 0,
+        grand_total:          grand_total          || 0,
+        items:                items                || [],
+        payment_method:       "razorpay",
+        delivery_address:     customer?.address    || null,
+        delivery_pincode:     customer?.pincode    || null,
+        delivery_city:        customer?.city       || null,
+        delivery_state:       customer?.state      || null,
+        status:               "new",
+        source:               delivery_mode === "pickup" ? "store_pickup" : "online_payment",
+        shiprocket_order_id:  `razorpay:${razorpay_payment_id}`,
+        shipment_id:          razorpay_order_id,
+        created_at:           new Date().toISOString(),
       });
+
+      // ── Auto-create Shiprocket order (fire-and-forget, non-blocking) ──
+      if (delivery_mode === "delivery" && customer?.pincode && items?.length > 0) {
+        const orderItems = (items as Array<{name: string; price: number; qty: number; brand: string}>).map((item) => ({
+          name:        item.name,
+          selling_price: item.price,
+          units:       item.qty || 1,
+          sku:         item.name.toLowerCase().replace(/\s+/g, "-").slice(0, 40),
+          hsn:         0,
+          discount:    0,
+          tax:         0,
+        }));
+
+        const totalWeight = items.reduce(
+          (s: number, i: {qty?: number}) => s + (i.qty || 1) * 0.3, 0
+        );
+
+        fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? "https://www.shreeambikabeauty.com" : ""}/api/admin/shiprocket/create-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json",
+            "Cookie": "sabs_session=authenticated" },
+          body: JSON.stringify({
+            order_id:          receiptNo,
+            order_date:        new Date().toISOString().split("T")[0],
+            billing_customer_name:   customer?.full_name || "Customer",
+            billing_phone:     customer?.phone || "",
+            billing_address:   customer?.address || "Address",
+            billing_city:      customer?.city || "Mumbai",
+            billing_state:     customer?.state || "Maharashtra",
+            billing_pincode:   customer?.pincode || "400068",
+            billing_country:   "India",
+            shipping_is_billing: true,
+            order_items:       orderItems,
+            payment_method:    "Prepaid",
+            shipping_charges:  delivery_charge || 0,
+            sub_total:         grand_total || 0,
+            length:            15, breadth: 10, height: 10,
+            weight:            Math.max(0.1, totalWeight),
+          }),
+        }).catch(() => { /* non-blocking */ });
+      }
+
     } catch (dbErr) {
-      // DB save failure should NOT block payment confirmation
       console.warn("Order DB save failed (non-blocking):", dbErr);
     }
 

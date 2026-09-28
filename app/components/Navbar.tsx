@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { cldImg } from "@/app/lib/cloudinary-img";
 import { usePathname, useRouter } from "next/navigation";
-import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle, FiMapPin, FiMail, FiEdit, FiLogOut, FiShoppingCart } from "react-icons/fi";
+import { FiSearch, FiUser, FiMenu, FiX, FiChevronDown, FiHeart, FiMessageCircle, FiMapPin, FiMail, FiEdit, FiLogOut, FiShoppingCart, FiPackage } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdRepeat } from "react-icons/md";
 import { useWishlist } from "@/app/context/WishlistContext";
@@ -345,6 +345,10 @@ export default function Navbar() {
                       className="w-full flex items-center gap-2 text-xs text-gray-600 hover:text-brand-primary hover:bg-brand-light px-3 py-2 rounded-xl transition-colors text-left">
                       <FiEdit size={12} /> Edit Profile
                     </button>
+                    <Link href="/my-orders"
+                      className="flex items-center gap-2 text-xs text-gray-600 hover:text-brand-primary hover:bg-brand-light px-3 py-2 rounded-xl transition-colors">
+                      <FiPackage size={12} /> My Orders
+                    </Link>
                     <Link href="/wishlist"
                       className="flex items-center gap-2 text-xs text-gray-600 hover:text-brand-primary hover:bg-brand-light px-3 py-2 rounded-xl transition-colors">
                       <FiHeart size={12} /> My Wishlist
