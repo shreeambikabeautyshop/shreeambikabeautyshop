@@ -11,23 +11,33 @@ type OrderStatus = "new" | "ready_to_ship" | "in_transit" | "delivered" | "rto";
 interface Order {
   id: string;
   sabs_order_id: string;
+  receipt_no: string;
+  razorpay_payment_id: string;
   shiprocket_order_id: string;
   shipment_id: string;
   awb: string | null;
+  awb_code: string | null;
   courier_name: string | null;
   estimated_delivery: string | null;
   customer_name: string;
   customer_phone: string;
   product_name: string;
   product_price: number;
+  grand_total: number;
+  subtotal: number;
+  delivery_charge: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  items: any[];
   delivery_address: string | null;
   delivery_pincode: string | null;
   delivery_city: string | null;
   delivery_state: string | null;
   status: OrderStatus;
   source: string;
+  payment_method: string;
   manifest_url: string | null;
   label_url: string | null;
+  tracking_url: string | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -91,16 +101,102 @@ export default function OrdersPage() {
 
   // ── Mark Ready to Ship ───────────────────────────────────────────────────
   const markReadyToShip = async (order: Order) => {
+    setRtsLoading(prev => ({ ...prev, [order.id]: true }));
+
+    // Step 1: If no Shiprocket order yet → create it first
+    if (!order.shiprocket_order_id || order.shiprocket_order_id.startsWith("razorpay:")) {
+      showToast("Creating order in Shiprocket...", "success");
+      try {
+        // Parse items if available
+        const orderItems = Array.isArray(order.items) && order.items.length > 0
+          ? order.items
+          : [{ name: order.product_name || "Beauty Product", price: order.product_price || 0, qty: 1 }];
+
+        const createRes = await fetch("/api/admin/shiprocket/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_id:          order.sabs_order_id,
+            order_date:        new Date(order.created_at).toISOString().split("T")[0],
+            customer_name:     order.customer_name,
+            customer_phone:    order.customer_phone,
+            delivery_address:  order.delivery_address || "Address",
+            delivery_city:     order.delivery_city    || "Mumbai",
+            delivery_state:    order.delivery_state   || "Maharashtra",
+            delivery_pincode:  order.delivery_pincode || "400068",
+            product_name:      orderItems.map((i: {name: string}) => i.name).join(", "),
+            product_price:     order.grand_total || order.product_price || 0,
+            product_quantity:  orderItems.reduce((s: number, i: {qty?: number}) => s + (i.qty || 1), 0),
+            weight:            0.3 * orderItems.length,
+          }),
+        });
+        const createData = await createRes.json();
+
+        if (!createRes.ok || !createData.success) {
+          showToast(createData.error || "Failed to create Shiprocket order", "error");
+          setRtsLoading(prev => ({ ...prev, [order.id]: false }));
+          return;
+        }
+
+        // Update DB with Shiprocket IDs
+        await fetch("/api/admin/orders", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: order.id,
+            shiprocket_order_id: createData.shiprocket_order_id,
+            shipment_id: createData.shipment_id,
+            awb: createData.awb || null,
+            courier_name: createData.courier_name || null,
+            estimated_delivery: createData.estimated_delivery || null,
+          }),
+        });
+
+        // Update local state
+        order = {
+          ...order,
+          shiprocket_order_id: createData.shiprocket_order_id,
+          shipment_id: createData.shipment_id,
+          awb: createData.awb || order.awb,
+        };
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...order } : o));
+
+        if (createData.awb) {
+          showToast(`Shiprocket order created! AWB: ${createData.awb}`, "success");
+          // Update customer tracking
+          await fetch("/api/admin/orders", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: order.id,
+              status: "ready_to_ship",
+              awb_code: createData.awb,
+              tracking_url: `https://shiprocket.co/tracking/${createData.awb}`,
+            }),
+          });
+          setOrders(prev => prev.map(o => o.id === order.id
+            ? { ...o, status: "ready_to_ship", awb: createData.awb, awb_code: createData.awb }
+            : o
+          ));
+          setRtsLoading(prev => ({ ...prev, [order.id]: false }));
+          return;
+        }
+
+        showToast("Shiprocket order created! Now scheduling pickup...", "success");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Shiprocket error", "error");
+        setRtsLoading(prev => ({ ...prev, [order.id]: false }));
+        return;
+      }
+    }
+
+    // Step 2: If shipment_id missing → fetch from Shiprocket
     if (!order.shipment_id) {
-      // Try to fetch shipment_id from Shiprocket using the order_id
-      showToast("Fetching shipment details from Shiprocket...", "success");
-      setRtsLoading(prev => ({ ...prev, [order.id]: true }));
       try {
         const syncRes = await fetch(`/api/admin/shiprocket/track?order_id=${order.shiprocket_order_id}`);
         const syncData = await syncRes.json();
         const fetchedShipmentId = syncData?.details?.shipment_id || syncData?.shipment_id || null;
         if (fetchedShipmentId) {
-          // Update in DB
           await fetch("/api/admin/orders", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -109,17 +205,18 @@ export default function OrdersPage() {
           setOrders(prev => prev.map(o => o.id === order.id ? { ...o, shipment_id: String(fetchedShipmentId) } : o));
           order = { ...order, shipment_id: String(fetchedShipmentId) };
         } else {
-          showToast(`No shipment ID found. Go to Shiprocket → Orders to check order ${order.shiprocket_order_id}`, "error");
+          showToast(`No shipment ID. Check Shiprocket → Orders for ${order.shiprocket_order_id}`, "error");
           setRtsLoading(prev => ({ ...prev, [order.id]: false }));
           return;
         }
       } catch {
-        showToast("Could not fetch shipment details. Check Shiprocket manually.", "error");
+        showToast("Could not fetch shipment details.", "error");
         setRtsLoading(prev => ({ ...prev, [order.id]: false }));
         return;
       }
     }
-    setRtsLoading(prev => ({ ...prev, [order.id]: true }));
+
+    // Step 3: Schedule pickup (Ready to Ship)
     try {
       const res = await fetch("/api/admin/shiprocket/ready-to-ship", {
         method: "POST",
@@ -267,9 +364,15 @@ export default function OrdersPage() {
                 {/* Order ID + Status */}
                 <div className="flex-shrink-0 min-w-[140px]">
                   <p className="text-[10px] text-gray-400 font-semibold uppercase">Order ID</p>
-                  <p className="text-xs font-black text-gray-800 font-mono">{order.sabs_order_id}</p>
-                  <span className={`inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLES[order.status]}`}>
+                  <p className="text-xs font-black text-gray-800 font-mono">{order.receipt_no || order.sabs_order_id}</p>
+                  {order.payment_method === "razorpay" && (
+                    <span className="text-[9px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                      Online Payment
+                    </span>
+                  )}
+                  <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLES[order.status]}`}>
                     {STATUS_LABELS[order.status]}
+                  </span>
                   </span>
                 </div>
 
@@ -294,7 +397,10 @@ export default function OrdersPage() {
                 <div className="flex-1 min-w-[140px]">
                   <p className="text-[10px] text-gray-400 font-semibold uppercase flex items-center gap-1"><FiPackage size={9}/> Product</p>
                   <p className="text-xs font-bold text-gray-800 line-clamp-2">{order.product_name}</p>
-                  <p className="text-xs text-gray-500 font-semibold mt-0.5">₹{order.product_price}</p>
+                  <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                    ₹{(order.grand_total || order.product_price || 0).toLocaleString("en-IN")}
+                    {order.delivery_charge > 0 && <span className="text-gray-400"> (+₹{order.delivery_charge} delivery)</span>}
+                  </p>
                 </div>
 
                 {/* Courier / AWB */}
