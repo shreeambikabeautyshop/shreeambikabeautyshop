@@ -208,8 +208,8 @@ export default function CartPage() {
               <h1 className="text-2xl font-bold text-gray-900">Your Cart</h1>
               <p className="text-sm text-gray-400">{totalItems} item{totalItems !== 1 ? "s" : ""}</p>
             </div>
-            <Link href="/products" className="text-sm text-brand-primary font-semibold hover:underline">
-              + Add more products
+            <Link href="/products" className="flex items-center gap-1.5 text-sm text-brand-primary font-semibold hover:underline">
+              <FiShoppingBag size={14} /> Continue Shopping
             </Link>
           </div>
 

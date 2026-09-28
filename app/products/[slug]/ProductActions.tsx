@@ -6,6 +6,7 @@ import { MdVerified, MdPayment } from "react-icons/md";
 import { useUser } from "@/app/context/UserContext";
 import { useCart } from "@/app/context/CartContext";
 import { useSettings } from "@/app/context/SettingsContext";
+import CartAddedToast from "@/app/components/CartAddedToast";
 
 interface Props {
   productName: string;
@@ -22,6 +23,7 @@ export default function ProductActions({ productName, price, mrp, slug, productI
   const [qty, setQty]               = useState(1);
   const [showHowItWorks, setShow]   = useState(false);
   const [cartAdded, setCartAdded]   = useState(false);
+  const [toastItem, setToastItem]   = useState<{id:string;name:string;brand:string;price:number;image?:string} | null>(null);
   const { customer, isLoggedIn, triggerLogin } = useUser();
   const { add: addToCart, has: hasInCart }     = useCart();
   const { show_price }    = useSettings();
@@ -205,7 +207,8 @@ export default function ProductActions({ productName, price, mrp, slug, productI
                 brand: brand || "", price, images: images || [], category: category || "",
               });
               setCartAdded(true);
-              setTimeout(() => setCartAdded(false), 2000);
+              setToastItem({ id: productId, name: productName, brand: brand || "", price, image: images?.[0] });
+              setTimeout(() => setCartAdded(false), 3500);
             }
           }}
           className={`flex items-center justify-center gap-2 border-2 font-semibold py-3 rounded-xl transition-colors text-xs ${
@@ -227,12 +230,15 @@ export default function ProductActions({ productName, price, mrp, slug, productI
           <MdVerified size={11} className="text-green-500" /> 100% Original
         </span>
         <span className="flex items-center gap-1 text-[10px] text-gray-400">
-          🇮🇳 Pan India Delivery
+          Pan India Delivery
         </span>
         <span className="flex items-center gap-1 text-[10px] text-gray-400">
-          💰 COD Available
+          COD Available
         </span>
       </div>
+
+      {/* ── Cart Added Toast ──────────────────────────────── */}
+      <CartAddedToast item={toastItem} onClose={() => setToastItem(null)} />
     </div>
   );
 }
