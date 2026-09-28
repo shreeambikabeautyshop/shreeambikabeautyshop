@@ -1,13 +1,14 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import RazorpayCheckout from "@/app/components/RazorpayCheckout";
 import { useCart } from "@/app/context/CartContext";
 import { useUser } from "@/app/context/UserContext";
 import { useSettings } from "@/app/context/SettingsContext";
-import { FiMinus, FiPlus, FiTrash2, FiTruck, FiMapPin, FiPackage, FiPrinter, FiShoppingBag } from "react-icons/fi";
+import { FiMinus, FiPlus, FiTrash2, FiTruck, FiMapPin, FiPackage, FiPrinter, FiShoppingBag, FiShoppingCart } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdStore, MdLocalShipping } from "react-icons/md";
 import { cldImg } from "@/app/lib/cloudinary-img";
@@ -28,10 +29,35 @@ export default function CartPage() {
   const [rate,       setRate]       = useState<DeliveryRate | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
   const [rateError,  setRateError]  = useState("");
+
+  // Suggested products
+  type SuggestedProduct = { id: string; name: string; slug: string; brand: string; price: number; images: string[]; category: string; };
+  const [suggested, setSuggested] = useState<SuggestedProduct[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    // Exclude items already in cart
+    const cartIds = items.map(i => i.id);
+    supabase.from("products")
+      .select("id,name,slug,brand,price,images,category")
+      .eq("in_stock", true)
+      .not("id", "in", cartIds.length > 0 ? `(${cartIds.join(",")})` : "(null)")
+      .limit(8)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setSuggested(data || []));
+  }, [items]);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [receiptNo,  setReceiptNo]  = useState("");
   const [paymentId,  setPaymentId]  = useState("");
+  // Capture items/amounts at payment time (before cart clear)
+  const [paidItems,    setPaidItems]    = useState<typeof items>([]);
+  const [paidSubtotal, setPaidSubtotal] = useState(0);
+  const [paidDelivery, setPaidDelivery] = useState(0);
+  const [paidTotal,    setPaidTotal]    = useState(0);
   const receiptRef = useRef<HTMLDivElement>(null);
 
   const deliveryCharge = mode === "pickup" ? 0 : (rate?.charge || 0);
@@ -124,48 +150,176 @@ export default function CartPage() {
     win.close();
   };
 
+  // ── Generate Invoice HTML ─────────────────────────────────────────
+  const generateInvoiceHTML = () => {
+    const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    return `<!DOCTYPE html>
+<html><head><title>Invoice — ${receiptNo}</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #333; }
+  .header { text-align: center; border-bottom: 2px solid #C41E3A; padding-bottom: 16px; margin-bottom: 20px; }
+  .logo { font-size: 28px; font-weight: 900; color: #C41E3A; }
+  .tagline { font-size: 12px; color: #666; margin-top: 4px; }
+  .address { font-size: 11px; color: #888; margin-top: 8px; }
+  .badge { background: #fff0f3; border: 1px solid #C41E3A; color: #C41E3A; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 8px; }
+  .section { margin: 16px 0; }
+  .section-title { font-size: 11px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .info-row { display: flex; justify-content: space-between; font-size: 13px; margin: 4px 0; }
+  .info-val { font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th { background: #f9f0f2; color: #C41E3A; font-size: 11px; text-align: left; padding: 8px; border-bottom: 2px solid #C41E3A; }
+  td { padding: 8px; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
+  td:last-child { text-align: right; }
+  .total-row td { font-weight: bold; font-size: 14px; background: #f9f0f2; border-top: 2px solid #C41E3A; }
+  .success-badge { background: #22c55e; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+  .footer { text-align: center; font-size: 10px; color: #aaa; margin-top: 24px; border-top: 1px dashed #ddd; padding-top: 16px; }
+  .terms { font-size: 10px; color: #999; margin-top: 12px; text-align: left; }
+</style></head>
+<body>
+  <div class="header">
+    <div class="logo">|| ॐ || Shree Ambika Beauty Shop</div>
+    <div class="tagline">Your Beauty, Our Responsibility ♡</div>
+    <div class="address">Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2,<br>Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai – 400068<br>Vinod: +91 82914 55297 | shreeambikabeauty.com</div>
+    <div class="badge">TAX INVOICE / RECEIPT</div>
+  </div>
+
+  <div class="section">
+    <div class="info-row"><span>Receipt No:</span><span class="info-val">${receiptNo}</span></div>
+    <div class="info-row"><span>Payment ID:</span><span class="info-val" style="font-family:monospace;font-size:11px">${paymentId}</span></div>
+    <div class="info-row"><span>Date & Time:</span><span class="info-val">${date}</span></div>
+    <div class="info-row"><span>Status:</span><span class="success-badge">PAID</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Customer Details</div>
+    <div class="info-row"><span>Name:</span><span class="info-val">${customer?.full_name || "Customer"}</span></div>
+    <div class="info-row"><span>Phone:</span><span class="info-val">${customer?.phone || ""}</span></div>
+    ${mode === "delivery" ? `<div class="info-row"><span>Delivery:</span><span class="info-val">${customer?.address || ""}, ${pincode}</span></div>` : `<div class="info-row"><span>Mode:</span><span class="info-val">Store Pickup</span></div>`}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Products Ordered</div>
+    <table>
+      <thead><tr><th>#</th><th>Product</th><th>Brand</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>
+        ${paidItems.map((item, i) => `<tr><td>${i + 1}</td><td>${item.name}</td><td>${item.brand}</td><td>${item.qty}</td><td>₹${item.price}</td><td>₹${item.price * item.qty}</td></tr>`).join("")}
+        <tr class="total-row"><td colspan="4"></td><td>Subtotal:</td><td>₹${paidSubtotal.toLocaleString("en-IN")}</td></tr>
+        <tr class="total-row"><td colspan="4"></td><td>Delivery:</td><td>${mode === "pickup" ? "FREE" : `₹${paidDelivery}`}</td></tr>
+        <tr class="total-row"><td colspan="4"></td><td>TOTAL PAID:</td><td>₹${paidTotal.toLocaleString("en-IN")}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="terms">
+    <strong>Terms & Conditions:</strong><br>
+    • Once order is placed, it cannot be cancelled or returned.<br>
+    • Cosmetic products do not come with any manufacturing warranty.<br>
+    • All products are 100% original — pesa vasool guaranteed!<br>
+    • For queries: WhatsApp 8291455297
+  </div>
+
+  <div class="footer">
+    Thank you for shopping with Shree Ambika Beauty Shop! ♡<br>
+    www.shreeambikabeauty.com | Powered by Razorpay
+  </div>
+</body></html>`;
+  };
+
+  const handleDownloadInvoice = () => {
+    const html = generateInvoiceHTML();
+    const blob = new Blob([html], { type: "text/html" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `Invoice-${receiptNo}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrintInvoice = () => {
+    const html = generateInvoiceHTML();
+    const win  = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
+  };
+
   // ── Payment Success Screen ────────────────────────────────────────
   if (paymentDone) {
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-          <div className="text-center max-w-md bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-            <div className="text-7xl mb-4">🎉</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-            <p className="text-gray-500 text-sm mb-4">
-              Thank you for shopping with Shree Ambika Beauty Shop!
-            </p>
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-6 text-left">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">Receipt No:</span>
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+          <div className="text-center w-full max-w-md bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+
+            {/* Logo */}
+            <div className="mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
+                alt="Shree Ambika Beauty Shop"
+                className="h-12 object-contain mx-auto"
+              />
+            </div>
+
+            <div className="text-5xl mb-3">🎉</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Payment Successful!</h1>
+            <p className="text-gray-500 text-sm mb-5">Thank you for shopping with Shree Ambika Beauty Shop!</p>
+
+            {/* Receipt details */}
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-5 text-left">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-500">Receipt No:</span>
                 <span className="font-bold text-gray-800">{receiptNo}</span>
               </div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">Payment ID:</span>
-                <span className="font-mono text-xs text-gray-500">{paymentId}</span>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-500">Payment ID:</span>
+                <span className="font-mono text-xs text-gray-500 break-all">{paymentId}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Amount Paid:</span>
-                <span className="font-bold text-green-700">₹{grandTotal.toLocaleString("en-IN")}</span>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-500">Items:</span>
+                <span className="font-bold text-gray-800">{paidItems.length} product{paidItems.length !== 1 ? "s" : ""}</span>
+              </div>
+              <div className="border-t border-green-200 pt-2 flex justify-between text-sm">
+                <span className="font-bold text-gray-700">Amount Paid:</span>
+                <span className="font-black text-lg text-green-700">₹{paidTotal.toLocaleString("en-IN")}</span>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mb-6">
+
+            <p className="text-xs text-gray-400 mb-5">
               Vinod will contact you on WhatsApp (+91 82914 55297) to confirm dispatch details.
             </p>
+
+            {/* Action buttons */}
             <div className="flex flex-col gap-3">
               <a
                 href={`https://wa.me/918291455297?text=${encodeURIComponent(
-                  `Hi Vinod! Payment done ✅\nReceipt: ${receiptNo}\nPayment ID: ${paymentId}\nAmount: ₹${grandTotal}\nPlease confirm my order dispatch.`
+                  `Hi Vinod! Payment done\nReceipt: ${receiptNo}\nPayment ID: ${paymentId}\nAmount: Rs.${paidTotal}\nPlease confirm my order dispatch.`
                 )}`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors"
               >
                 <FaWhatsapp size={16} /> Confirm on WhatsApp
               </a>
+
+              {/* Download Invoice */}
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={handleDownloadInvoice}
+                  className="flex items-center justify-center gap-1.5 border-2 border-brand-primary text-brand-primary font-bold py-2.5 rounded-xl text-xs hover:bg-brand-light transition-colors">
+                  <FiPackage size={13} /> Download Invoice
+                </button>
+                <button onClick={handlePrintInvoice}
+                  className="flex items-center justify-center gap-1.5 border-2 border-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs hover:bg-gray-50 transition-colors">
+                  <FiPrinter size={13} /> Print Invoice
+                </button>
+              </div>
+
               <Link href="/products"
                 className="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-600 font-bold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors">
-                🛍 Continue Shopping
+                <FiShoppingBag size={14} /> Continue Shopping
               </Link>
             </div>
           </div>
@@ -418,6 +572,11 @@ export default function CartPage() {
                           onSuccess={(rno, pid) => {
                             setReceiptNo(rno);
                             setPaymentId(pid);
+                            // Capture before clear
+                            setPaidItems([...items]);
+                            setPaidSubtotal(subtotal);
+                            setPaidDelivery(deliveryCharge);
+                            setPaidTotal(grandTotal);
                             setPaymentDone(true);
                             clear();
                           }}
