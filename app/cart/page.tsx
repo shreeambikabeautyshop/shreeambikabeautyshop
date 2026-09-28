@@ -280,25 +280,75 @@ export default function CartPage() {
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
-          <div className="text-center w-full max-w-md bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+        <style>{`
+          @keyframes confetti-fall {
+            0%   { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+          }
+          @keyframes success-scale {
+            0%   { transform: scale(0); opacity: 0; }
+            60%  { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+          }
+          .confetti-piece {
+            position: fixed; width: 10px; height: 10px; top: -20px;
+            animation: confetti-fall linear forwards;
+            border-radius: 2px;
+          }
+          .success-icon { animation: success-scale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s both; }
+          .slide-up-1   { animation: slide-up 0.5s ease 0.3s both; }
+          .slide-up-2   { animation: slide-up 0.5s ease 0.5s both; }
+          .slide-up-3   { animation: slide-up 0.5s ease 0.7s both; }
+          .slide-up-4   { animation: slide-up 0.5s ease 0.9s both; }
+        `}</style>
+
+        {/* Confetti */}
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="confetti-piece" style={{
+            left: `${Math.random() * 100}%`,
+            background: ["#C41E3A","#FFD700","#22c55e","#3b82f6","#a855f7","#f97316"][i % 6],
+            animationDuration: `${1.5 + Math.random() * 2}s`,
+            animationDelay: `${Math.random() * 0.5}s`,
+            width: `${6 + Math.random() * 10}px`,
+            height: `${6 + Math.random() * 10}px`,
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+          }} />
+        ))}
+
+        <main className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-4 py-8">
+          <div className="text-center w-full max-w-md bg-white rounded-3xl p-8 shadow-xl border border-green-100">
 
             {/* Logo */}
-            <div className="mb-2">
+            <div className="mb-3 slide-up-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png"
                 alt="Shree Ambika Beauty Shop"
-                className="h-12 object-contain mx-auto"
+                className="h-10 object-contain mx-auto"
               />
             </div>
 
-            <div className="text-5xl mb-3">🎉</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Payment Successful!</h1>
-            <p className="text-gray-500 text-sm mb-5">Thank you for shopping with Shree Ambika Beauty Shop!</p>
+            {/* Success icon with animation */}
+            <div className="success-icon mb-4">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto border-4 border-green-400 shadow-lg">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <path d="M8 20L16 28L32 12" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ strokeDasharray: 40, strokeDashoffset: 0, animation: "slide-up 0.4s ease 0.6s both" }} />
+                </svg>
+              </div>
+            </div>
+
+            <div className="slide-up-1">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Payment Successful!</h1>
+              <p className="text-gray-500 text-sm">Thank you for shopping with Shree Ambika Beauty Shop!</p>
+            </div>
 
             {/* Receipt details */}
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-5 text-left">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 my-5 text-left slide-up-2">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-500">Receipt No:</span>
                 <span className="font-bold text-gray-800">{receiptNo}</span>
@@ -311,29 +361,28 @@ export default function CartPage() {
                 <span className="text-gray-500">Items:</span>
                 <span className="font-bold text-gray-800">{paidItems.length} product{paidItems.length !== 1 ? "s" : ""}</span>
               </div>
-              <div className="border-t border-green-200 pt-2 flex justify-between text-sm">
+              <div className="border-t border-green-200 pt-2 flex justify-between">
                 <span className="font-bold text-gray-700">Amount Paid:</span>
-                <span className="font-black text-lg text-green-700">₹{paidTotal.toLocaleString("en-IN")}</span>
+                <span className="font-black text-xl text-green-700">₹{paidTotal.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
-            <p className="text-xs text-gray-400 mb-5">
+            <p className="text-xs text-gray-400 mb-5 slide-up-2">
               Vinod will contact you on WhatsApp (+91 82914 55297) to confirm dispatch details.
             </p>
 
             {/* Action buttons */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 slide-up-3">
               <a
                 href={`https://wa.me/918291455297?text=${encodeURIComponent(
                   `Hi Vinod! Payment done\nReceipt: ${receiptNo}\nPayment ID: ${paymentId}\nAmount: Rs.${paidTotal}\nPlease confirm my order dispatch.`
                 )}`}
                 target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+                className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-sm"
               >
                 <FaWhatsapp size={16} /> Confirm on WhatsApp
               </a>
 
-              {/* Download Invoice */}
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={handleDownloadInvoice}
                   className="flex items-center justify-center gap-1.5 border-2 border-brand-primary text-brand-primary font-bold py-2.5 rounded-xl text-xs hover:bg-brand-light transition-colors">
@@ -350,6 +399,7 @@ export default function CartPage() {
                 <FiShoppingBag size={14} /> Continue Shopping
               </Link>
             </div>
+
           </div>
         </main>
         <Footer />
