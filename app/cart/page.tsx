@@ -19,6 +19,35 @@ type DeliveryRate = {
   courier: string; error?: string;
 };
 
+// ── Small Add to Cart button for suggested products ───────────────
+type SuggestedProduct = { id: string; name: string; slug: string; brand: string; price: number; images: string[]; category: string; };
+
+function AddToCartBtn({ product }: { product: SuggestedProduct }) {
+  const { add, has } = useCart();
+  const { isLoggedIn, triggerLogin } = useUser();
+  const [added, setAdded] = useState(false);
+  const inCart = has(product.id);
+
+  const handleClick = () => {
+    if (!isLoggedIn) { triggerLogin("cart"); return; }
+    add({ id: product.id, name: product.name, slug: product.slug || product.id, brand: product.brand, price: product.price, images: product.images || [], category: product.category });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  return (
+    <button onClick={handleClick}
+      className={`mt-2 w-full flex items-center justify-center gap-1 text-[10px] font-bold py-1.5 rounded-xl transition-colors ${
+        inCart || added
+          ? "bg-brand-primary text-white"
+          : "bg-brand-light text-brand-primary border border-brand-primary/30 hover:bg-brand-primary hover:text-white"
+      }`}>
+      <FiShoppingCart size={10} />
+      {inCart || added ? "In Cart ✓" : "Add to Cart"}
+    </button>
+  );
+}
+
 export default function CartPage() {
   const { items, remove, updateQty, clear, subtotal, totalWeight, totalItems } = useCart();
   const { customer, isLoggedIn, triggerLogin } = useUser();
@@ -31,7 +60,6 @@ export default function CartPage() {
   const [rateError,  setRateError]  = useState("");
 
   // Suggested products
-  type SuggestedProduct = { id: string; name: string; slug: string; brand: string; price: number; images: string[]; category: string; };
   const [suggested, setSuggested] = useState<SuggestedProduct[]>([]);
 
   useEffect(() => {
@@ -638,6 +666,44 @@ export default function CartPage() {
                 <FiShoppingBag size={13} /> Shop More
               </Link>
             </div>
+
+            {/* Actual product cards from DB */}
+            {suggested.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
+                {suggested.slice(0, 8).map((p) => (
+                  <div key={p.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-0.5 group">
+                    {/* Image */}
+                    <Link href={`/products/${p.slug || p.id}`}>
+                      <div className="relative aspect-square bg-brand-light overflow-hidden">
+                        {p.images?.[0] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={cldImg(p.images[0], 300)} alt={p.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-4xl">💄</div>
+                        )}
+                        <span className="absolute bottom-2 right-2 bg-white/90 text-brand-primary text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+                          {p.category}
+                        </span>
+                      </div>
+                    </Link>
+                    {/* Info */}
+                    <div className="p-3">
+                      <p className="text-[9px] font-bold text-brand-primary uppercase tracking-wide mb-0.5">{p.brand}</p>
+                      <Link href={`/products/${p.slug || p.id}`}>
+                        <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-brand-primary transition-colors">{p.name}</p>
+                      </Link>
+                      {show_price && (
+                        <p className="text-sm font-black text-gray-900 mt-1">₹{p.price}</p>
+                      )}
+                      {/* Add to Cart button */}
+                      <AddToCartBtn product={p} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Category quick links */}
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
               {[
@@ -654,6 +720,7 @@ export default function CartPage() {
                 </Link>
               ))}
             </div>
+
             {/* CTA */}
             <div className="bg-brand-primary rounded-2xl p-5 text-center text-white">
               <p className="font-bold text-base mb-1">Need help finding more products?</p>
