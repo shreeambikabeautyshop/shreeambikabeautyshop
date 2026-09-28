@@ -62,28 +62,36 @@ export async function POST(req: NextRequest) {
     // Generate receipt number
     const receiptNo = `SABS-${Date.now().toString().slice(-8)}`;
 
-    // Log order to Supabase if available
+    // Log order to Supabase — save to sabs_orders (same table as admin Orders page)
     try {
       const { createClient } = await import("@supabase/supabase-js");
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
-      await supabase.from("orders").insert({
-        receipt_no:        receiptNo,
-        razorpay_order_id,
-        razorpay_payment_id,
-        customer_name:     customer?.full_name  || null,
-        customer_phone:    customer?.phone      || null,
-        customer_address:  customer?.address    || null,
-        customer_pincode:  customer?.pincode    || null,
-        items:             items                || [],
-        delivery_mode:     delivery_mode        || "delivery",
-        delivery_charge:   delivery_charge      || 0,
-        subtotal:          subtotal             || 0,
-        grand_total:       grand_total          || 0,
-        payment_status:    "paid",
-        created_at:        new Date().toISOString(),
+
+      // Build product name string from items array
+      const productNames = (items || []).map((i: { name: string; qty: number; price: number }) =>
+        `${i.name} (x${i.qty})`
+      ).join(", ");
+      const firstItem = (items || [])[0];
+
+      await supabase.from("sabs_orders").insert({
+        sabs_order_id:      receiptNo,
+        customer_name:      customer?.full_name  || "Customer",
+        customer_phone:     customer?.phone      || null,
+        product_name:       productNames         || firstItem?.name || "Order",
+        product_price:      grand_total          || 0,
+        delivery_address:   customer?.address    || null,
+        delivery_pincode:   customer?.pincode    || null,
+        delivery_city:      customer?.city       || null,
+        delivery_state:     customer?.state      || null,
+        status:             "new",
+        source:             delivery_mode === "pickup" ? "store_pickup" : "online_payment",
+        // Extra info in shiprocket_order_id field for reference
+        shiprocket_order_id: `razorpay:${razorpay_payment_id}`,
+        shipment_id:         razorpay_order_id,
+        created_at:          new Date().toISOString(),
       });
     } catch (dbErr) {
       // DB save failure should NOT block payment confirmation
