@@ -103,42 +103,47 @@ export async function POST(req: NextRequest) {
 
       // ── Auto-create Shiprocket order (fire-and-forget, non-blocking) ──
       if (delivery_mode === "delivery" && customer?.pincode && items?.length > 0) {
-        const orderItems = (items as Array<{name: string; price: number; qty: number; brand: string}>).map((item) => ({
-          name:        item.name,
-          selling_price: item.price,
-          units:       item.qty || 1,
-          sku:         item.name.toLowerCase().replace(/\s+/g, "-").slice(0, 40),
-          hsn:         0,
-          discount:    0,
-          tax:         0,
-        }));
-
-        const totalWeight = items.reduce(
-          (s: number, i: {qty?: number}) => s + (i.qty || 1) * 0.3, 0
+        const baseUrl = "https://www.shreeambikabeauty.com";
+        const totalWeight = (items as Array<{qty?: number}>).reduce(
+          (s, i) => s + (i.qty || 1) * 0.3, 0
         );
 
-        fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? "https://www.shreeambikabeauty.com" : ""}/api/admin/shiprocket/create-order`, {
+        fetch(`${baseUrl}/api/shiprocket-internal`, {
           method: "POST",
-          headers: { "Content-Type": "application/json",
-            "Cookie": "sabs_session=authenticated" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": process.env.INTERNAL_API_SECRET || "sabs-internal-2026",
+          },
           body: JSON.stringify({
-            order_id:          receiptNo,
-            order_date:        new Date().toISOString().split("T")[0],
-            billing_customer_name:   customer?.full_name || "Customer",
-            billing_phone:     customer?.phone || "",
-            billing_address:   customer?.address || "Address",
-            billing_city:      customer?.city || "Mumbai",
-            billing_state:     customer?.state || "Maharashtra",
-            billing_pincode:   customer?.pincode || "400068",
-            billing_country:   "India",
-            shipping_is_billing: true,
-            order_items:       orderItems,
-            payment_method:    "Prepaid",
-            shipping_charges:  delivery_charge || 0,
-            sub_total:         grand_total || 0,
-            length:            15, breadth: 10, height: 10,
-            weight:            Math.max(0.1, totalWeight),
+            order_id:         receiptNo,
+            order_date:       new Date().toISOString().split("T")[0],
+            customer_name:    customer?.full_name || "Customer",
+            customer_phone:   customer?.phone || "",
+            delivery_address: customer?.address || "Address",
+            delivery_city:    customer?.city    || "Mumbai",
+            delivery_state:   customer?.state   || "Maharashtra",
+            delivery_pincode: customer?.pincode || "400068",
+            items,
+            grand_total,
+            delivery_charge,
+            weight: Math.max(0.1, totalWeight),
           }),
+        }).then(async r => {
+          const d = await r.json();
+          if (d.success && d.shiprocket_order_id) {
+            // Update sabs_orders with Shiprocket IDs
+            const { createClient } = await import("@supabase/supabase-js");
+            const sb = createClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+            await sb.from("sabs_orders")
+              .update({
+                shiprocket_order_id: d.shiprocket_order_id,
+                shipment_id: d.shipment_id,
+              })
+              .eq("sabs_order_id", receiptNo);
+          }
         }).catch(() => { /* non-blocking */ });
       }
 
