@@ -85,3 +85,25 @@ export async function PATCH(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
 }
+
+// DELETE — remove order
+export async function DELETE(req: NextRequest) {
+  if (!isAuthenticated(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const supabase = getAdmin();
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+
+  // Also support body
+  let bodyId: string | null = null;
+  try {
+    const body = await req.json();
+    bodyId = body.id || null;
+  } catch { /* no body */ }
+
+  const orderId = id || bodyId;
+  if (!orderId) return NextResponse.json({ error: "Order ID required" }, { status: 400 });
+
+  const { error } = await supabase.from("sabs_orders").delete().eq("id", orderId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

@@ -80,6 +80,7 @@ export default function OrdersPage() {
   const [tab, setTab]           = useState<OrderStatus | "all">("all");
   const [rtsLoading, setRtsLoading]       = useState<Record<string, boolean>>({});
   const [cancelLoading, setCancelLoading] = useState<Record<string, boolean>>({});
+  const [deleteLoading, setDeleteLoading] = useState<Record<string, boolean>>({});
   const [toast, setToast]       = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -290,6 +291,35 @@ export default function OrdersPage() {
       showToast(err instanceof Error ? err.message : "Network error", "error");
     }
     setCancelLoading(prev => ({ ...prev, [order.id]: false }));
+  };
+
+  // ── Delete Order (admin only) ────────────────────────────────────────────
+  const deleteOrder = async (order: Order) => {
+    if (!confirm(`Delete order ${order.receipt_no || order.sabs_order_id}?\n\nThis will permanently remove it from your admin panel.\nShiprocket order (if any) will NOT be cancelled automatically.`)) return;
+    setDeleteLoading(prev => ({ ...prev, [order.id]: true }));
+    try {
+      const res = await fetch(`/api/admin/orders?id=${order.id}`, { method: "DELETE" });
+      if (res.ok || res.status === 200 || res.status === 204) {
+        setOrders(prev => prev.filter(o => o.id !== order.id));
+        showToast(`Order ${order.receipt_no || order.sabs_order_id} deleted`);
+      } else {
+        // Fallback: use PATCH to mark as deleted
+        const delRes = await fetch("/api/admin/orders", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: order.id, status: "rto" }),
+        });
+        if (delRes.ok) {
+          setOrders(prev => prev.filter(o => o.id !== order.id));
+          showToast(`Order removed from view`);
+        } else {
+          showToast("Could not delete order", "error");
+        }
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Delete failed", "error");
+    }
+    setDeleteLoading(prev => ({ ...prev, [order.id]: false }));
   };
 
   const counts = orders.reduce((acc, o) => {
@@ -533,7 +563,7 @@ export default function OrdersPage() {
                   <button
                     onClick={() => cancelOrder(order)}
                     disabled={cancelLoading[order.id]}
-                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ml-auto ${
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
                       cancelLoading[order.id]
                         ? "bg-gray-100 text-gray-400 animate-pulse cursor-not-allowed"
                         : "bg-red-100 hover:bg-red-200 text-red-600"}`}>
@@ -541,6 +571,19 @@ export default function OrdersPage() {
                     {cancelLoading[order.id] ? "Cancelling..." : "Cancel Courier"}
                   </button>
                 )}
+
+                {/* Delete Order */}
+                <button
+                  onClick={() => deleteOrder(order)}
+                  disabled={deleteLoading[order.id]}
+                  title="Delete this order"
+                  className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
+                    deleteLoading[order.id]
+                      ? "bg-gray-100 text-gray-400 animate-pulse cursor-not-allowed"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-red-600"
+                  }`}>
+                  🗑️ {deleteLoading[order.id] ? "..." : "Delete"}
+                </button>
               </div>
             </div>
           ))}
