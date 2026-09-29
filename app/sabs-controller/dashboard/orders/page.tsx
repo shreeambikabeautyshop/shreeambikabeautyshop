@@ -26,8 +26,7 @@ interface Order {
   grand_total: number;
   subtotal: number;
   delivery_charge: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  items: any[];
+  items: Record<string, unknown>[];
   delivery_address: string | null;
   delivery_pincode: string | null;
   delivery_city: string | null;
@@ -109,8 +108,9 @@ export default function OrdersPage() {
       showToast("Creating order in Shiprocket...", "success");
       try {
         // Parse items if available
-        const orderItems = Array.isArray(order.items) && order.items.length > 0
-          ? order.items
+        type OItem = { name: string; price?: number; qty?: number };
+        const orderItems: OItem[] = Array.isArray(order.items) && order.items.length > 0
+          ? (order.items as OItem[])
           : [{ name: order.product_name || "Beauty Product", price: order.product_price || 0, qty: 1 }];
 
         const createRes = await fetch("/api/admin/shiprocket/create-order", {
@@ -125,9 +125,9 @@ export default function OrdersPage() {
             delivery_city:     order.delivery_city    || "Mumbai",
             delivery_state:    order.delivery_state   || "Maharashtra",
             delivery_pincode:  order.delivery_pincode || "400068",
-            product_name:      orderItems.map((i: {name: string}) => i.name).join(", "),
+            product_name:      orderItems.map(i => i.name).join(", "),
             product_price:     order.grand_total || order.product_price || 0,
-            product_quantity:  orderItems.reduce((s: number, i: {qty?: number}) => s + (i.qty || 1), 0),
+            product_quantity:  orderItems.reduce((s, i) => s + (i.qty || 1), 0),
             weight:            0.3 * orderItems.length,
           }),
         });
@@ -402,7 +402,6 @@ export default function OrdersPage() {
                   )}
                   <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLES[order.status]}`}>
                     {STATUS_LABELS[order.status]}
-                  </span>
                   </span>
                 </div>
 

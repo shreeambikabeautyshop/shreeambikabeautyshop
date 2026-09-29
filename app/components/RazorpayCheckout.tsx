@@ -25,6 +25,8 @@ interface Props {
   deliveryCharge:  number;   // ₹
   deliveryMode:    "pickup" | "delivery";
   deliveryPincode?: string;
+  courierName?:    string;   // selected courier name
+  courierDays?:    number;   // estimated delivery days
   onSuccess:       (receiptNo: string, paymentId: string) => void;
   onFailure?:      (error: string) => void;
   disabled?:       boolean;
@@ -52,7 +54,7 @@ interface RazorpayInstance { open(): void; }
 
 export default function RazorpayCheckout({
   items, customer, subtotal, deliveryCharge, deliveryMode,
-  deliveryPincode, onSuccess, onFailure, disabled,
+  deliveryPincode, courierName, courierDays, onSuccess, onFailure, disabled,
 }: Props) {
   const [loading,       setLoading]       = useState(false);
   const [scriptLoaded,  setScriptLoaded]  = useState(false);
@@ -133,6 +135,8 @@ export default function RazorpayCheckout({
                 delivery_charge:  deliveryCharge,
                 subtotal,
                 grand_total:      grandTotal,
+                courier_name:     courierName  || null,
+                courier_days:     courierDays  || null,
               }),
             });
 

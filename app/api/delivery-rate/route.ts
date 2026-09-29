@@ -82,36 +82,60 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Sort by total charge
-    const sorted = [...couriers].sort(
-      (a, b) => (a.freight_charge || 0) - (b.freight_charge || 0)
+    // Sort by cost (cheapest first) and by speed (fewest days first)
+    const byCost  = [...couriers].sort((a, b) => (a.freight_charge || 0) - (b.freight_charge || 0));
+    const bySpeed = [...couriers].sort((a, b) => (a.estimated_delivery_days || 99) - (b.estimated_delivery_days || 99));
+
+    const cheapest = byCost[0];
+    const fastest  = bySpeed[0];
+
+    // Build 3 distinct options: Standard, Fast, Express
+    // Standard = cheapest courier
+    // Express  = fastest courier
+    // Fast     = best balance (cheapest among those that deliver in ≤ fastest+1 days, or second cheapest)
+    const standardCharge = (cheapest.freight_charge || 0) + (cod ? (cheapest.cod_charges || 0) : 0);
+    const expressCharge  = (fastest.freight_charge  || 0) + (cod ? (fastest.cod_charges  || 0) : 0);
+
+    // Fast option: cheapest courier that is faster than standard (but not same as express unless only 2 couriers)
+    const fasterThanStandard = byCost.filter(
+      c => (c.estimated_delivery_days || 99) < (cheapest.estimated_delivery_days || 99)
     );
-    const cheapest = sorted[0];
+    const fastCourier = fasterThanStandard.length > 0
+      ? fasterThanStandard[0]         // cheapest among faster ones
+      : byCost[1] || cheapest;        // fallback: second cheapest, or same as standard
 
-    // Fastest
-    const fastest = [...couriers].sort(
-      (a, b) => (a.estimated_delivery_days || 99) - (b.estimated_delivery_days || 99)
-    )[0];
+    const fastCharge = (fastCourier.freight_charge || 0) + (cod ? (fastCourier.cod_charges || 0) : 0);
 
-    const charge = (cheapest.freight_charge || 0) + (cod ? (cheapest.cod_charges || 0) : 0);
+    // Deduplicate options by courier name
+    const seen   = new Set<string>();
+    const opts: Array<{ label: string; tag: string; courier: string; charge: number; days: number }> = [];
+    const push = (label: string, tag: string, c: Courier) => {
+      if (seen.has(c.courier_name)) return;
+      seen.add(c.courier_name);
+      opts.push({
+        label,
+        tag,
+        courier: c.courier_name,
+        charge:  (c.freight_charge || 0) + (cod ? (c.cod_charges || 0) : 0),
+        days:    c.estimated_delivery_days,
+      });
+    };
 
+    push("Standard", "standard", cheapest);
+    push("Fast",     "fast",     fastCourier);
+    push("Express",  "express",  fastest);
+
+    // If only 1 unique courier, still return it as a single option
     return NextResponse.json({
       success:   true,
       available: true,
       pincode,
-      charge,                          // cheapest total
-      days:      cheapest.estimated_delivery_days,
-      courier:   cheapest.courier_name,
-      fastest: {
-        charge:  (fastest.freight_charge || 0) + (cod ? (fastest.cod_charges || 0) : 0),
-        days:    fastest.estimated_delivery_days,
-        courier: fastest.courier_name,
-      },
-      options: sorted.slice(0, 3).map(c => ({
-        courier: c.courier_name,
-        charge:  (c.freight_charge || 0) + (cod ? (c.cod_charges || 0) : 0),
-        days:    c.estimated_delivery_days,
-      })),
+      // Legacy fields (cheapest) — kept for backward compat
+      charge:  standardCharge,
+      days:    cheapest.estimated_delivery_days,
+      courier: cheapest.courier_name,
+      // Structured options for the new delivery selector UI
+      options: opts,
     });
 
   } catch (err) {

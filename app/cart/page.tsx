@@ -14,9 +14,20 @@ import { MdStore, MdLocalShipping } from "react-icons/md";
 import { cldImg } from "@/app/lib/cloudinary-img";
 
 type DeliveryMode = "pickup" | "delivery" | null;
+type DeliveryOption = {
+  label: string;   // "Standard" | "Fast" | "Express"
+  tag: string;     // "standard" | "fast" | "express"
+  courier: string;
+  charge: number;
+  days: number;
+};
 type DeliveryRate = {
-  available: boolean; charge: number; days: number;
-  courier: string; error?: string;
+  available: boolean;
+  charge: number;   // cheapest (legacy)
+  days: number;
+  courier: string;
+  options?: DeliveryOption[];
+  error?: string;
 };
 
 // ── Small Add to Cart button for suggested products ───────────────
@@ -58,6 +69,7 @@ export default function CartPage() {
   const [rate,       setRate]       = useState<DeliveryRate | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
   const [rateError,  setRateError]  = useState("");
+  const [selectedOption, setSelectedOption] = useState<DeliveryOption | null>(null);
 
   // Suggested products
   const [suggested, setSuggested] = useState<SuggestedProduct[]>([]);
@@ -88,7 +100,7 @@ export default function CartPage() {
   const [paidTotal,    setPaidTotal]    = useState(0);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  const deliveryCharge = mode === "pickup" ? 0 : (rate?.charge || 0);
+  const deliveryCharge = mode === "pickup" ? 0 : (selectedOption?.charge ?? rate?.charge ?? 0);
   const grandTotal     = subtotal + deliveryCharge;
   const orderDate      = new Date().toLocaleDateString("en-IN", {
     day: "2-digit", month: "long", year: "numeric"
@@ -102,6 +114,7 @@ export default function CartPage() {
     }
     setRateLoading(true);
     setRateError("");
+    setSelectedOption(null);
     try {
       const res  = await fetch("/api/delivery-rate", {
         method:  "POST",
@@ -110,7 +123,17 @@ export default function CartPage() {
       });
       const data = await res.json();
       if (data.success && data.available) {
-        setRate({ available: true, charge: data.charge, days: data.days, courier: data.courier });
+        setRate({
+          available: true,
+          charge: data.charge,
+          days:   data.days,
+          courier: data.courier,
+          options: data.options || [],
+        });
+        // Auto-select standard (first option) if only 1 option
+        if ((data.options || []).length === 1) {
+          setSelectedOption(data.options[0]);
+        }
       } else if (data.success && !data.available) {
         setRate({ available: false, charge: 0, days: 0, courier: "", error: data.message });
       } else {
@@ -130,7 +153,7 @@ export default function CartPage() {
       `*Customer:* ${customer?.full_name || "Customer"}`,
       `*Phone:* ${customer?.phone || ""}`,
       mode === "delivery"
-        ? `*Delivery to:* ${customer?.address || ""}, ${customer?.city || ""} — ${pincode}`
+        ? `*Delivery to:* ${customer?.address || ""}, ${customer?.city || ""} — ${pincode}${selectedOption ? `\n*Courier:* ${selectedOption.label} — ${selectedOption.courier} (${selectedOption.days} days) — ₹${selectedOption.charge}` : ""}`
         : `*Mode:* Store Pickup`,
       ``,
       `*Products:*`,
@@ -519,7 +542,7 @@ export default function CartPage() {
 
                     {/* Pickup */}
                     <button
-                      onClick={() => { setMode("pickup"); setRate(null); }}
+                      onClick={() => { setMode("pickup"); setRate(null); setSelectedOption(null); }}
                       className={`w-full flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
                         mode === "pickup"
                           ? "border-green-500 bg-green-50"
@@ -561,7 +584,7 @@ export default function CartPage() {
                         <input
                           type="number"
                           value={pincode}
-                          onChange={(e) => { setPincode(e.target.value); setRate(null); }}
+                          onChange={(e) => { setPincode(e.target.value); setRate(null); setSelectedOption(null); }}
                           placeholder="e.g. 400068"
                           maxLength={6}
                           className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand-primary transition-colors"
@@ -576,13 +599,51 @@ export default function CartPage() {
                       </div>
                       {rateError && <p className="text-xs text-red-500 mt-1">{rateError}</p>}
                       {rate?.available && (
-                        <div className="mt-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-                          <p className="text-xs font-bold text-green-700">
-                            ✅ Delivery available — ₹{rate.charge}
-                          </p>
-                          <p className="text-[10px] text-green-600">
-                            {rate.courier} · {rate.days} day{rate.days !== 1 ? "s" : ""}
-                          </p>
+                        <div className="mt-3 space-y-2">
+                          <p className="text-xs font-bold text-gray-600">📦 Choose delivery speed:</p>
+                          {(rate.options || []).map((opt) => {
+                            const isSelected = selectedOption?.tag === opt.tag;
+                            const icons: Record<string, string> = { standard: "🐢", fast: "🚀", express: "⚡" };
+                            const colors: Record<string, string> = {
+                              standard: isSelected ? "border-blue-500 bg-blue-50"   : "border-gray-200 hover:border-blue-300",
+                              fast:     isSelected ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-green-300",
+                              express:  isSelected ? "border-orange-500 bg-orange-50" : "border-gray-200 hover:border-orange-300",
+                            };
+                            const badgeColors: Record<string, string> = {
+                              standard: "bg-blue-100 text-blue-700",
+                              fast:     "bg-green-100 text-green-700",
+                              express:  "bg-orange-100 text-orange-700",
+                            };
+                            return (
+                              <button
+                                key={opt.tag}
+                                onClick={() => setSelectedOption(opt)}
+                                className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all text-left ${colors[opt.tag] || (isSelected ? "border-brand-primary bg-brand-light" : "border-gray-200")}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{icons[opt.tag] || "📦"}</span>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-sm text-gray-800">{opt.label}</span>
+                                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${badgeColors[opt.tag] || "bg-gray-100 text-gray-600"}`}>
+                                        {opt.days} day{opt.days !== 1 ? "s" : ""}
+                                      </span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-0.5 truncate max-w-[150px]">{opt.courier}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-black text-gray-900 text-sm">₹{opt.charge}</span>
+                                  {isSelected && <span className="text-green-500 text-lg">✓</span>}
+                                </div>
+                              </button>
+                            );
+                          })}
+                          {!selectedOption && (
+                            <p className="text-[10px] text-orange-500 font-semibold text-center">
+                              ↑ Select a delivery option to continue
+                            </p>
+                          )}
                         </div>
                       )}
                       {rate?.available === false && (
@@ -599,7 +660,7 @@ export default function CartPage() {
               )}
 
               {/* Price Summary */}
-              {isLoggedIn && mode && (
+              {isLoggedIn && mode && (mode === "pickup" || selectedOption) && (
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
                   <h3 className="font-bold text-gray-800 text-sm mb-3">💰 Price Summary</h3>
                   <div className="space-y-2 text-sm">
@@ -610,9 +671,19 @@ export default function CartPage() {
                     <div className="flex justify-between text-gray-600">
                       <span>Delivery Charges</span>
                       <span className={`font-semibold ${mode === "pickup" ? "text-green-600" : ""}`}>
-                        {mode === "pickup" ? "FREE" : rate?.available ? `₹${deliveryCharge}` : "—"}
+                        {mode === "pickup"
+                          ? "FREE"
+                          : selectedOption
+                            ? `₹${selectedOption.charge}`
+                            : "—"
+                        }
                       </span>
                     </div>
+                    {mode === "delivery" && selectedOption && (
+                      <div className="text-[10px] text-gray-400 -mt-1">
+                        {selectedOption.label} · {selectedOption.courier} · {selectedOption.days} day{selectedOption.days !== 1 ? "s" : ""}
+                      </div>
+                    )}
                     <div className="text-xs text-gray-400 italic">
                       ✅ No GST — all taxes already included in price
                     </div>
@@ -625,7 +696,7 @@ export default function CartPage() {
                   </div>
 
                   {/* Payment Options */}
-                  {(mode === "pickup" || rate?.available) && (
+                  {(mode === "pickup" || selectedOption) && (
                     <div className="mt-4 space-y-3">
 
                       {/* Option 1 — Pay Online via Razorpay */}
@@ -647,6 +718,8 @@ export default function CartPage() {
                           deliveryCharge={deliveryCharge}
                           deliveryMode={mode as "pickup" | "delivery"}
                           deliveryPincode={pincode}
+                          courierName={selectedOption?.courier}
+                          courierDays={selectedOption?.days}
                           onSuccess={(rno, pid) => {
                             setReceiptNo(rno);
                             setPaymentId(pid);

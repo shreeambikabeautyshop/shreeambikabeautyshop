@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
       delivery_charge,
       subtotal,
       grand_total,
+      courier_name,       // user-selected courier (optional)
+      courier_days,       // estimated delivery days selected
     } = body;
 
     // Validate required fields
@@ -126,12 +128,13 @@ export async function POST(req: NextRequest) {
             items,
             grand_total,
             delivery_charge,
-            weight: Math.max(0.1, totalWeight),
+            weight:       Math.max(0.1, totalWeight),
+            courier_name: courier_name || null,   // pass user-selected courier
           }),
         }).then(async r => {
           const d = await r.json();
           if (d.success && d.shiprocket_order_id) {
-            // Update sabs_orders with Shiprocket IDs
+            // Update sabs_orders with Shiprocket IDs + AWB
             const { createClient } = await import("@supabase/supabase-js");
             const sb = createClient(
               process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -140,11 +143,17 @@ export async function POST(req: NextRequest) {
             await sb.from("sabs_orders")
               .update({
                 shiprocket_order_id: d.shiprocket_order_id,
-                shipment_id: d.shipment_id,
+                shipment_id:         d.shipment_id,
+                awb:                 d.awb         || null,
+                courier_name:        d.courier_name || courier_name || null,
+                estimated_delivery:  d.estimated_delivery || null,
+                status:              "new",
               })
               .eq("sabs_order_id", receiptNo);
+          } else {
+            console.error("[verify-payment] Shiprocket auto-create failed:", d.error || d);
           }
-        }).catch(() => { /* non-blocking */ });
+        }).catch(e => console.error("[verify-payment] shiprocket-internal fetch error:", e));
       }
 
     } catch (dbErr) {

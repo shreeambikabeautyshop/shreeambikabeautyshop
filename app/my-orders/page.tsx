@@ -16,6 +16,7 @@ type Order = {
   razorpay_payment_id: string;
   product_name: string;
   grand_total: number;
+  product_price?: number;
   items: OrderItem[];
   status: string;
   source: string;
