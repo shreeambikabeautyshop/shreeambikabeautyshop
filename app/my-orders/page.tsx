@@ -4,7 +4,6 @@ import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { useUser } from "@/app/context/UserContext";
-import { createClient } from "@supabase/supabase-js";
 import { FiPackage, FiTruck, FiCheck, FiClock, FiExternalLink, FiShoppingBag, FiStar } from "react-icons/fi";
 import { cldImg } from "@/app/lib/cloudinary-img";
 
@@ -48,26 +47,15 @@ export default function MyOrdersPage() {
       return;
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    // Normalize phone — strip +91 prefix, keep last 10 digits
-    const rawPhone = customer.phone || "";
-    const phone10  = rawPhone.replace(/\D/g, "").slice(-10);
-    const phoneWithPrefix = `+91${phone10}`;
-
-    // Try both formats (some orders saved with +91, some without)
-    supabase
-      .from("sabs_orders")
-      .select("*")
-      .or(`customer_phone.eq.${phone10},customer_phone.eq.${phoneWithPrefix},customer_phone.eq.91${phone10}`)
-      .order("created_at", { ascending: false })
+    // Use server-side API (service role key) to bypass Supabase RLS
+    const phone10 = (customer.phone || "").replace(/\D/g, "").slice(-10);
+    fetch(`/api/my-orders?phone=${phone10}`)
+      .then(r => r.json())
       .then(({ data }) => {
         setOrders(data || []);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [isLoggedIn, customer]);
 
   if (!isLoggedIn) {
