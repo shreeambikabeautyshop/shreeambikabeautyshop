@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
       delivery_charge,
       subtotal,
       grand_total,
-      courier_name,       // user-selected courier (optional)
-      courier_days,       // estimated delivery days selected
+      courier_name,       // user-selected courier name
+      courier_days,       // estimated delivery days selected by user
     } = body;
 
     // Validate required fields
@@ -78,6 +78,14 @@ export async function POST(req: NextRequest) {
       ).join(", ");
       const firstItem = (items || [])[0];
 
+      // Calculate estimated delivery date from selected courier days
+      let estimatedDelivery: string | null = null;
+      if (delivery_mode === "delivery" && courier_days && courier_days > 0) {
+        const edd = new Date();
+        edd.setDate(edd.getDate() + Number(courier_days));
+        estimatedDelivery = edd.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      }
+
       await supabase.from("sabs_orders").insert({
         sabs_order_id:        receiptNo,
         receipt_no:           receiptNo,
@@ -98,74 +106,34 @@ export async function POST(req: NextRequest) {
         delivery_state:       customer?.state      || null,
         status:               "new",
         source:               delivery_mode === "pickup" ? "store_pickup" : "online_payment",
-        shiprocket_order_id:  `razorpay:${razorpay_payment_id}`,
-        shipment_id:          razorpay_order_id,
+        courier_name:         courier_name         || null,   // user's selected courier
+        estimated_delivery:   estimatedDelivery,              // calculated from selected days
+        shiprocket_order_id:  null,                           // will be set when admin marks Ready to Ship
+        shipment_id:          null,
         created_at:           new Date().toISOString(),
       });
 
-      // ── Auto-create Shiprocket order (fire-and-forget, non-blocking) ──
-      if (delivery_mode === "delivery" && customer?.pincode && items?.length > 0) {
-        const baseUrl = "https://www.shreeambikabeauty.com";
-        const totalWeight = (items as Array<{qty?: number}>).reduce(
-          (s, i) => s + (i.qty || 1) * 0.3, 0
-        );
-
-        fetch(`${baseUrl}/api/shiprocket-internal`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-internal-secret": process.env.INTERNAL_API_SECRET || "sabs-internal-2026",
-          },
-          body: JSON.stringify({
-            order_id:         receiptNo,
-            order_date:       new Date().toISOString().split("T")[0],
-            customer_name:    customer?.full_name || "Customer",
-            customer_phone:   customer?.phone || "",
-            delivery_address: customer?.address || "Address",
-            delivery_city:    customer?.city    || "Mumbai",
-            delivery_state:   customer?.state   || "Maharashtra",
-            delivery_pincode: customer?.pincode || "400068",
-            items,
-            grand_total,
-            delivery_charge,
-            weight:       Math.max(0.1, totalWeight),
-            courier_name: courier_name || null,   // pass user-selected courier
-          }),
-        }).then(async r => {
-          const d = await r.json();
-          if (d.success && d.shiprocket_order_id) {
-            // Update sabs_orders with Shiprocket IDs + AWB
-            const { createClient } = await import("@supabase/supabase-js");
-            const sb = createClient(
-              process.env.NEXT_PUBLIC_SUPABASE_URL!,
-              process.env.SUPABASE_SERVICE_ROLE_KEY!
-            );
-            await sb.from("sabs_orders")
-              .update({
-                shiprocket_order_id: d.shiprocket_order_id,
-                shipment_id:         d.shipment_id,
-                awb:                 d.awb         || null,
-                courier_name:        d.courier_name || courier_name || null,
-                estimated_delivery:  d.estimated_delivery || null,
-                status:              "new",
-              })
-              .eq("sabs_order_id", receiptNo);
-          } else {
-            console.error("[verify-payment] Shiprocket auto-create failed:", d.error || d);
-          }
-        }).catch(e => console.error("[verify-payment] shiprocket-internal fetch error:", e));
-      }
+      // NOTE: Shiprocket order creation happens when admin clicks "Ready to Ship"
+      // No auto-creation here to keep it clean and let Vinod control dispatch timing
 
     } catch (dbErr) {
       console.warn("Order DB save failed (non-blocking):", dbErr);
     }
 
     return NextResponse.json({
-      success:    true,
-      verified:   true,
-      receipt_no: receiptNo,
-      payment_id: razorpay_payment_id,
-      order_id:   razorpay_order_id,
+      success:            true,
+      verified:           true,
+      receipt_no:         receiptNo,
+      payment_id:         razorpay_payment_id,
+      order_id:           razorpay_order_id,
+      courier_name:       courier_name       || null,
+      courier_days:       courier_days       || null,
+      estimated_delivery: (() => {
+        if (delivery_mode !== "delivery" || !courier_days) return null;
+        const edd = new Date();
+        edd.setDate(edd.getDate() + Number(courier_days));
+        return edd.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      })(),
     });
 
   } catch (err: unknown) {

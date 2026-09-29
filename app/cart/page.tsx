@@ -98,6 +98,8 @@ export default function CartPage() {
   const [paidSubtotal, setPaidSubtotal] = useState(0);
   const [paidDelivery, setPaidDelivery] = useState(0);
   const [paidTotal,    setPaidTotal]    = useState(0);
+  const [paidCourier,  setPaidCourier]  = useState<string | undefined>(undefined);
+  const [paidEDD,      setPaidEDD]      = useState<string | undefined>(undefined);
   const receiptRef = useRef<HTMLDivElement>(null);
 
   const deliveryCharge = mode === "pickup" ? 0 : (selectedOption?.charge ?? rate?.charge ?? 0);
@@ -245,7 +247,10 @@ export default function CartPage() {
     <div class="section-title">Customer Details</div>
     <div class="info-row"><span>Name:</span><span class="info-val">${customer?.full_name || "Customer"}</span></div>
     <div class="info-row"><span>Phone:</span><span class="info-val">${customer?.phone || ""}</span></div>
-    ${mode === "delivery" ? `<div class="info-row"><span>Delivery:</span><span class="info-val">${customer?.address || ""}, ${pincode}</span></div>` : `<div class="info-row"><span>Mode:</span><span class="info-val">Store Pickup</span></div>`}
+    ${mode === "delivery" ? `<div class="info-row"><span>Delivery:</span><span class="info-val">${customer?.address || ""}, ${pincode}</span></div>
+  ${paidCourier ? `<div class="info-row"><span>Courier:</span><span class="info-val">${paidCourier}</span></div>` : ""}
+  ${paidEDD ? `<div class="info-row"><span>Expected Delivery:</span><span class="info-val" style="color:#16a34a">📅 ${paidEDD}</span></div>` : ""}
+  ${!paidCourier ? `<div class="info-row"><span style="font-style:italic;color:#999">Tracking details will be shared on WhatsApp after dispatch</span></div>` : ""}` : `<div class="info-row"><span>Mode:</span><span class="info-val">Store Pickup</span></div>`}
   </div>
 
   <div class="section">
@@ -384,6 +389,23 @@ export default function CartPage() {
                 <span className="text-gray-500">Items:</span>
                 <span className="font-bold text-gray-800">{paidItems.length} product{paidItems.length !== 1 ? "s" : ""}</span>
               </div>
+              {paidCourier && (
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-500">Courier:</span>
+                  <span className="font-bold text-gray-800">{paidCourier}</span>
+                </div>
+              )}
+              {paidEDD && (
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-500">Expected by:</span>
+                  <span className="font-bold text-green-700">📅 {paidEDD}</span>
+                </div>
+              )}
+              {!paidCourier && paidDelivery > 0 && (
+                <div className="text-xs text-gray-400 mb-2 italic">
+                  Courier details will be shared on WhatsApp after dispatch
+                </div>
+              )}
               <div className="border-t border-green-200 pt-2 flex justify-between">
                 <span className="font-bold text-gray-700">Amount Paid:</span>
                 <span className="font-black text-xl text-green-700">₹{paidTotal.toLocaleString("en-IN")}</span>
@@ -720,7 +742,7 @@ export default function CartPage() {
                           deliveryPincode={pincode}
                           courierName={selectedOption?.courier}
                           courierDays={selectedOption?.days}
-                          onSuccess={(rno, pid) => {
+                          onSuccess={(rno, pid, courierN, edd) => {
                             setReceiptNo(rno);
                             setPaymentId(pid);
                             // Capture before clear
@@ -728,6 +750,14 @@ export default function CartPage() {
                             setPaidSubtotal(subtotal);
                             setPaidDelivery(deliveryCharge);
                             setPaidTotal(grandTotal);
+                            setPaidCourier(courierN || selectedOption?.courier);
+                            setPaidEDD(edd || (selectedOption?.days
+                              ? (() => {
+                                  const d = new Date();
+                                  d.setDate(d.getDate() + selectedOption.days);
+                                  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+                                })()
+                              : undefined));
                             setPaymentDone(true);
                             clear();
                           }}

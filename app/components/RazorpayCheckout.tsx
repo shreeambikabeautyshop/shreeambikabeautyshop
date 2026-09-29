@@ -27,7 +27,7 @@ interface Props {
   deliveryPincode?: string;
   courierName?:    string;   // selected courier name
   courierDays?:    number;   // estimated delivery days
-  onSuccess:       (receiptNo: string, paymentId: string) => void;
+  onSuccess:       (receiptNo: string, paymentId: string, courierName?: string, estimatedDelivery?: string) => void;
   onFailure?:      (error: string) => void;
   disabled?:       boolean;
 }
@@ -146,7 +146,12 @@ export default function RazorpayCheckout({
             }
 
             setLoading(false);
-            onSuccess(verifyData.receipt_no, response.razorpay_payment_id);
+            onSuccess(
+              verifyData.receipt_no,
+              response.razorpay_payment_id,
+              verifyData.courier_name  || courierName  || undefined,
+              verifyData.estimated_delivery             || undefined,
+            );
 
           } catch (verifyErr) {
             setLoading(false);

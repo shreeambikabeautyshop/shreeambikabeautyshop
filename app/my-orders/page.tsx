@@ -53,10 +53,16 @@ export default function MyOrdersPage() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    // Normalize phone — strip +91 prefix, keep last 10 digits
+    const rawPhone = customer.phone || "";
+    const phone10  = rawPhone.replace(/\D/g, "").slice(-10);
+    const phoneWithPrefix = `+91${phone10}`;
+
+    // Try both formats (some orders saved with +91, some without)
     supabase
       .from("sabs_orders")
       .select("*")
-      .eq("customer_phone", customer.phone)
+      .or(`customer_phone.eq.${phone10},customer_phone.eq.${phoneWithPrefix},customer_phone.eq.91${phone10}`)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setOrders(data || []);
@@ -201,9 +207,16 @@ export default function MyOrdersPage() {
                         {order.courier_name && (
                           <p className="text-xs text-gray-400">{order.courier_name}</p>
                         )}
+                        {order.estimated_delivery && (
+                          <p className="text-xs text-green-600 font-semibold">
+                            📅 Expected: {order.estimated_delivery}
+                          </p>
+                        )}
                         {!order.awb_code && (
                           <p className="text-xs text-gray-400">
-                            {order.source === "store_pickup" ? "Store Pickup" : "Delivery details will be updated"}
+                            {order.source === "store_pickup"
+                              ? "🏪 Store Pickup"
+                              : "📦 Courier details will be shared on WhatsApp after dispatch"}
                           </p>
                         )}
                       </div>
