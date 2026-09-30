@@ -413,7 +413,8 @@ export default function CartPage() {
             </div>
 
             <p className="text-xs text-gray-400 mb-5 slide-up-2">
-              Your order is confirmed. Vinod will arrange dispatch and share tracking details on WhatsApp (+91 82914 55297) within a few hours.
+              Your order is confirmed! 🎉 Courier details will be sent to your registered WhatsApp number after dispatch.
+              For any queries, call or WhatsApp: <span className="font-semibold text-gray-600">+91 82914 55297</span>
             </p>
 
             {/* Action buttons */}

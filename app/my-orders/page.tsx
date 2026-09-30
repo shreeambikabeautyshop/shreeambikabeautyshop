@@ -204,7 +204,7 @@ export default function MyOrdersPage() {
                           <p className="text-xs text-gray-400">
                             {order.source === "store_pickup"
                               ? "🏪 Store Pickup"
-                              : "📦 Courier details will be shared on WhatsApp after dispatch"}
+                              : "📦 Courier details will be sent to your WhatsApp after dispatch. Queries: 8291455297"}
                           </p>
                         )}
                       </div>

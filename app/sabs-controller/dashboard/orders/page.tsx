@@ -80,6 +80,7 @@ export default function OrdersPage() {
   const [rtsLoading, setRtsLoading]       = useState<Record<string, boolean>>({});
   const [cancelLoading, setCancelLoading] = useState<Record<string, boolean>>({});
   const [deleteLoading, setDeleteLoading] = useState<Record<string, boolean>>({});
+  const [srCreateLoading, setSrCreateLoading] = useState<Record<string, boolean>>({});
   const [toast, setToast]       = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -263,6 +264,79 @@ export default function OrdersPage() {
     } else {
       showToast(data.error || "Failed to update status", "error");
     }
+  };
+
+  // ── Create in Shiprocket (without marking Ready to Ship) ────────────────
+  // Lets Vinod compare Shiprocket rates vs local courier before deciding
+  const createInShiprocket = async (order: Order) => {
+    setSrCreateLoading(prev => ({ ...prev, [order.id]: true }));
+    showToast("Creating order in Shiprocket...", "success");
+    try {
+      type OItem = { name: string; price?: number; qty?: number };
+      const orderItems: OItem[] = Array.isArray(order.items) && order.items.length > 0
+        ? (order.items as OItem[])
+        : [{ name: order.product_name || "Beauty Product", price: order.product_price || 0, qty: 1 }];
+
+      const res = await fetch("/api/admin/shiprocket/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id:         order.sabs_order_id,
+          order_date:       new Date(order.created_at).toISOString().split("T")[0],
+          customer_name:    order.customer_name,
+          customer_phone:   order.customer_phone,
+          delivery_address: order.delivery_address || "Address",
+          delivery_city:    order.delivery_city    || "Mumbai",
+          delivery_state:   order.delivery_state   || "Maharashtra",
+          delivery_pincode: order.delivery_pincode || "400068",
+          product_name:     orderItems.map(i => i.name).join(", "),
+          product_price:    order.grand_total || order.product_price || 0,
+          product_quantity: orderItems.reduce((s, i) => s + (i.qty || 1), 0),
+          weight:           0.3 * orderItems.length,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Failed to create in Shiprocket", "error");
+        setSrCreateLoading(prev => ({ ...prev, [order.id]: false }));
+        return;
+      }
+
+      // Save Shiprocket IDs to DB (but keep status as "new")
+      await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id:                  order.id,
+          shiprocket_order_id: data.shiprocket_order_id,
+          shipment_id:         data.shipment_id,
+          awb:                 data.awb || null,
+          courier_name:        data.courier_name || null,
+          estimated_delivery:  data.estimated_delivery || null,
+        }),
+      });
+
+      setOrders(prev => prev.map(o => o.id === order.id
+        ? { ...o,
+            shiprocket_order_id: data.shiprocket_order_id,
+            shipment_id: data.shipment_id,
+            awb: data.awb || o.awb,
+            courier_name: data.courier_name || o.courier_name,
+          }
+        : o
+      ));
+
+      showToast(
+        data.awb
+          ? `✅ Created in Shiprocket! AWB: ${data.awb} via ${data.courier_name}`
+          : `✅ Created in Shiprocket! Order: ${data.shiprocket_order_id} — now compare rates & click Ready to Ship when done`,
+        "success"
+      );
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Shiprocket error", "error");
+    }
+    setSrCreateLoading(prev => ({ ...prev, [order.id]: false }));
   };
 
   // ── Cancel Courier Order ─────────────────────────────────────────────────
@@ -462,6 +536,21 @@ export default function OrdersPage() {
 
               {/* Action bar */}
               <div className="bg-gray-50 border-t border-gray-100 px-4 py-2.5 flex items-center gap-2 flex-wrap">
+                {/* Create in Shiprocket — for new orders without Shiprocket order yet */}
+                {order.status === "new" && (!order.shiprocket_order_id || order.shiprocket_order_id.startsWith("razorpay:")) && (
+                  <button
+                    onClick={() => createInShiprocket(order)}
+                    disabled={srCreateLoading[order.id]}
+                    title="Creates order in Shiprocket so you can compare courier rates — does NOT mark Ready to Ship"
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border-2 transition-colors ${
+                      srCreateLoading[order.id]
+                        ? "border-purple-200 bg-purple-50 text-purple-300 animate-pulse cursor-not-allowed"
+                        : "border-purple-400 bg-white text-purple-600 hover:bg-purple-50"}`}>
+                    <FiPackage size={11}/>
+                    {srCreateLoading[order.id] ? "Creating..." : "Create in Shiprocket"}
+                  </button>
+                )}
+
                 {/* Ready to Ship button — only for "new" orders */}
                 {order.status === "new" && (
                   <button
