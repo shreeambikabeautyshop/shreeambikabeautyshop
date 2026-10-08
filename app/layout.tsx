@@ -303,6 +303,13 @@ export default function RootLayout({
       "reviewCount": "500",
       "bestRating": "5",
     },
+    "hasMap": "https://maps.google.com/?q=Shree+Ambika+Beauty+Shop+Dahisar+East+Mumbai+400068",
+    "knowsAbout": [
+      "Makeup", "Skincare", "Haircare", "Cosmetics", "Beauty Products",
+      "L'Oreal Professionnel", "Insight Professional", "Swiss Beauty",
+      "Wella", "SUGAR Cosmetics", "Original beauty products Mumbai",
+      "Same day delivery Mumbai", "Beauty shop Dahisar"
+    ],
   };
 
   // FAQ Schema for AEO (Answer Engine Optimization)

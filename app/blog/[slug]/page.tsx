@@ -60,19 +60,34 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const blog = await getBlog(params.slug);
   if (!blog) return { title: "Blog Not Found" };
 
-  const title = blog.seo_title || `${blog.title} | Shree Ambika Beauty Shop Mumbai`;
+  // Power title: if no custom seo_title, append location + year for freshness signal
+  const currentYear = new Date().getFullYear();
+  const title = blog.seo_title ||
+    `${blog.title} | Mumbai Beauty Guide ${currentYear} | Shree Ambika`;
+
   const description = blog.seo_description || blog.excerpt;
 
   return {
     title,
     description,
+    keywords: [
+      ...(blog.tags || []),
+      "beauty tips mumbai",
+      "shree ambika beauty shop",
+      "original products mumbai",
+      blog.category?.toLowerCase() || "",
+    ].filter(Boolean).join(", "),
     openGraph: {
       title: blog.title,
       description: blog.excerpt,
-      images: blog.cover_image ? [{ url: blog.cover_image, width: 1200, height: 630, alt: blog.title }] : [],
+      images: blog.cover_image
+        ? [{ url: blog.cover_image, width: 1200, height: 630, alt: `${blog.title} — Shree Ambika Beauty Shop Mumbai` }]
+        : [],
       type: "article",
       publishedTime: blog.created_at,
-      authors: ["Shree Ambika Beauty Shop"],
+      modifiedTime:  blog.updated_at || blog.created_at,
+      authors: ["Shree Ambika Beauty Shop, Dahisar East Mumbai"],
+      tags: blog.tags || [],
     },
     alternates: { canonical: `https://www.shreeambikabeauty.com/blog/${blog.slug}` },
   };
@@ -91,15 +106,49 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const articleSchema = {
     "@context": "https://schema.org", "@type": "Article",
-    headline: blog.title, description: blog.excerpt,
-    image: blog.cover_image || "",
-    author: { "@type": "Organization", name: "Shree Ambika Beauty Shop" },
+    headline:    blog.title,
+    description: blog.excerpt,
+    image:       blog.cover_image || "",
+    author: {
+      "@type": "Organization",
+      name:    "Shree Ambika Beauty Shop",
+      url:     "https://www.shreeambikabeauty.com",
+    },
     publisher: {
-      "@type": "Organization", name: "Shree Ambika Beauty Shop",
-      logo: { "@type": "ImageObject", url: "https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png" }
+      "@type": "Organization",
+      name:  "Shree Ambika Beauty Shop",
+      logo:  { "@type": "ImageObject", url: "https://res.cloudinary.com/zjlchjal/image/upload/v1784563982/shree-ambika-beauty-shop-logo_wdds5i.png" },
     },
     datePublished: blog.created_at,
+    dateModified:  blog.updated_at || blog.created_at,
     mainEntityOfPage: `https://www.shreeambikabeauty.com/blog/${blog.slug}`,
+    url:           `https://www.shreeambikabeauty.com/blog/${blog.slug}`,
+    wordCount:     blog.content ? Math.round(blog.content.replace(/<[^>]*>/g, "").split(/\s+/).length) : undefined,
+    articleSection: blog.category,
+    keywords:      (blog.tags || []).join(", "),
+    inLanguage:    "en-IN",
+    about: {
+      "@type": "Thing",
+      name:    blog.category,
+      description: `Beauty ${blog.category} tips and guides from Shree Ambika Beauty Shop, Mumbai`,
+    },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["article h1", "article blockquote", "article h2"],
+    },
+    mentions: {
+      "@type": "LocalBusiness",
+      name:      "Shree Ambika Beauty Shop",
+      telephone: "+918291455297",
+      address: {
+        "@type":           "PostalAddress",
+        streetAddress:     "Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar",
+        addressLocality:   "Dahisar East",
+        addressRegion:     "Maharashtra",
+        postalCode:        "400068",
+        addressCountry:    "IN",
+      },
+    },
   };
 
   return (
