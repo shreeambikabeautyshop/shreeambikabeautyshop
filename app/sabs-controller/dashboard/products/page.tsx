@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiCopy, FiZap, FiImage, FiEye, FiX } from "react-icons/fi";
-import { FaWhatsapp, FaInstagram } from "react-icons/fa";
+import { FiEdit2, FiTrash2, FiPlusCircle, FiSearch, FiShare2, FiCopy, FiZap, FiImage, FiEye, FiX, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { FaWhatsapp } from "react-icons/fa";
 
 interface Product {
   id: string;
@@ -14,11 +14,22 @@ interface Product {
   price: number;
   mrp: number;
   discount: number;
+  description?: string;
   images: string[];
   in_stock: boolean;
   featured: boolean;
   trending: boolean;
   created_at: string;
+}
+
+// AI-suggested corrections for a product
+interface AiCorrection {
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  mrp: number;
+  description: string;
 }
 
 const BASE_URL = "https://www.shreeambikabeauty.com";
@@ -46,6 +57,15 @@ export default function ProductsList() {
   const [copiedKey, setCopiedKey]       = useState<string | null>(null);
   const [view, setView] = useState<"table" | "images">("table");
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
+
+  // ── AI Fix Details state ──────────────────────────────────────────
+  const [fixLoading,    setFixLoading]    = useState<string | null>(null);   // product id being analyzed
+  const [fixModal,      setFixModal]      = useState<{
+    product: Product;
+    correction: AiCorrection;
+  } | null>(null);
+  const [fixApplying,   setFixApplying]   = useState(false);
+  const [fixDone,       setFixDone]       = useState<string | null>(null);   // product id that was fixed
 
   const fetchProducts = () => {
     setLoading(true);
@@ -133,6 +153,71 @@ export default function ProductsList() {
     if (!captionCache[waKey]) {
       handleGenerateCaption(p, "whatsapp");
     }
+  };
+
+  // ── AI Fix Details — analyze product image and suggest corrections ──
+  const handleAiFix = async (p: Product) => {
+    if (!p.images?.[0]) { alert("No image found for this product."); return; }
+    setFixLoading(p.id);
+    try {
+      const res  = await fetch("/api/admin/generate-product", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ imageUrl: p.images[0] }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.data) throw new Error(json.error || "AI analysis failed");
+      const d = json.data;
+      setFixModal({
+        product: p,
+        correction: {
+          name:        String(d.name        || p.name),
+          brand:       String(d.brand       || p.brand),
+          category:    String(d.category    || p.category),
+          price:       Number(d.price       || p.price),
+          mrp:         Number(d.mrp         || p.mrp),
+          description: String(d.description || ""),
+        },
+      });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "AI fix failed");
+    }
+    setFixLoading(null);
+  };
+
+  // ── Apply AI corrections to DB ───────────────────────────────────
+  const handleApplyFix = async () => {
+    if (!fixModal) return;
+    setFixApplying(true);
+    const { product, correction } = fixModal;
+    try {
+      const res = await fetch(`/api/admin/products/${product.id}`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          name:        correction.name,
+          brand:       correction.brand,
+          category:    correction.category,
+          price:       correction.price,
+          mrp:         correction.mrp,
+          description: correction.description,
+        }),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      // Update local state
+      setProducts(prev => prev.map(p =>
+        p.id === product.id
+          ? { ...p, name: correction.name, brand: correction.brand,
+              category: correction.category, price: correction.price, mrp: correction.mrp }
+          : p
+      ));
+      setFixDone(product.id);
+      setTimeout(() => setFixDone(null), 4000);
+      setFixModal(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Apply failed");
+    }
+    setFixApplying(false);
   };
 
   const handleTabChange = (p: Product, type: CaptionType) => {
@@ -347,6 +432,27 @@ export default function ProductsList() {
                                 ? "Caption ✓" : "Caption"}
                             </span>
                           </button>
+                          {/* AI Fix Details button */}
+                          <button
+                            onClick={() => handleAiFix(p)}
+                            disabled={fixLoading === p.id}
+                            title="AI auto-corrects name, brand, category, price by analyzing the product image"
+                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+                              fixDone === p.id
+                                ? "bg-green-500 text-white"
+                                : fixLoading === p.id
+                                ? "bg-purple-200 text-purple-400 animate-pulse cursor-not-allowed"
+                                : "bg-purple-600 hover:bg-purple-700 text-white"
+                            }`}
+                          >
+                            {fixLoading === p.id ? (
+                              <><div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" /> Analyzing...</>
+                            ) : fixDone === p.id ? (
+                              <><FiCheckCircle size={11} /> Fixed ✓</>
+                            ) : (
+                              <><FiAlertCircle size={11} /> AI Fix</>
+                            )}
+                          </button>
                           {/* Edit */}
                           <Link href={`/sabs-controller/dashboard/products/edit/${p.id}`}
                             className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors" title="Edit">
@@ -385,6 +491,124 @@ export default function ProductsList() {
           )}
         </div>
       )}
+
+      {/* ── AI Fix Details Modal ── */}
+      {fixModal && (() => {
+        const { product: p, correction: c } = fixModal;
+        const changed = (field: keyof AiCorrection) => {
+          const oldVal = String(p[field as keyof Product] ?? "");
+          const newVal = String(c[field] ?? "");
+          return oldVal.trim().toLowerCase() !== newVal.trim().toLowerCase();
+        };
+        const anyChanged = (["name","brand","category","price","mrp"] as (keyof AiCorrection)[]).some(changed);
+
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={() => !fixApplying && setFixModal(null)}>
+            <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden"
+              onClick={e => e.stopPropagation()}>
+
+              {/* Header */}
+              <div className="px-6 pt-5 pb-4 border-b border-gray-100 flex items-start justify-between">
+                <div>
+                  <h3 className="font-bold text-gray-800 text-base flex items-center gap-2">
+                    <span className="text-purple-600">✨</span> AI Product Fix
+                  </h3>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Review AI-suggested corrections before applying</p>
+                </div>
+                {!fixApplying && (
+                  <button onClick={() => setFixModal(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+                )}
+              </div>
+
+              {/* Comparison table */}
+              <div className="px-6 py-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                {/* Product image */}
+                {p.images?.[0] && (
+                  <div className="flex items-center gap-3 mb-4">
+                    <Image src={p.images[0]} alt={p.name} width={60} height={60}
+                      className="rounded-xl object-cover w-16 h-16 border border-gray-100" />
+                    <div>
+                      <p className="text-[10px] text-gray-400 font-semibold uppercase">Analyzing product</p>
+                      <p className="text-xs font-semibold text-gray-700 line-clamp-2 max-w-[280px]">{p.name}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Field comparison */}
+                {([
+                  { key: "name",     label: "Product Name" },
+                  { key: "brand",    label: "Brand" },
+                  { key: "category", label: "Category" },
+                  { key: "price",    label: "Price (₹)" },
+                  { key: "mrp",      label: "MRP (₹)" },
+                ] as { key: keyof AiCorrection; label: string }[]).map(({ key, label }) => {
+                  const isChanged = changed(key);
+                  return (
+                    <div key={key}
+                      className={`rounded-xl p-3 border ${isChanged ? "border-purple-200 bg-purple-50" : "border-gray-100 bg-gray-50"}`}>
+                      <p className={`text-[10px] font-bold uppercase mb-1.5 ${isChanged ? "text-purple-600" : "text-gray-400"}`}>
+                        {label} {isChanged && <span className="ml-1">← AI updated</span>}
+                      </p>
+                      <div className={`flex items-center gap-2 ${isChanged ? "flex-col items-start" : ""}`}>
+                        {isChanged ? (
+                          <>
+                            <div className="flex items-center gap-2 w-full">
+                              <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-semibold">OLD</span>
+                              <span className="text-xs text-gray-500 line-through">{String(p[key as keyof Product] ?? "")}</span>
+                            </div>
+                            <div className="flex items-center gap-2 w-full">
+                              <span className="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-semibold">NEW</span>
+                              <span className="text-xs font-bold text-gray-800">{String(c[key])}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-600">{String(c[key])} <span className="text-gray-400">(no change)</span></span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Description preview */}
+                {c.description && (
+                  <div className="rounded-xl p-3 border border-blue-100 bg-blue-50">
+                    <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Description (will be updated)</p>
+                    <p className="text-xs text-gray-700 line-clamp-3">{c.description}</p>
+                  </div>
+                )}
+
+                {!anyChanged && (
+                  <div className="rounded-xl p-3 border border-green-200 bg-green-50 text-center">
+                    <p className="text-sm font-bold text-green-700">✅ AI found no issues — product details look correct!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer buttons */}
+              <div className="px-6 pb-5 pt-3 border-t border-gray-100 flex gap-3">
+                <button onClick={() => setFixModal(null)} disabled={fixApplying}
+                  className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors disabled:opacity-50">
+                  Cancel
+                </button>
+                <button onClick={handleApplyFix} disabled={fixApplying || !anyChanged}
+                  className={`flex-1 flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-sm transition-all ${
+                    fixApplying
+                      ? "bg-purple-300 text-white cursor-not-allowed"
+                      : !anyChanged
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-purple-600 hover:bg-purple-700 text-white"}`}>
+                  {fixApplying ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Applying...</>
+                  ) : (
+                    <><FiCheckCircle size={14} /> Apply {anyChanged ? "Changes" : "(No Changes)"}</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Unified Caption Modal ── */}
       {captionModal && (() => {
