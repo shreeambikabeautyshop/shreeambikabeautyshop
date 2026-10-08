@@ -415,44 +415,46 @@ export default function ProductsList() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {/* Single Caption button — opens unified modal */}
-                          <button
-                            onClick={() => openCaptionModal(p)}
-                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                              captionCache[`${p.id}:whatsapp`] || captionCache[`${p.id}:instagram`]
-                                ? "bg-green-500 hover:bg-green-600 text-white"
-                                : "bg-orange-500 hover:bg-orange-600 text-white"
-                            }`}
-                            title="Generate WA Caption + IG Caption + Alt Text"
-                          >
-                            <FiZap size={11} />
-                            <span>
-                              {captionCache[`${p.id}:whatsapp`] || captionCache[`${p.id}:instagram`]
-                                ? "Caption ✓" : "Caption"}
-                            </span>
-                          </button>
-                          {/* AI Fix Details button */}
-                          <button
-                            onClick={() => handleAiFix(p)}
-                            disabled={fixLoading === p.id}
-                            title="AI auto-corrects name, brand, category, price by analyzing the product image"
-                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                              fixDone === p.id
-                                ? "bg-green-500 text-white"
-                                : fixLoading === p.id
-                                ? "bg-purple-200 text-purple-400 animate-pulse cursor-not-allowed"
-                                : "bg-purple-600 hover:bg-purple-700 text-white"
-                            }`}
-                          >
-                            {fixLoading === p.id ? (
-                              <><div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" /> Analyzing...</>
-                            ) : fixDone === p.id ? (
-                              <><FiCheckCircle size={11} /> Fixed ✓</>
-                            ) : (
-                              <><FiAlertCircle size={11} /> AI Fix</>
-                            )}
-                          </button>
+                        <div className="flex flex-col gap-1.5">
+                          {/* Row 1: Caption + AI Fix */}
+                          <div className="flex items-center gap-1.5">
+                            {/* Caption button */}
+                            <button
+                              onClick={() => openCaptionModal(p)}
+                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+                                captionCache[`${p.id}:whatsapp`] || captionCache[`${p.id}:instagram`]
+                                  ? "bg-green-500 hover:bg-green-600 text-white"
+                                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                              }`}
+                              title="Generate WA Caption + IG Caption + Alt Text"
+                            >
+                              <FiZap size={11} />
+                              <span>{captionCache[`${p.id}:whatsapp`] || captionCache[`${p.id}:instagram`] ? "Caption ✓" : "Caption"}</span>
+                            </button>
+                            {/* AI Fix Details button */}
+                            <button
+                              onClick={() => handleAiFix(p)}
+                              disabled={fixLoading === p.id}
+                              title="AI auto-corrects name, brand, category, price by analyzing the product image"
+                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
+                                fixDone === p.id
+                                  ? "bg-green-500 text-white"
+                                  : fixLoading === p.id
+                                  ? "bg-purple-200 text-purple-400 animate-pulse cursor-not-allowed"
+                                  : "bg-purple-600 hover:bg-purple-700 text-white"
+                              }`}
+                            >
+                              {fixLoading === p.id ? (
+                                <><div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" /> Analyzing...</>
+                              ) : fixDone === p.id ? (
+                                <><FiCheckCircle size={11} /> Fixed ✓</>
+                              ) : (
+                                <><FiAlertCircle size={11} /> AI Fix</>
+                              )}
+                            </button>
+                          </div>
+                          {/* Row 2: Edit + Share + WhatsApp + Delete */}
+                          <div className="flex items-center gap-1.5">
                           {/* Edit */}
                           <Link href={`/sabs-controller/dashboard/products/edit/${p.id}`}
                             className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors" title="Edit">
@@ -477,7 +479,8 @@ export default function ProductsList() {
                             className="p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors disabled:opacity-50" title="Delete">
                             <FiTrash2 size={13} />
                           </button>
-                        </div>
+                          </div>{/* end Row 2 */}
+                        </div>{/* end flex-col */}
                       </td>
                     </tr>
                   ))}
