@@ -59,13 +59,13 @@ export default function ProductsList() {
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
 
   // ── AI Fix Details state ──────────────────────────────────────────
-  const [fixLoading,    setFixLoading]    = useState<string | null>(null);   // product id being analyzed
+  const [fixLoading,    setFixLoading]    = useState<Record<string, boolean>>({});  // { [productId]: true }
   const [fixModal,      setFixModal]      = useState<{
     product: Product;
     correction: AiCorrection;
   } | null>(null);
   const [fixApplying,   setFixApplying]   = useState(false);
-  const [fixDone,       setFixDone]       = useState<string | null>(null);   // product id that was fixed
+  const [fixDone,       setFixDone]       = useState<Record<string, boolean>>({});  // { [productId]: true }
 
   const fetchProducts = () => {
     setLoading(true);
@@ -158,7 +158,8 @@ export default function ProductsList() {
   // ── AI Fix Details — analyze product image and suggest corrections ──
   const handleAiFix = async (p: Product) => {
     if (!p.images?.[0]) { alert("No image found for this product."); return; }
-    setFixLoading(p.id);
+    // Allow multiple concurrent — each product tracks its own loading state
+    setFixLoading(prev => ({ ...prev, [p.id]: true }));
     try {
       const res  = await fetch("/api/admin/generate-product", {
         method:  "POST",
@@ -182,7 +183,7 @@ export default function ProductsList() {
     } catch (err) {
       alert(err instanceof Error ? err.message : "AI fix failed");
     }
-    setFixLoading(null);
+    setFixLoading(prev => ({ ...prev, [p.id]: false }));
   };
 
   // ── Apply AI corrections to DB ───────────────────────────────────
@@ -211,8 +212,8 @@ export default function ProductsList() {
               category: correction.category, price: correction.price, mrp: correction.mrp }
           : p
       ));
-      setFixDone(product.id);
-      setTimeout(() => setFixDone(null), 4000);
+      setFixDone(prev => ({ ...prev, [product.id]: true }));
+      setTimeout(() => setFixDone(prev => ({ ...prev, [product.id]: false })), 4000);
       setFixModal(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Apply failed");
@@ -434,19 +435,19 @@ export default function ProductsList() {
                             {/* AI Fix Details button */}
                             <button
                               onClick={() => handleAiFix(p)}
-                              disabled={fixLoading === p.id}
+                              disabled={fixLoading[p.id]}
                               title="AI auto-corrects name, brand, category, price by analyzing the product image"
                               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                                fixDone === p.id
+                                fixDone[p.id]
                                   ? "bg-green-500 text-white"
-                                  : fixLoading === p.id
+                                  : fixLoading[p.id]
                                   ? "bg-purple-200 text-purple-400 animate-pulse cursor-not-allowed"
                                   : "bg-purple-600 hover:bg-purple-700 text-white"
                               }`}
                             >
-                              {fixLoading === p.id ? (
+                              {fixLoading[p.id] ? (
                                 <><div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" /> Analyzing...</>
-                              ) : fixDone === p.id ? (
+                              ) : fixDone[p.id] ? (
                                 <><FiCheckCircle size={11} /> Fixed ✓</>
                               ) : (
                                 <><FiAlertCircle size={11} /> AI Fix</>
