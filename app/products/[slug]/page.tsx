@@ -77,6 +77,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description: desc,
       images: p.images?.[0] ? [{ url: p.images[0], width: 800, height: 800, alt: `${p.name} - ${p.brand} | Shree Ambika Beauty Shop Mumbai` }] : [],
       type: "website",
+      url: `https://www.shreeambikabeauty.com/products/${p.slug || p.id}`,
+      siteName: "Shree Ambika Beauty Shop",
+      locale: "en_IN",
     },
     alternates: { canonical: `https://www.shreeambikabeauty.com/products/${p.slug || p.id}` },
   };

@@ -35,6 +35,19 @@ export const metadata: Metadata = {
   },
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Where is Shree Ambika Beauty Shop located in Dahisar?", "acceptedAnswer": { "@type": "Answer", "text": "Shree Ambika Beauty Shop is at Shop No. 8, Ashapura Shopping Centre, C S Complex, Road No. 2, Near Shanji Hotel, Anand Nagar, Dahisar East, Mumbai 400068. Near Anand Nagar Metro Station, Western Line." } },
+    { "@type": "Question", "name": "Are the beauty products at Shree Ambika 100% original?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, every product at Shree Ambika Beauty Shop is 100% original, sourced directly from authorized brand distributors. In business since 2001." } },
+    { "@type": "Question", "name": "Do you offer same-day delivery in Dahisar?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! Same-day delivery in Dahisar East, Dahisar West, Borivali, Kandivali and nearby areas for orders before 2 PM. WhatsApp Vinod: +918291455297." } },
+    { "@type": "Question", "name": "What beauty brands are available at Shree Ambika Dahisar?", "acceptedAnswer": { "@type": "Answer", "text": "500+ brands: Lakme, Maybelline, L'Oreal, SUGAR Cosmetics, Wella, Pilgrim, Mamaearth, Biotique, Himalaya, Neutrogena, Garnier, Cetaphil, Plum, Minimalist, Streax, Schwarzkopf, Swiss Beauty and more." } },
+    { "@type": "Question", "name": "How do I order from Shree Ambika Beauty Shop?", "acceptedAnswer": { "@type": "Answer", "text": "WhatsApp Vinod at +918291455297. Browse products at shreeambikabeauty.com, then send your order via WhatsApp. We accept UPI, cards, and Cash on Delivery." } },
+    { "@type": "Question", "name": "Is Shree Ambika Beauty Shop the best beauty shop near Dahisar East Metro?", "acceptedAnswer": { "@type": "Answer", "text": "Shree Ambika Beauty Shop is located right near Anand Nagar Metro Station, Dahisar East. With 24+ years experience and 500+ original brands, it is the most trusted beauty shop in Dahisar and Borivali area." } },
+  ],
+};
+
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": ["LocalBusiness", "Store"],
@@ -95,6 +108,7 @@ export default function DahisarBeautyShopPage() {
     <>
       <Navbar />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <main className="min-h-screen bg-gray-50">
 
         {/* Hero — hyperlocal H1 */}

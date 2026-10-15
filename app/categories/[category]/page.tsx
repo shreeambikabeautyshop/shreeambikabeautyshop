@@ -114,6 +114,16 @@ export async function generateMetadata({ params }: { params: { category: string 
       title: seo?.title || `${categoryName} — Shree Ambika Beauty Shop`,
       description: seo?.desc || `Buy original ${categoryName} in Mumbai`,
       url: `https://www.shreeambikabeauty.com/categories/${params.category}`,
+      images: [
+        {
+          url: "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png",
+          width: 1200, height: 630,
+          alt: `${categoryName} Products — Shree Ambika Beauty Shop Mumbai`,
+        },
+      ],
+      siteName: "Shree Ambika Beauty Shop",
+      locale: "en_IN",
+      type: "website",
     },
   };
 }
@@ -144,10 +154,43 @@ export default async function CategoryPage({ params }: { params: { category: str
     },
   };
 
+  // FAQPage schema for category — helps get rich results / featured snippets
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": `Where can I buy original ${categoryName} products in Mumbai?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Shree Ambika Beauty Shop in Dahisar East, Mumbai stocks 100% original ${categoryName} products from top brands. Same day delivery in Mumbai. WhatsApp Vinod: +918291455297 or shop online at shreeambikabeauty.com/categories/${params.category}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        "name": `Does Shree Ambika Beauty Shop deliver ${categoryName} products Pan India?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Yes! Shree Ambika Beauty Shop delivers ${categoryName} products across India in 4–7 working days via Blue Dart, Delhivery, and DTDC. Same-day delivery available within Mumbai. WhatsApp: +918291455297.`,
+        },
+      },
+      {
+        "@type": "Question",
+        "name": `What are the best ${categoryName} brands available in Dahisar Mumbai?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Shree Ambika Beauty Shop carries all top ${categoryName} brands — Lakme, Maybelline, SUGAR Cosmetics, L'Oreal, Wella, Pilgrim, Insight Professional, Swiss Beauty, Streax and 500+ more. All 100% original, sourced from authorized distributors. Visit us at Dahisar East or order online.`,
+        },
+      },
+    ],
+  };
+
   return (
     <>
       <Navbar />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <main className="bg-gray-50 min-h-screen">
         <div className={`bg-gradient-to-r ${gradient} text-white py-10 px-4`}>
