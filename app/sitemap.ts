@@ -61,6 +61,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/beauty-tips/buying`,            lastModified: now, changeFrequency: "monthly", priority: 0.70 },
     // Wholesale & Retail
     { url: `${BASE}/wholesale`,                     lastModified: now, changeFrequency: "monthly", priority: 0.88 },
+    // Brand pages — targeted keyword landing pages
+    { url: `${BASE}/brands`,                         lastModified: now, changeFrequency: "monthly", priority: 0.90 },
+    { url: `${BASE}/brands/insight-professional`,    lastModified: now, changeFrequency: "weekly",  priority: 0.88 },
+    { url: `${BASE}/brands/swiss-beauty`,            lastModified: now, changeFrequency: "weekly",  priority: 0.88 },
+    { url: `${BASE}/brands/loreal-professionnel`,    lastModified: now, changeFrequency: "weekly",  priority: 0.88 },
+    { url: `${BASE}/brands/loreal-paris`,            lastModified: now, changeFrequency: "weekly",  priority: 0.86 },
+    { url: `${BASE}/brands/pilgrim`,                 lastModified: now, changeFrequency: "weekly",  priority: 0.86 },
+    { url: `${BASE}/brands/wella-professionals`,     lastModified: now, changeFrequency: "weekly",  priority: 0.86 },
+    { url: `${BASE}/brands/matrix`,                  lastModified: now, changeFrequency: "weekly",  priority: 0.85 },
+    { url: `${BASE}/brands/schwarzkopf`,             lastModified: now, changeFrequency: "weekly",  priority: 0.84 },
+    { url: `${BASE}/brands/streax-professional`,     lastModified: now, changeFrequency: "weekly",  priority: 0.84 },
+    { url: `${BASE}/brands/garnier`,                 lastModified: now, changeFrequency: "weekly",  priority: 0.86 },
+    { url: `${BASE}/brands/lakme`,                   lastModified: now, changeFrequency: "weekly",  priority: 0.88 },
+    { url: `${BASE}/brands/maybelline`,              lastModified: now, changeFrequency: "weekly",  priority: 0.88 },
+    { url: `${BASE}/brands/mamaearth`,               lastModified: now, changeFrequency: "weekly",  priority: 0.84 },
+    { url: `${BASE}/brands/oshea-herbals`,           lastModified: now, changeFrequency: "weekly",  priority: 0.82 },
+    { url: `${BASE}/brands/jovees`,                  lastModified: now, changeFrequency: "weekly",  priority: 0.82 },
     // Occasions — parent + all slugs
     { url: `${BASE}/occasions`,                     lastModified: now, changeFrequency: "monthly", priority: 0.80 },
     { url: `${BASE}/occasions/wedding`,             lastModified: now, changeFrequency: "monthly", priority: 0.78 },

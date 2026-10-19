@@ -154,28 +154,32 @@ export default function HomePage() {
             <div className="mb-10">
               <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3">Top Brands Available</h3>
               <p className="text-sm text-gray-500 leading-relaxed">
-                <Link href="/products?brand=Lakme" className="text-brand-primary hover:underline font-medium">Lakme</Link>,{" "}
-                <Link href="/products?brand=Maybelline" className="text-brand-primary hover:underline font-medium">Maybelline</Link>,{" "}
-                <Link href="/products?brand=L%27Oreal+Professionnel" className="text-brand-primary hover:underline font-medium">L&apos;Oréal Professionnel</Link>,{" "}
-                <Link href="/products?brand=SUGAR+Cosmetics" className="text-brand-primary hover:underline font-medium">SUGAR Cosmetics</Link>,{" "}
-                <Link href="/products?brand=Wella" className="text-brand-primary hover:underline font-medium">Wella</Link>,{" "}
-                <Link href="/products?brand=Pilgrim" className="text-brand-primary hover:underline font-medium">Pilgrim</Link>,{" "}
-                <Link href="/products?brand=Insight+Professional" className="text-brand-primary hover:underline font-medium">Insight Professional</Link>,{" "}
-                <Link href="/products?brand=Swiss+Beauty" className="text-brand-primary hover:underline font-medium">Swiss Beauty</Link>,{" "}
-                <Link href="/products?brand=Streax+Professional" className="text-brand-primary hover:underline font-medium">Streax Professional</Link>,{" "}
-                <Link href="/products?brand=Matrix" className="text-brand-primary hover:underline font-medium">Matrix</Link>,{" "}
-                <Link href="/products?brand=Garnier" className="text-brand-primary hover:underline font-medium">Garnier</Link>,{" "}
-                <Link href="/products?brand=Mamaearth" className="text-brand-primary hover:underline font-medium">Mamaearth</Link>,{" "}
-                <Link href="/products?brand=Minimalist" className="text-brand-primary hover:underline font-medium">Minimalist</Link>,{" "}
-                <Link href="/products?brand=Cetaphil" className="text-brand-primary hover:underline font-medium">Cetaphil</Link>
+                <Link href="/brands/lakme" className="text-brand-primary hover:underline font-medium">Lakme</Link>,{" "}
+                <Link href="/brands/maybelline" className="text-brand-primary hover:underline font-medium">Maybelline</Link>,{" "}
+                <Link href="/brands/loreal-professionnel" className="text-brand-primary hover:underline font-medium">L&apos;Oréal Professionnel</Link>,{" "}
+                <Link href="/brands/swiss-beauty" className="text-brand-primary hover:underline font-medium">Swiss Beauty</Link>,{" "}
+                <Link href="/brands/wella-professionals" className="text-brand-primary hover:underline font-medium">Wella</Link>,{" "}
+                <Link href="/brands/pilgrim" className="text-brand-primary hover:underline font-medium">Pilgrim</Link>,{" "}
+                <Link href="/brands/insight-professional" className="text-brand-primary hover:underline font-medium">Insight Professional</Link>,{" "}
+                <Link href="/brands/matrix" className="text-brand-primary hover:underline font-medium">Matrix</Link>,{" "}
+                <Link href="/brands/streax-professional" className="text-brand-primary hover:underline font-medium">Streax Professional</Link>,{" "}
+                <Link href="/brands/garnier" className="text-brand-primary hover:underline font-medium">Garnier</Link>,{" "}
+                <Link href="/brands/mamaearth" className="text-brand-primary hover:underline font-medium">Mamaearth</Link>,{" "}
+                <Link href="/brands/schwarzkopf" className="text-brand-primary hover:underline font-medium">Schwarzkopf</Link>,{" "}
+                <Link href="/brands/oshea-herbals" className="text-brand-primary hover:underline font-medium">Oshea Herbals</Link>,{" "}
+                <Link href="/brands/jovees" className="text-brand-primary hover:underline font-medium">Jovees</Link>
                 {" "}and 486+ more brands — all 100% original, guaranteed.
               </p>
+              <Link href="/brands" className="inline-flex items-center gap-1 text-xs font-bold text-brand-primary mt-2 hover:underline">
+                View All Brands →
+              </Link>
             </div>
 
             {/* Quick links */}
             <div className="flex flex-wrap gap-4 text-xs text-gray-400">
               <Link href="/about" className="hover:text-brand-primary">About Us</Link>
               <Link href="/blog" className="hover:text-brand-primary">Beauty Blog</Link>
+              <Link href="/brands" className="hover:text-brand-primary">All Brands</Link>
               <Link href="/faq" className="hover:text-brand-primary">FAQs</Link>
               <Link href="/how-to-order" className="hover:text-brand-primary">How to Order</Link>
               <Link href="/delivery" className="hover:text-brand-primary">Delivery Info</Link>
