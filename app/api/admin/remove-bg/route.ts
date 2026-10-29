@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
 
   const hfToken = process.env.HUGGINGFACE_API_TOKEN;
   if (!hfToken) {
-    return NextResponse.json({ error: "HF_TOKEN missing" }, { status: 500 });
+    // No HF token configured — tell client to use browser-side fallback
+    return NextResponse.json({ error: "no_token", fallback: true }, { status: 422 });
   }
 
   try {

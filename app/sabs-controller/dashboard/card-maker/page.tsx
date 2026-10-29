@@ -43,6 +43,7 @@ function resizeImage(file: File, maxPx = 1024): Promise<{ base64: string; mimeTy
 }
 
 // ── HF BRIA RMBG-2.0 background removal via our API route ────────────────────
+// Falls back to browser-side @imgly if HF token not configured
 async function removeBgHF(base64: string, mimeType: string, retryCount = 0): Promise<string> {
   const res = await fetch("/api/admin/remove-bg", {
     method: "POST",
@@ -50,6 +51,23 @@ async function removeBgHF(base64: string, mimeType: string, retryCount = 0): Pro
     body: JSON.stringify({ imageBase64: base64, mimeType }),
   });
   const json = await res.json();
+
+  // No HF token — fall back to browser-side WASM model
+  if (res.status === 422 && json.fallback) {
+    console.log("HF token not set — using browser-side @imgly fallback");
+    const { removeBackground } = await import("@imgly/background-removal");
+    // Convert base64 back to Blob
+    const byteString = atob(base64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: mimeType });
+    const resultBlob = await removeBackground(blob, {
+      model: "medium",
+      output: { format: "image/png", quality: 0.9 },
+    });
+    return URL.createObjectURL(resultBlob);
+  }
 
   // Model cold-start — wait and retry (max 3 times)
   if (res.status === 503 && json.error === "model_loading" && retryCount < 3) {
@@ -372,7 +390,7 @@ export default function CardMakerPage() {
       const { base64, mimeType } = await resizeImage(file, 1024);
 
       // Run BG removal + AI in parallel
-      setBgStatus("loading"); setBgMsg("Model load ho raha hai (first time ~20s)...");
+      setBgStatus("loading"); setBgMsg("BRIA RMBG-2.0 background remove kar raha hai...");
       setAiStatus("loading");
 
       const [bgSrc, info] = await Promise.all([
