@@ -56,8 +56,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1">
+        {/* Nav — scrollable so all items visible on small screens */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden
+          [&::-webkit-scrollbar]:w-1.5
+          [&::-webkit-scrollbar-track]:bg-gray-800
+          [&::-webkit-scrollbar-thumb]:bg-gray-600
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
           {navItems.map((item) => (
             <Link
               key={item.href}
