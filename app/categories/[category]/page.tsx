@@ -6,7 +6,9 @@ import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
 import ProductGrid from "@/app/components/ProductGrid";
 
-export const dynamic = "force-dynamic";
+// ISR — revalidate every 4 hours.
+// Replaces force-dynamic so Google gets pre-rendered category pages.
+export const revalidate = 14400; // 4 hours
 
 const CATEGORY_MAP: Record<string, string> = {
   "cosmetics":        "Cosmetics",

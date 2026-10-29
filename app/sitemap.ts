@@ -9,10 +9,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Fetch all published products
+  // Fetch only active/in-stock products that have a proper slug
+  // Filters:
+  //   in_stock = true  → only live, available products
+  //   slug not null    → must have a proper SEO slug (not just an id)
+  // This removes: out-of-stock products, soft-deleted rows, products
+  // with no slug (which would generate a bad /products/undefined URL).
   const { data: products } = await supabase
     .from("products")
     .select("slug,id,updated_at")
+    .eq("in_stock", true)
+    .not("slug", "is", null)
     .order("updated_at", { ascending: false });
 
   // Fetch all published blog posts
@@ -102,12 +109,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // ── Product detail pages (dynamic from DB) ────────────────────────────────
-  const productPages: MetadataRoute.Sitemap = (products || []).map((p) => ({
-    url: `${BASE}/products/${p.slug || p.id}`,
-    lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.85,
-  }));
+  // Only products with a real slug get a sitemap entry.
+  // p.slug is guaranteed non-null from the query above.
+  const productPages: MetadataRoute.Sitemap = (products || [])
+    .filter((p) => p.slug && p.slug.trim() !== "")
+    .map((p) => ({
+      url: `${BASE}/products/${p.slug}`,
+      lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    }));
 
   // ── Blog detail pages (dynamic from DB) ───────────────────────────────────
   const blogPages: MetadataRoute.Sitemap = (blogs || []).map((b) => ({

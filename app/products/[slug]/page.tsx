@@ -4,8 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 import { cldImg } from "@/app/lib/cloudinary-img";
 import Image from "next/image";
 import Link from "next/link";
-
-export const dynamic = "force-dynamic";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import WhatsAppFloat from "@/app/components/WhatsAppFloat";
@@ -14,18 +12,66 @@ import { FiCheck, FiTruck, FiChevronRight } from "react-icons/fi";
 import ProductActions from "./ProductActions";
 import RelatedPrice from "./RelatedPrice";
 
+// ISR — revalidate every 6 hours. This replaces force-dynamic.
+// Google can now crawl a pre-rendered HTML page instead of waiting
+// for an SSR render, which dramatically improves crawl coverage.
+export const revalidate = 21600; // 6 hours in seconds
+
+// Allow on-demand generation for slugs not in generateStaticParams
+// (e.g. new products added after last deploy — they get ISR on first visit)
+export const dynamicParams = true;
+
+// generateStaticParams: pre-build all in-stock product pages at deploy time.
+// This gives Google pre-rendered HTML for every product URL — biggest
+// single fix for the "not indexed" problem.
+export async function generateStaticParams() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from("products")
+    .select("slug")
+    .eq("in_stock", true)
+    .not("slug", "is", null);
+  return (data || [])
+    .filter((p) => p.slug && p.slug.trim() !== "")
+    .map((p) => ({ slug: p.slug as string }));
+}
+
 async function getProduct(slug: string) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const { data: e1 } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
+  // 1. Exact slug match (primary — only in-stock)
+  const { data: e1 } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .eq("in_stock", true)
+    .maybeSingle();
   if (e1) return e1;
-  const { data: e2 } = await supabase.from("products").select("*").eq("id", slug).maybeSingle();
+
+  // 2. Legacy: slug matches the product id (old URL format)
+  const { data: e2 } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", slug)
+    .eq("in_stock", true)
+    .maybeSingle();
   if (e2) return e2;
+
+  // 3. Fuzzy fallback for old slugs with different suffix — in_stock only
   const base = slug.replace(/-[a-z0-9]{6,}$/, "");
   if (base !== slug) {
-    const { data: e3 } = await supabase.from("products").select("*").ilike("slug", `${base}%`).limit(1).maybeSingle();
+    const { data: e3 } = await supabase
+      .from("products")
+      .select("*")
+      .ilike("slug", `${base}%`)
+      .eq("in_stock", true)
+      .limit(1)
+      .maybeSingle();
     if (e3) return e3;
   }
   return null;

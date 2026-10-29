@@ -44,6 +44,21 @@ export async function middleware(req: NextRequest) {
       .single();
 
     if (data?.value === "home_only") {
+      // ── SEO-safe maintenance mode ────────────────────────────────────────
+      // Use 503 + Retry-After for search engine bots so Google knows the
+      // site is temporarily unavailable and does NOT deindex pages.
+      // For real users, redirect to homepage as before.
+      const ua = req.headers.get("user-agent") || "";
+      const isBot = /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandex|sogou|exabot|facebot|ia_archiver|GPTBot|ClaudeBot|PerplexityBot/i.test(ua);
+      if (isBot) {
+        return new NextResponse("Service temporarily unavailable", {
+          status: 503,
+          headers: {
+            "Retry-After": "3600",
+            "Content-Type": "text/plain",
+          },
+        });
+      }
       return NextResponse.redirect(new URL("/", req.url));
     }
   } catch { /* allow through on error */ }
