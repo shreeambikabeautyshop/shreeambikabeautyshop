@@ -116,6 +116,20 @@ const nextConfig = {
         destination: "/:path+",
         permanent: true,
       },
+
+      // ── Neuron duplicate product 301 redirects ───────────────────────────
+      // Old slugs (with triple-dash, old suffix) → new canonical slug.
+      // This transfers the +186% impression equity & any backlinks to the new URL.
+      {
+        source: "/products/neuron-korean-glass-radiance-rice-facial-kit---opulence-royale-10-steps-muzfqicd",
+        destination: "/products/neuron-korean-glass-radiance-rice-facial-kit-opulence-royale-10-steps-mvti8e0t",
+        permanent: true,
+      },
+      {
+        source: "/products/neuron-snow-glow-bright-imperial-elite-10-step-facial-kit-muzfwt3y",
+        destination: "/products/neuron-snow-glow-bright-imperial-elite-facial-kit-10-steps-mvti8yv7",
+        permanent: true,
+      },
     ];
   },
 };
