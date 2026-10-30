@@ -246,16 +246,15 @@ async function drawCard(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
 
-  // ── 1. HEADER — try real image first, else draw shop board ─────────────────
+  // ── 1. HEADER — actual shop board photo from Cloudinary ──────────────────
   const HDR_H = 148;
-  if (headerImg) {
-    // Check if it's the actual shop board (slider-1 is NOT the shop board)
-    // Always draw our custom shop board for professional look
-    const hdrCanvas = document.createElement("canvas");
-    hdrCanvas.width = W; hdrCanvas.height = HDR_H;
-    drawShopHeader(hdrCanvas.getContext("2d")!, W, HDR_H);
-    ctx.drawImage(hdrCanvas, 0, 0);
-  } else {
+  // Use the real shop board image — clean URL without f_auto/q_auto for canvas
+  const SHOP_BOARD_URL = "https://res.cloudinary.com/zjlchjal/image/upload/shop-board_ykmh85.jpg";
+  try {
+    const boardImg = await loadImg(SHOP_BOARD_URL);
+    ctx.drawImage(boardImg, 0, 0, W, HDR_H);
+  } catch {
+    // Fallback: draw programmatic header if image fails
     const hdrCanvas = document.createElement("canvas");
     hdrCanvas.width = W; hdrCanvas.height = HDR_H;
     drawShopHeader(hdrCanvas.getContext("2d")!, W, HDR_H);
@@ -515,14 +514,9 @@ export default function CardMakerPage() {
     }
   }, [aiInfo]);
 
-  // Preload header image
-  const [headerImg, setHeaderImg] = useState<HTMLImageElement | null>(null);
-  useEffect(() => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.src = "https://res.cloudinary.com/zjlchjal/image/upload/v1784047036/slider-1_orhz8e.png";
-    img.onload = () => setHeaderImg(img);
-  }, []);
+  // Preload no longer needed — shop board loaded directly in drawCard
+  // keeping state for backwards compatibility
+  const [headerImg] = useState<HTMLImageElement | null>(null);
 
   // ── Generate card ─────────────────────────────────────────────────────────
   const generateCard = useCallback(async (info: AIProductInfo, bgSrc: string, priceVal: string) => {
