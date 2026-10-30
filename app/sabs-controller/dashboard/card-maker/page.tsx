@@ -121,6 +121,113 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
   return lines;
 }
 
+// ── Draw the exact Shree Ambika shop board header ────────────────────────────
+function drawShopHeader(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  const pad = 8;
+
+  // ── Outer white border ──
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Dark red outer frame ──
+  ctx.strokeStyle = "#8B0000";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(2, 2, W - 4, H - 4);
+
+  // ── Top row: VINOD left, OM center, VIKRAM right ──
+  const ROW1_H = Math.round(H * 0.195);
+  // Gradient bg for top row
+  const topGrad = ctx.createLinearGradient(0, 0, W, 0);
+  topGrad.addColorStop(0, "#8B0000"); topGrad.addColorStop(0.5, "#C41E3A"); topGrad.addColorStop(1, "#8B0000");
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(pad, pad, W - pad * 2, ROW1_H);
+
+  // VINOD number (left)
+  ctx.fillStyle = "#FFD700"; ctx.font = `bold ${Math.round(H * 0.085)}px Arial`;
+  ctx.textAlign = "left";
+  ctx.fillText("VINOD - 8291455297", pad + 10, ROW1_H * 0.65);
+
+  // OM symbol (center)
+  ctx.fillStyle = "#FFD700"; ctx.font = `bold ${Math.round(H * 0.10)}px serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("|| ॐ ||", W / 2, ROW1_H * 0.68);
+
+  // VIKRAM number (right)
+  ctx.fillStyle = "#FFD700"; ctx.font = `bold ${Math.round(H * 0.085)}px Arial`;
+  ctx.textAlign = "right";
+  ctx.fillText("VIKRAM - 8824728350", W - pad - 10, ROW1_H * 0.65);
+
+  // ── Main brand name row ──
+  const BRAND_Y = ROW1_H + pad;
+  const BRAND_H = Math.round(H * 0.30);
+
+  // Background: white for main brand area
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(pad, BRAND_Y, W - pad * 2, BRAND_H);
+
+  // Lady silhouette placeholder (left side) — simple arc shape
+  const ladyX = Math.round(W * 0.08);
+  const ladyY = BRAND_Y + BRAND_H * 0.5;
+  ctx.fillStyle = "#C41E3A";
+  ctx.beginPath();
+  ctx.arc(ladyX, ladyY, Math.round(H * 0.12), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.round(H * 0.13)}px serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("S", ladyX, ladyY + Math.round(H * 0.045));
+
+  // Brand name — श्री अंबिका (big, red, script-like)
+  ctx.fillStyle = "#C41E3A";
+  ctx.font = `900 ${Math.round(H * 0.22)}px serif`;
+  ctx.textAlign = "center";
+  // Shadow
+  ctx.shadowColor = "rgba(139,0,0,0.3)"; ctx.shadowBlur = 3;
+  ctx.fillText("श्री अंबिका", W / 2, BRAND_Y + BRAND_H * 0.68);
+  ctx.shadowBlur = 0;
+
+  // ── Sub line: ब्यूटी शॉप | रिटल वेडिंग ड्रेस ──
+  const SUB_Y = BRAND_Y + BRAND_H;
+  const SUB_H = Math.round(H * 0.155);
+
+  // Blue strip for sub line
+  ctx.fillStyle = "#1a3a8a";
+  ctx.fillRect(pad, SUB_Y, W - pad * 2, SUB_H);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold ${Math.round(H * 0.095)}px serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("ब्यूटी शॉप | रिटल वेडिंग ड्रेस", W / 2, SUB_Y + SUB_H * 0.72);
+
+  // ── Bottom info bar ──
+  const BOT_Y = SUB_Y + SUB_H;
+  const BOT_H = H - BOT_Y - pad;
+
+  ctx.fillStyle = "#f5f0e0";
+  ctx.fillRect(pad, BOT_Y, W - pad * 2, BOT_H);
+
+  // WHOLESALE & RETAIL (left)
+  ctx.fillStyle = "#8B0000";
+  ctx.font = `bold ${Math.round(H * 0.072)}px Arial`;
+  ctx.textAlign = "left";
+  ctx.fillText("WHOLESALE & RETAIL", pad + 8, BOT_Y + BOT_H * 0.65);
+
+  // Address (center)
+  ctx.fillStyle = "#333";
+  ctx.font = `${Math.round(H * 0.053)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.fillText("शॉप नं. 8, आकाशपुरा शॉपिंग सेंटर, दहिसर (ईस्ट), मुंबई-400066", W / 2, BOT_Y + BOT_H * 0.65);
+
+  // FREE HOME DELIVERY (right)
+  ctx.fillStyle = "#8B0000";
+  ctx.font = `bold ${Math.round(H * 0.072)}px Arial`;
+  ctx.textAlign = "right";
+  ctx.fillText("FREE HOME DELIVERY", W - pad - 8, BOT_Y + BOT_H * 0.65);
+
+  // Bottom border line
+  ctx.strokeStyle = "#8B0000"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(pad, H - pad); ctx.lineTo(W - pad, H - pad); ctx.stroke();
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // DRAW CARD — exact Solingen/Shills template structure
 // ────────────────────────────────────────────────────────────────────────────
@@ -139,20 +246,20 @@ async function drawCard(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
 
-  // ── 1. HEADER ──────────────────────────────────────────────────────────────
-  const HDR_H = 128;
+  // ── 1. HEADER — try real image first, else draw shop board ─────────────────
+  const HDR_H = 148;
   if (headerImg) {
-    ctx.drawImage(headerImg, 0, 0, W, HDR_H);
+    // Check if it's the actual shop board (slider-1 is NOT the shop board)
+    // Always draw our custom shop board for professional look
+    const hdrCanvas = document.createElement("canvas");
+    hdrCanvas.width = W; hdrCanvas.height = HDR_H;
+    drawShopHeader(hdrCanvas.getContext("2d")!, W, HDR_H);
+    ctx.drawImage(hdrCanvas, 0, 0);
   } else {
-    const g = ctx.createLinearGradient(0, 0, W, 0);
-    g.addColorStop(0, "#8B0000"); g.addColorStop(0.5, "#C41E3A"); g.addColorStop(1, "#8B0000");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, HDR_H);
-    ctx.fillStyle = "#FFD700"; ctx.font = "bold 38px serif"; ctx.textAlign = "center";
-    ctx.fillText("श्री अंबिका", W / 2, 52);
-    ctx.fillStyle = "#fff"; ctx.font = "bold 16px Arial";
-    ctx.fillText("ब्यूटी शॉप | रिटेल वेडिंग ड्रेस", W / 2, 76);
-    ctx.font = "11px Arial";
-    ctx.fillText("VINOD: 8291455297    VIKRAM: 8824728350    FREE HOME DELIVERY", W / 2, 102);
+    const hdrCanvas = document.createElement("canvas");
+    hdrCanvas.width = W; hdrCanvas.height = HDR_H;
+    drawShopHeader(hdrCanvas.getContext("2d")!, W, HDR_H);
+    ctx.drawImage(hdrCanvas, 0, 0);
   }
 
   // ── 2. LAYOUT ──────────────────────────────────────────────────────────────
