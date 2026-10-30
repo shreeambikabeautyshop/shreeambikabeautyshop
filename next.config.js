@@ -3,13 +3,6 @@ const nextConfig = {
   // Prevent trailing slash duplicates — /categories/ → /categories
   trailingSlash: false,
 
-  // ── WebAssembly support for @imgly/background-removal ────────────────────
-  // This library runs a WASM model in the browser (no API calls needed).
-  webpack: (config) => {
-    config.experiments = { ...config.experiments, asyncWebAssembly: true };
-    return config;
-  },
-
   // ── Image optimization ────────────────────────────────────────────────────
   // STRATEGY: Bypass Vercel image optimizer for Cloudinary images.
   // Cloudinary already serves WebP/AVIF via f_auto,q_auto in the URL.

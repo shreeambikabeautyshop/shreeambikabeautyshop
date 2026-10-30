@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@imgly/background-removal": "1.7.0",
     "@supabase/supabase-js": "^2.110.5",
     "cloudinary": "^2.10.0",
     "framer-motion": "^11.3.19",
