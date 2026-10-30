@@ -146,7 +146,7 @@ export const metadata: Metadata = {
       { rel: "icon", url: "https://res.cloudinary.com/zjlchjal/image/upload/v1784565733/web-app-manifest-512x512_foaxw6.png", sizes: "512x512" },
     ],
   },
-  manifest: "https://res.cloudinary.com/zjlchjal/raw/upload/v1784565730/site_q3agjo.webmanifest",
+  manifest: "/site.webmanifest",
   viewport: {
     width: "device-width",
     initialScale: 1,

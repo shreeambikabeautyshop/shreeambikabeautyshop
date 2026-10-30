@@ -20,17 +20,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const imageBase64: string = body.imageBase64; // base64 string (no data: prefix)
+    const imageBase64: string = body.imageBase64;
     const mimeType: string = body.mimeType || "image/jpeg";
 
     if (!imageBase64) {
       return NextResponse.json({ error: "imageBase64 required" }, { status: 400 });
     }
 
-    // Convert base64 to binary buffer
     const imageBuffer = Buffer.from(imageBase64, "base64");
 
-    // Call Hugging Face Inference API — BRIA RMBG-2.0
     const hfRes = await fetch(
       "https://api-inference.huggingface.co/models/briaai/RMBG-2.0",
       {
@@ -46,27 +44,26 @@ export async function POST(req: NextRequest) {
 
     if (!hfRes.ok) {
       const errText = await hfRes.text();
-      // Model loading (cold start) — tell client to retry
       if (hfRes.status === 503) {
         return NextResponse.json(
           { error: "model_loading", retryAfter: 20 },
           { status: 503 }
         );
       }
-      throw new Error(`HF API error ${hfRes.status}: ${errText}`);
+      // Any other HF error — fallback to browser-side
+      console.error("HF API error:", hfRes.status, errText);
+      return NextResponse.json({ error: "no_token", fallback: true }, { status: 422 });
     }
 
-    // Return the PNG as base64 so client can use it as an image src
     const pngBuffer = await hfRes.arrayBuffer();
     const pngBase64 = Buffer.from(pngBuffer).toString("base64");
 
-    return NextResponse.json({
-      success: true,
-      imageBase64: pngBase64,
-      mimeType: "image/png",
-    });
+    return NextResponse.json({ success: true, imageBase64: pngBase64, mimeType: "image/png" });
+
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Background removal failed";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("remove-bg error:", msg);
+    // On any error, fallback gracefully
+    return NextResponse.json({ error: "no_token", fallback: true }, { status: 422 });
   }
 }
