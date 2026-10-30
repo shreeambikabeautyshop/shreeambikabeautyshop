@@ -422,45 +422,63 @@ async function drawCard(
   ctx.textAlign = "center";
   ctx.fillText(`₹${price}`, RIGHT_X + RIGHT_W / 2, priceBoxY + priceBoxH * 0.71);
 
-  // ── 5. BOTTOM STRIP — 3 thumbnail cards ────────────────────────────────────
+  // ── 5. BOTTOM STRIP — "How to Use" 3 steps ───────────────────────────────
   const STRIP_Y = H - STRIP_H;
-  ctx.fillStyle = "#f0f0f0";
+
+  // Light cream background
+  ctx.fillStyle = "#fdf8f0";
   ctx.fillRect(0, STRIP_Y, W, STRIP_H);
 
-  ctx.strokeStyle = "#d8d8d8"; ctx.lineWidth = 1.5;
+  // Top border line (red)
+  ctx.strokeStyle = "#C41E3A"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0, STRIP_Y); ctx.lineTo(W, STRIP_Y); ctx.stroke();
 
-  const thumbW = Math.round(W / 3);
-  const thumbImgH = Math.round(STRIP_H * 0.62);
-  const lblSz = Math.round(STRIP_H * 0.17);
+  // "HOW TO USE" title bar
+  const titleBarH = Math.round(STRIP_H * 0.28);
+  ctx.fillStyle = "#C41E3A";
+  ctx.fillRect(0, STRIP_Y, W, titleBarH);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold ${Math.round(titleBarH * 0.60)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.fillText("HOW TO USE", W / 2, STRIP_Y + titleBarH * 0.74);
+
+  // 3 step columns
+  const colW = Math.round(W / 3);
+  const stepNums = ["1", "2", "3"];
+  // Default how-to-use steps from AI info (bottomLabels used as step descriptions)
+  const steps = info.bottomLabels.length >= 3
+    ? info.bottomLabels
+    : ["Step 1", "Step 2", "Step 3"];
+
+  const stepY = STRIP_Y + titleBarH;
+  const stepH = STRIP_H - titleBarH;
+  const circleR = Math.round(stepH * 0.24);
+  const stepFontSz = Math.round(stepH * 0.175);
 
   for (let i = 0; i < 3; i++) {
-    const tx = i * thumbW;
+    const cx = i * colW + colW / 2;
 
     // Divider between columns
     if (i > 0) {
-      ctx.strokeStyle = "#d0d0d0"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(tx, STRIP_Y + 8); ctx.lineTo(tx, H - 8); ctx.stroke();
+      ctx.strokeStyle = "#e8d8c8"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(i * colW, stepY + 6); ctx.lineTo(i * colW, H - 6); ctx.stroke();
     }
 
-    // Try to draw product image as thumbnail (use same product img, just scaled)
-    try {
-      const tImg = await loadImg(productImgSrc);
-      const tMaxW = thumbW - 16, tMaxH = thumbImgH - 8;
-      const ts = Math.min(tMaxW / tImg.width, tMaxH / tImg.height);
-      const tw = tImg.width * ts, th = tImg.height * ts;
-      ctx.drawImage(tImg, tx + (thumbW - tw) / 2, STRIP_Y + 4 + (thumbImgH - th) / 2, tw, th);
-    } catch { /* skip */ }
+    // Step number circle
+    const circleY = stepY + circleR + Math.round(stepH * 0.12);
+    ctx.fillStyle = "#C41E3A";
+    ctx.beginPath(); ctx.arc(cx, circleY, circleR, 0, Math.PI * 2); ctx.fill();
 
-    // Label
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `900 ${Math.round(circleR * 1.1)}px Arial Black, Arial`;
     ctx.textAlign = "center";
-    ctx.font = `bold ${lblSz}px Arial`;
-    ctx.fillStyle = "#333333";
-    ctx.fillText(
-      (info.bottomLabels[i] || "").substring(0, 14),
-      tx + thumbW / 2,
-      STRIP_Y + thumbImgH + lblSz + 4,
-    );
+    ctx.fillText(stepNums[i], cx, circleY + Math.round(circleR * 0.38));
+
+    // Step label
+    ctx.fillStyle = "#333";
+    ctx.font = `bold ${stepFontSz}px Arial`;
+    const label = (steps[i] || "").substring(0, 16);
+    ctx.fillText(label, cx, stepY + stepH - Math.round(stepH * 0.08));
   }
 }
 
@@ -691,14 +709,16 @@ export default function CardMakerPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">Bottom Labels (3)</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">How to Use (3 Steps)</label>
                 <div className="flex gap-2">
                   {(editLabels.length >= 3 ? editLabels : ["","",""]).map((l, i) => (
                     <input key={i} value={l}
+                      placeholder={`Step ${i + 1}`}
                       onChange={(e) => { const nl = [...(editLabels.length >= 3 ? editLabels : ["","",""])]; nl[i] = e.target.value; setEditLabels(nl); }}
                       className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-center focus:border-brand-primary outline-none" />
                   ))}
                 </div>
+                <p className="text-[10px] text-gray-400 mt-1">e.g. "Clean Nails" · "Apply Pressure" · "Remove Cuticle"</p>
               </div>
 
               <button onClick={handleGenerate} disabled={!price || renderingCard}
