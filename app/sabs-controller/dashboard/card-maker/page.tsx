@@ -229,7 +229,7 @@ function drawShopHeader(ctx: CanvasRenderingContext2D, W: number, H: number) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// DRAW CARD — exact Solingen/Shills template structure
+// DRAW CARD — Premium professional template
 // ────────────────────────────────────────────────────────────────────────────
 async function drawCard(
   canvas: HTMLCanvasElement,
@@ -238,23 +238,44 @@ async function drawCard(
   info: AIProductInfo,
   price: string,
 ) {
-  const W = 780, H = 1040;
+  const W = 780, H = 1060;
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // ── Background white ──
-  ctx.fillStyle = "#ffffff";
+  // ── Premium warm white background ─────────────────────────────────────────
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, "#fffdf9");
+  bgGrad.addColorStop(0.5, "#fff8f0");
+  bgGrad.addColorStop(1, "#fdf4eb");
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // ── 1. HEADER — actual shop board photo from Cloudinary ──────────────────
-  const HDR_H = 148;
-  // Use the real shop board image — clean URL without f_auto/q_auto for canvas
+  // ── Subtle diagonal texture lines (premium feel) ──────────────────────────
+  ctx.strokeStyle = "rgba(196,30,58,0.04)";
+  ctx.lineWidth = 1;
+  for (let x = -H; x < W + H; x += 32) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + H, H); ctx.stroke();
+  }
+
+  // ── 1. HEADER — actual shop board photo ───────────────────────────────────
+  const HDR_H = 150;
   const SHOP_BOARD_URL = "https://res.cloudinary.com/zjlchjal/image/upload/shop-board_ykmh85.jpg";
   try {
     const boardImg = await loadImg(SHOP_BOARD_URL);
+    // Draw with rounded bottom corners using clip
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, HDR_H - 12);
+    ctx.quadraticCurveTo(W, HDR_H, W - 12, HDR_H);
+    ctx.lineTo(12, HDR_H); ctx.quadraticCurveTo(0, HDR_H, 0, HDR_H - 12);
+    ctx.closePath(); ctx.clip();
     ctx.drawImage(boardImg, 0, 0, W, HDR_H);
+    ctx.restore();
+    // Header bottom shadow
+    const hdrShadow = ctx.createLinearGradient(0, HDR_H - 8, 0, HDR_H + 10);
+    hdrShadow.addColorStop(0, "rgba(0,0,0,0.12)"); hdrShadow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = hdrShadow; ctx.fillRect(0, HDR_H - 8, W, 18);
   } catch {
-    // Fallback: draw programmatic header if image fails
     const hdrCanvas = document.createElement("canvas");
     hdrCanvas.width = W; hdrCanvas.height = HDR_H;
     drawShopHeader(hdrCanvas.getContext("2d")!, W, HDR_H);
@@ -262,76 +283,130 @@ async function drawCard(
   }
 
   // ── 2. LAYOUT ──────────────────────────────────────────────────────────────
-  const BODY_TOP = HDR_H + 6;
-  const STRIP_H = 118;    // bottom thumbnail strip
+  const BODY_TOP = HDR_H + 14;
+  const STRIP_H = 128;
   const BODY_H = H - BODY_TOP - STRIP_H;
-  const LEFT_W = Math.round(W * 0.488);
-  const RIGHT_X = LEFT_W + 12;
-  const RIGHT_W = W - RIGHT_X - 12;
+  const LEFT_W = Math.round(W * 0.468);
+  const RIGHT_X = LEFT_W + 16;
+  const RIGHT_W = W - RIGHT_X - 14;
 
-  // ── 3. LEFT — product image on light gray ──────────────────────────────────
-  ctx.fillStyle = "#f7f7f7";
-  ctx.fillRect(0, BODY_TOP, LEFT_W, BODY_H);
+  // ── 3. LEFT — premium styled image area with SHAPE CUTOUT ──────────────────
+  // Rounded rectangle with diagonal cut at bottom-right (stylish shape)
+  ctx.save();
+  ctx.beginPath();
+  const imgR = 16; // corner radius
+  ctx.moveTo(8 + imgR, BODY_TOP + 6);
+  ctx.lineTo(LEFT_W - imgR, BODY_TOP + 6);
+  ctx.quadraticCurveTo(LEFT_W, BODY_TOP + 6, LEFT_W, BODY_TOP + 6 + imgR);
+  ctx.lineTo(LEFT_W, BODY_TOP + BODY_H - 40); // diagonal cut start
+  ctx.lineTo(LEFT_W - 40, BODY_TOP + BODY_H - 6); // diagonal cut
+  ctx.lineTo(8 + imgR, BODY_TOP + BODY_H - 6);
+  ctx.quadraticCurveTo(8, BODY_TOP + BODY_H - 6, 8, BODY_TOP + BODY_H - 6 - imgR);
+  ctx.lineTo(8, BODY_TOP + 6 + imgR);
+  ctx.quadraticCurveTo(8, BODY_TOP + 6, 8 + imgR, BODY_TOP + 6);
+  ctx.closePath();
 
-  // Subtle decorative swirl behind product (like Shills template)
-  const swX = LEFT_W * 0.5, swY = BODY_TOP + BODY_H * 0.42;
-  const swGrad = ctx.createRadialGradient(swX, swY, 20, swX, swY, 220);
-  swGrad.addColorStop(0, "rgba(200,200,200,0.25)");
-  swGrad.addColorStop(1, "rgba(247,247,247,0)");
-  ctx.fillStyle = swGrad;
-  ctx.beginPath(); ctx.ellipse(swX, swY, 220, 280, -0.3, 0, Math.PI * 2); ctx.fill();
+  // Premium gradient fill for image background
+  const imgBg = ctx.createLinearGradient(8, BODY_TOP, LEFT_W, BODY_TOP + BODY_H);
+  imgBg.addColorStop(0, "#f0f4ff");
+  imgBg.addColorStop(0.4, "#e8f0fe");
+  imgBg.addColorStop(1, "#dde8f8");
+  ctx.fillStyle = imgBg;
+  ctx.fill();
+
+  // Subtle inner glow
+  const innerGlow = ctx.createRadialGradient(LEFT_W * 0.5, BODY_TOP + BODY_H * 0.4, 30, LEFT_W * 0.5, BODY_TOP + BODY_H * 0.4, 200);
+  innerGlow.addColorStop(0, "rgba(255,255,255,0.7)");
+  innerGlow.addColorStop(1, "rgba(200,220,255,0)");
+  ctx.fillStyle = innerGlow; ctx.fill();
+
+  // Clip product image to shape
+  ctx.beginPath();
+  ctx.moveTo(8 + imgR, BODY_TOP + 6);
+  ctx.lineTo(LEFT_W - imgR, BODY_TOP + 6);
+  ctx.quadraticCurveTo(LEFT_W, BODY_TOP + 6, LEFT_W, BODY_TOP + 6 + imgR);
+  ctx.lineTo(LEFT_W, BODY_TOP + BODY_H - 40);
+  ctx.lineTo(LEFT_W - 40, BODY_TOP + BODY_H - 6);
+  ctx.lineTo(8 + imgR, BODY_TOP + BODY_H - 6);
+  ctx.quadraticCurveTo(8, BODY_TOP + BODY_H - 6, 8, BODY_TOP + BODY_H - 6 - imgR);
+  ctx.lineTo(8, BODY_TOP + 6 + imgR);
+  ctx.quadraticCurveTo(8, BODY_TOP + 6, 8 + imgR, BODY_TOP + 6);
+  ctx.closePath();
+  ctx.clip();
 
   // Draw product image
   try {
     const prodImg = await loadImg(productImgSrc);
-    const pad = 20;
+    const pad = 24;
     const maxW = LEFT_W - pad * 2;
     const maxH = BODY_H - pad * 2;
     const scale = Math.min(maxW / prodImg.width, maxH / prodImg.height);
-    const dw = prodImg.width * scale;
-    const dh = prodImg.height * scale;
+    const dw = prodImg.width * scale, dh = prodImg.height * scale;
     ctx.drawImage(prodImg, (LEFT_W - dw) / 2, BODY_TOP + (BODY_H - dh) / 2, dw, dh);
-  } catch {
-    ctx.fillStyle = "#ccc";
-    ctx.font = "14px Arial"; ctx.textAlign = "center";
-    ctx.fillText("Product Image", LEFT_W / 2, BODY_TOP + BODY_H / 2);
-  }
+  } catch { /* skip */ }
+  ctx.restore();
+
+  // Shape border stroke (premium gold/red accent)
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(8 + imgR, BODY_TOP + 6);
+  ctx.lineTo(LEFT_W - imgR, BODY_TOP + 6);
+  ctx.quadraticCurveTo(LEFT_W, BODY_TOP + 6, LEFT_W, BODY_TOP + 6 + imgR);
+  ctx.lineTo(LEFT_W, BODY_TOP + BODY_H - 40);
+  ctx.lineTo(LEFT_W - 40, BODY_TOP + BODY_H - 6);
+  ctx.lineTo(8 + imgR, BODY_TOP + BODY_H - 6);
+  ctx.quadraticCurveTo(8, BODY_TOP + BODY_H - 6, 8, BODY_TOP + BODY_H - 6 - imgR);
+  ctx.lineTo(8, BODY_TOP + 6 + imgR);
+  ctx.quadraticCurveTo(8, BODY_TOP + 6, 8 + imgR, BODY_TOP + 6);
+  ctx.closePath();
+  ctx.strokeStyle = "rgba(196,30,58,0.35)"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.restore();
 
   // ── 4. RIGHT PANEL ─────────────────────────────────────────────────────────
   ctx.textAlign = "left";
-  let ry = BODY_TOP + 16;
+  let ry = BODY_TOP + 14;
 
-  // Brand name — large, bold, stylized (red like Solingen)
-  const brandSz = Math.round(W * 0.060);
-  ctx.font = `900 ${brandSz}px Arial Black, Georgia, serif`;
-  ctx.fillStyle = "#C41E3A";
-  // Drop shadow effect
-  ctx.shadowColor = "rgba(196,30,58,0.18)";
-  ctx.shadowBlur = 4;
-  ctx.fillText(info.brandName.toUpperCase(), RIGHT_X, ry + brandSz);
-  ctx.shadowBlur = 0;
+  // ── Brand name — large, bold, red, serif (Solingen style) ──────────────────
+  const brandSz = Math.round(W * 0.063);
+  ctx.font = `900 ${brandSz}px Georgia, serif`;
+  ctx.fillStyle = "#B01C32";
+  ctx.shadowColor = "rgba(176,28,50,0.20)"; ctx.shadowBlur = 5; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 2;
+  ctx.fillText(info.brandName, RIGHT_X, ry + brandSz);
+  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   ry += brandSz + 2;
 
-  // Brand sub caption
-  const subSz = Math.round(W * 0.017);
+  // Brand tagline small (italic gray)
+  const subSz = Math.round(W * 0.018);
   ctx.font = `italic ${subSz}px Georgia, serif`;
-  ctx.fillStyle = "#888";
-  ctx.fillText("PROFESSIONELLE QUALITÄT", RIGHT_X, ry + subSz);
+  ctx.fillStyle = "#999";
+  ctx.fillText("Professional Quality · Est. 2001", RIGHT_X, ry + subSz);
   ry += subSz + 10;
 
-  // Thin red divider line
-  ctx.strokeStyle = "#C41E3A"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(RIGHT_X, ry); ctx.lineTo(RIGHT_X + RIGHT_W, ry); ctx.stroke();
-  ry += 12;
+  // Decorative divider — gold line with diamond
+  const divY = ry + 3;
+  const goldGrad = ctx.createLinearGradient(RIGHT_X, 0, RIGHT_X + RIGHT_W, 0);
+  goldGrad.addColorStop(0, "rgba(180,140,50,0)");
+  goldGrad.addColorStop(0.1, "#c8a84b");
+  goldGrad.addColorStop(0.5, "#e8c860");
+  goldGrad.addColorStop(0.9, "#c8a84b");
+  goldGrad.addColorStop(1, "rgba(180,140,50,0)");
+  ctx.strokeStyle = goldGrad; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(RIGHT_X, divY); ctx.lineTo(RIGHT_X + RIGHT_W, divY); ctx.stroke();
+  // Diamond at center
+  const dCx = RIGHT_X + RIGHT_W / 2;
+  ctx.fillStyle = "#e8c860";
+  ctx.beginPath(); ctx.moveTo(dCx, divY - 5); ctx.lineTo(dCx + 5, divY); ctx.lineTo(dCx, divY + 5); ctx.lineTo(dCx - 5, divY); ctx.closePath(); ctx.fill();
+  ry += 16;
 
-  // Product name — in a red pill/banner background (like CUTICLE NIPPER box in template)
-  const boxH = Math.round(W * 0.065);
-  const boxR = 6;
-  // Red background box
-  ctx.fillStyle = "#C41E3A";
+  // ── Product name — gradient red pill box ────────────────────────────────────
+  const boxH = Math.round(W * 0.062);
+  const boxR = 8;
+  const boxGrad = ctx.createLinearGradient(RIGHT_X, ry, RIGHT_X + RIGHT_W, ry + boxH);
+  boxGrad.addColorStop(0, "#C41E3A"); boxGrad.addColorStop(1, "#8B0000");
+  ctx.fillStyle = boxGrad;
+  // Rounded rect
   ctx.beginPath();
-  ctx.moveTo(RIGHT_X + boxR, ry);
-  ctx.lineTo(RIGHT_X + RIGHT_W - boxR, ry);
+  ctx.moveTo(RIGHT_X + boxR, ry); ctx.lineTo(RIGHT_X + RIGHT_W - boxR, ry);
   ctx.quadraticCurveTo(RIGHT_X + RIGHT_W, ry, RIGHT_X + RIGHT_W, ry + boxR);
   ctx.lineTo(RIGHT_X + RIGHT_W, ry + boxH - boxR);
   ctx.quadraticCurveTo(RIGHT_X + RIGHT_W, ry + boxH, RIGHT_X + RIGHT_W - boxR, ry + boxH);
@@ -340,72 +415,77 @@ async function drawCard(
   ctx.lineTo(RIGHT_X, ry + boxR);
   ctx.quadraticCurveTo(RIGHT_X, ry, RIGHT_X + boxR, ry);
   ctx.closePath(); ctx.fill();
+  // Inner highlight line
+  ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(RIGHT_X + boxR + 4, ry + 3); ctx.lineTo(RIGHT_X + RIGHT_W - boxR - 4, ry + 3); ctx.stroke();
 
-  // Product name text in the box
-  const nameSz = Math.round(W * 0.036);
-  ctx.font = `bold ${nameSz}px Arial`;
+  // Product name text
+  const nameSz = Math.round(W * 0.032);
+  ctx.font = `bold ${nameSz}px Arial, sans-serif`;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
-  // Truncate to fit
   let nameText = info.productName.toUpperCase();
-  while (ctx.measureText(nameText).width > RIGHT_W - 20 && nameText.length > 6) {
-    nameText = nameText.slice(0, -1);
-  }
+  // Fit text
+  while (ctx.measureText(nameText).width > RIGHT_W - 20 && nameText.length > 6) nameText = nameText.slice(0, -1);
   if (nameText !== info.productName.toUpperCase()) nameText += "…";
-  ctx.fillText(nameText, RIGHT_X + RIGHT_W / 2, ry + boxH * 0.65);
+  ctx.fillText(nameText, RIGHT_X + RIGHT_W / 2, ry + boxH * 0.67);
   ctx.textAlign = "left";
   ry += boxH + 10;
 
-  // Tagline
-  const tagSz = Math.round(W * 0.022);
-  ctx.font = `${tagSz}px Arial`;
-  ctx.fillStyle = "#555";
-  const tagShort = info.tagline.length > 42 ? info.tagline.substring(0, 42) : info.tagline;
-  ctx.fillText(tagShort, RIGHT_X, ry + tagSz);
+  // ── Tagline ──────────────────────────────────────────────────────────────────
+  const tagSz = Math.round(W * 0.021);
+  ctx.font = `${tagSz}px Georgia, serif`;
+  ctx.fillStyle = "#666";
+  const tag = info.tagline.length > 44 ? info.tagline.substring(0, 44) : info.tagline;
+  ctx.fillText(tag, RIGHT_X, ry + tagSz);
   ry += tagSz + 14;
 
-  // ── 4 Feature rows ──
-  const featSz = Math.round(W * 0.024);
-  const circR = Math.round(W * 0.031);
+  // ── 4 Feature rows — premium style ──────────────────────────────────────────
+  const featSz = Math.round(W * 0.0235);
+  const circR = Math.round(W * 0.029);
 
   for (const feat of info.features.slice(0, 4)) {
     const cy = ry + circR;
-    // Circle — white fill with dark border
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#cccccc";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(RIGHT_X + circR, cy, circR, 0, Math.PI * 2);
-    ctx.fill(); ctx.stroke();
 
-    // Emoji
-    ctx.font = `${Math.round(circR * 1.05)}px serif`;
+    // Circle with gradient fill
+    const circGrad = ctx.createRadialGradient(RIGHT_X + circR - 3, cy - 3, 2, RIGHT_X + circR, cy, circR);
+    circGrad.addColorStop(0, "#ffffff"); circGrad.addColorStop(1, "#f0e8f0");
+    ctx.fillStyle = circGrad;
+    ctx.strokeStyle = "#ddc8cc"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(RIGHT_X + circR, cy, circR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    // Emoji icon
+    ctx.font = `${Math.round(circR * 1.0)}px serif`;
     ctx.textAlign = "center"; ctx.fillStyle = "#000";
     ctx.fillText(feat.icon, RIGHT_X + circR, cy + Math.round(circR * 0.35));
 
-    // Title bold
+    // Feature title — bold dark
     ctx.textAlign = "left";
-    ctx.font = `bold ${featSz}px Arial`;
+    ctx.font = `bold ${featSz}px Arial, sans-serif`;
     ctx.fillStyle = "#1a1a1a";
     ctx.fillText(feat.title, RIGHT_X + circR * 2 + 10, cy - 4);
 
-    // Subtitle small gray
-    ctx.font = `${Math.round(featSz * 0.80)}px Arial`;
-    ctx.fillStyle = "#888";
+    // Feature subtitle — italic light gray
+    ctx.font = `italic ${Math.round(featSz * 0.78)}px Georgia, serif`;
+    ctx.fillStyle = "#aaa";
     ctx.fillText(feat.subtitle, RIGHT_X + circR * 2 + 10, cy + featSz - 2);
 
-    ry += circR * 2 + 10;
+    // Tiny dot separator
+    ctx.fillStyle = "#e0c8c8";
+    ctx.beginPath(); ctx.arc(RIGHT_X + circR * 2 + 5, cy + 3, 1.5, 0, Math.PI * 2); ctx.fill();
+
+    ry += circR * 2 + 9;
   }
 
-  // ── Price box ──────────────────────────────────────────────────────────────
-  const priceBoxH = Math.round(W * 0.108);
-  const priceBoxY = BODY_TOP + BODY_H - priceBoxH - 8;
-  const pbR = 12;
-
-  // Outer dark rounded rect
-  ctx.fillStyle = "#111111";
+  // ── Price box — premium dark with gold accent ─────────────────────────────
+  const priceBoxH = Math.round(W * 0.104);
+  const priceBoxY = BODY_TOP + BODY_H - priceBoxH - 10;
+  const pbR = 14;
+  const priceGrad = ctx.createLinearGradient(RIGHT_X, priceBoxY, RIGHT_X + RIGHT_W, priceBoxY + priceBoxH);
+  priceGrad.addColorStop(0, "#1a1a2e"); priceGrad.addColorStop(1, "#0d0d1a");
+  ctx.fillStyle = priceGrad;
   ctx.beginPath();
-  ctx.moveTo(RIGHT_X + pbR, priceBoxY);
-  ctx.lineTo(RIGHT_X + RIGHT_W - pbR, priceBoxY);
+  ctx.moveTo(RIGHT_X + pbR, priceBoxY); ctx.lineTo(RIGHT_X + RIGHT_W - pbR, priceBoxY);
   ctx.quadraticCurveTo(RIGHT_X + RIGHT_W, priceBoxY, RIGHT_X + RIGHT_W, priceBoxY + pbR);
   ctx.lineTo(RIGHT_X + RIGHT_W, priceBoxY + priceBoxH - pbR);
   ctx.quadraticCurveTo(RIGHT_X + RIGHT_W, priceBoxY + priceBoxH, RIGHT_X + RIGHT_W - pbR, priceBoxY + priceBoxH);
@@ -415,69 +495,93 @@ async function drawCard(
   ctx.quadraticCurveTo(RIGHT_X, priceBoxY, RIGHT_X + pbR, priceBoxY);
   ctx.closePath(); ctx.fill();
 
-  const priceSz = Math.round(priceBoxH * 0.68);
+  // Gold border on price box
+  ctx.strokeStyle = "#c8a84b"; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(RIGHT_X + pbR, priceBoxY); ctx.lineTo(RIGHT_X + RIGHT_W - pbR, priceBoxY);
+  ctx.quadraticCurveTo(RIGHT_X + RIGHT_W, priceBoxY, RIGHT_X + RIGHT_W, priceBoxY + pbR);
+  ctx.lineTo(RIGHT_X + RIGHT_W, priceBoxY + priceBoxH - pbR);
+  ctx.quadraticCurveTo(RIGHT_X + RIGHT_W, priceBoxY + priceBoxH, RIGHT_X + RIGHT_W - pbR, priceBoxY + priceBoxH);
+  ctx.lineTo(RIGHT_X + pbR, priceBoxY + priceBoxH);
+  ctx.quadraticCurveTo(RIGHT_X, priceBoxY + priceBoxH, RIGHT_X, priceBoxY + priceBoxH - pbR);
+  ctx.lineTo(RIGHT_X, priceBoxY + pbR);
+  ctx.quadraticCurveTo(RIGHT_X, priceBoxY, RIGHT_X + pbR, priceBoxY);
+  ctx.closePath(); ctx.stroke();
+
+  // ₹ symbol small
+  const rupeeSz = Math.round(priceBoxH * 0.32);
+  ctx.font = `bold ${rupeeSz}px Arial`;
+  ctx.fillStyle = "#c8a84b";
+  ctx.textAlign = "left";
+  ctx.fillText("₹", RIGHT_X + 14, priceBoxY + priceBoxH * 0.68);
+
+  // Price number big white
+  const priceSz = Math.round(priceBoxH * 0.66);
   ctx.font = `900 ${priceSz}px Arial Black, Arial`;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
-  ctx.fillText(`₹${price}`, RIGHT_X + RIGHT_W / 2, priceBoxY + priceBoxH * 0.71);
+  ctx.fillText(price, RIGHT_X + RIGHT_W / 2 + 12, priceBoxY + priceBoxH * 0.72);
 
-  // ── 5. BOTTOM STRIP — "How to Use" 3 steps ───────────────────────────────
+  // ── 5. BOTTOM — "How to Use" premium strip ────────────────────────────────
   const STRIP_Y = H - STRIP_H;
 
-  // Light cream background
-  ctx.fillStyle = "#fdf8f0";
+  // Gradient background
+  const stripGrad = ctx.createLinearGradient(0, STRIP_Y, 0, H);
+  stripGrad.addColorStop(0, "#1a1a2e"); stripGrad.addColorStop(1, "#2d1a2e");
+  ctx.fillStyle = stripGrad;
   ctx.fillRect(0, STRIP_Y, W, STRIP_H);
 
-  // Top border line (red)
-  ctx.strokeStyle = "#C41E3A"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, STRIP_Y); ctx.lineTo(W, STRIP_Y); ctx.stroke();
+  // Gold top border
+  ctx.strokeStyle = "#c8a84b"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, STRIP_Y + 1); ctx.lineTo(W, STRIP_Y + 1); ctx.stroke();
 
-  // "HOW TO USE" title bar
-  const titleBarH = Math.round(STRIP_H * 0.28);
-  ctx.fillStyle = "#C41E3A";
-  ctx.fillRect(0, STRIP_Y, W, titleBarH);
+  // HOW TO USE header
+  const htuBarH = Math.round(STRIP_H * 0.27);
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold ${Math.round(titleBarH * 0.60)}px Arial`;
+  ctx.font = `bold ${Math.round(htuBarH * 0.56)}px Arial`;
   ctx.textAlign = "center";
-  ctx.fillText("HOW TO USE", W / 2, STRIP_Y + titleBarH * 0.74);
+  // Letter spacing effect
+  const htuText = "✦  HOW TO USE  ✦";
+  ctx.fillText(htuText, W / 2, STRIP_Y + htuBarH * 0.80);
+
+  // Gold underline
+  ctx.strokeStyle = "#c8a84b"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W * 0.2, STRIP_Y + htuBarH); ctx.lineTo(W * 0.8, STRIP_Y + htuBarH); ctx.stroke();
 
   // 3 step columns
   const colW = Math.round(W / 3);
-  const stepNums = ["1", "2", "3"];
-  // Default how-to-use steps from AI info (bottomLabels used as step descriptions)
-  const steps = info.bottomLabels.length >= 3
-    ? info.bottomLabels
-    : ["Step 1", "Step 2", "Step 3"];
-
-  const stepY = STRIP_Y + titleBarH;
-  const stepH = STRIP_H - titleBarH;
-  const circleR = Math.round(stepH * 0.24);
-  const stepFontSz = Math.round(stepH * 0.175);
+  const steps = info.bottomLabels.length >= 3 ? info.bottomLabels : ["Apply Product", "Wait & Absorb", "See Results"];
+  const stepY = STRIP_Y + htuBarH + 6;
+  const stepH = H - stepY - 6;
+  const circleR2 = Math.round(stepH * 0.22);
+  const stepFontSz = Math.round(stepH * 0.16);
 
   for (let i = 0; i < 3; i++) {
     const cx = i * colW + colW / 2;
 
-    // Divider between columns
+    // Vertical dividers
     if (i > 0) {
-      ctx.strokeStyle = "#e8d8c8"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(i * colW, stepY + 6); ctx.lineTo(i * colW, H - 6); ctx.stroke();
+      ctx.strokeStyle = "rgba(200,168,75,0.3)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(i * colW, stepY + 4); ctx.lineTo(i * colW, H - 6); ctx.stroke();
     }
 
-    // Step number circle
-    const circleY = stepY + circleR + Math.round(stepH * 0.12);
-    ctx.fillStyle = "#C41E3A";
-    ctx.beginPath(); ctx.arc(cx, circleY, circleR, 0, Math.PI * 2); ctx.fill();
+    // Step number circle — gold gradient
+    const scy = stepY + circleR2 + 4;
+    const circleGrad = ctx.createRadialGradient(cx, scy, 2, cx, scy, circleR2);
+    circleGrad.addColorStop(0, "#f0d070"); circleGrad.addColorStop(1, "#c8a84b");
+    ctx.fillStyle = circleGrad;
+    ctx.beginPath(); ctx.arc(cx, scy, circleR2, 0, Math.PI * 2); ctx.fill();
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `900 ${Math.round(circleR * 1.1)}px Arial Black, Arial`;
+    // Step number
+    ctx.fillStyle = "#1a1a2e";
+    ctx.font = `900 ${Math.round(circleR2 * 1.05)}px Arial Black, Arial`;
     ctx.textAlign = "center";
-    ctx.fillText(stepNums[i], cx, circleY + Math.round(circleR * 0.38));
+    ctx.fillText(String(i + 1), cx, scy + Math.round(circleR2 * 0.38));
 
-    // Step label
-    ctx.fillStyle = "#333";
+    // Step text
+    ctx.fillStyle = "#e8e8e8";
     ctx.font = `bold ${stepFontSz}px Arial`;
-    const label = (steps[i] || "").substring(0, 16);
-    ctx.fillText(label, cx, stepY + stepH - Math.round(stepH * 0.08));
+    ctx.fillText((steps[i] || "").substring(0, 14), cx, stepY + stepH - 4);
   }
 }
 
